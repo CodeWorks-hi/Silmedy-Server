@@ -13,6 +13,9 @@ collection_doctors = db.collection('doctors')
 collection_admins = db.collection('admins')
 
 
+@app.route('/patient/signup', methods=['POST'])
+
+
 @app.route('/patient/login', methods=['POST'])
 def patient_login():
     try:
