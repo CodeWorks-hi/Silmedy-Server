@@ -1,3 +1,4 @@
+
 from flask import Flask, Blueprint, request, jsonify
 import firebase_admin
 import boto3
@@ -59,10 +60,9 @@ table_prescription_records = dynamodb.Table('prescription_records')
 # ---- 진료 신청----
 
 
-# ---- 채팅 ----
+# ---- 채팅 저장 ----
 
-# 채팅 저장 API
-@app.route('/save', methods=['POST'])
+@app.route('/chat/save', methods=['POST'])
 def save_chat():
     try:
         data = request.get_json()
@@ -87,7 +87,64 @@ def save_chat():
     except Exception as e:
         logger.error(f"Error saving chat: {e}")
         return jsonify({'error': str(e)}), 500
+    
+
+    
+# ---- 진료 예약 페이지 안내 ----
+@app.route('/chat/reserve', methods=['POST'])
+def go_to_reservation_page():
+    return jsonify({"message": "진료 예약 화면으로 이동하세요."}), 200
+
+
+# ---- 의사 목록 반환 ----
+@app.route('/chat/doctors', methods=['GET'])
+def get_doctor_list():
+    try:
+        doctors = [doc.to_dict() for doc in collection_doctors.stream()]
+        return jsonify(doctors), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ---- 의사 진료 가능 시간 확인 ----
+@app.route('/chat/availability', methods=['GET'])
+def get_doctor_availability():
+    return jsonify({
+        "availability": {
+            "start": "09:00",
+            "end": "18:00"
+        }
+    }), 200
+
+
+# ---- 수어 필요 여부 자동 확인 ----
+@app.route('/chat/signcheck', methods=['GET'])
+def check_sign_language_required():
+    # 향후 로직으로 사용자의 프로필 기반 분석 가능
+    return jsonify({"sign_language_needed": True}), 200
+
+
+# ---- 진료 예약 확정 처리 ----
+@app.route('/chat/confirmed', methods=['POST'])
+def confirm_reservation():
+    data = request.get_json()
+    required_fields = ["name", "time", "doctor"]
+
+    # 필수 필드 확인
+    if not all(field in data for field in required_fields):
+        return jsonify({
+            "error": "Missing required reservation information."
+        }), 400
+
+    return jsonify({
+        "message": "진료 예약이 확정되었습니다.",
+        "reservation": data
+    }), 200
 
 
 
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
 
