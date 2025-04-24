@@ -114,6 +114,23 @@ def patient_login():
         return jsonify({'error': str(e)}), 500
     
 
-# @app.route('/request/disease-image', methods=[])
-    
+@app.route('/request/disease-image', methods=['POST'])
+def request_disease_image():
+    try:
+        data = request.get_json()
+        analysis = data.get('analysis')
+
+        if not analysis:
+            return jsonify({'error': 'Analysis is required'}), 400
+        
+        response = table_diseases.get_item(Key={'name': analysis})
+        item = response.get('Item')
+
+        if item and 'desc_url' in item:
+            return jsonify({'desc_url': item['desc_url']}), 200
+        else:
+            return jsonify({'error': 'No matching disease found'}), 404
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
     
