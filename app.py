@@ -120,6 +120,46 @@ def search_postal_code():
         return jsonify(result), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    
+
+
+# ---- 진료 신청----
+
+
+# ---- 채팅 ----
+
+# 채팅 저장 API
+@app.route('/save', methods=['POST'])
+def save_chat():
+    try:
+        data = request.get_json()
+        consult_id = data.get('consult_id')
+        original_text = data.get('original_text')
+
+        # 입력 유효성 검증
+        if not consult_id or not isinstance(original_text, list):
+            return jsonify({"message": "Invalid input"}), 400
+
+        # DynamoDB 저장
+        table_consult_text.put_item(
+            Item={
+                'consult_id': int(consult_id),
+                'original_text': original_text
+            }
+        )
+
+        logger.info(f"[저장됨] consult_id={consult_id}, text={original_text}")
+        return jsonify({"message": "Chat saved", "consult_id": consult_id}), 200
+
+    except Exception as e:
+        logger.error(f"Error saving chat: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+
+
+
+
 
 
 if __name__ == '__main__':
