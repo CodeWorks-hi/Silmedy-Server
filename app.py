@@ -733,6 +733,164 @@ def mark_delivery_as_received():
         return jsonify({'error': str(e)}), 500
 
 
+# ---- 대기중인 의사 조회 ----
+@app.route('/call/waiting-doctor', methods=['POST'])
+def get_waiting_doctor_for_patient():
+    try:
+        data = request.get_json()
+        patient_id = data.get('patient_id')
+
+        if not patient_id:
+            return jsonify({'error': 'patient_id is required'}), 400
+
+        query = collection_calls \
+            .where("patient_id", "==", patient_id) \
+            .where("is_accepted", "==", False) \
+            .limit(1) \
+            .stream()
+
+        call_doc = next(query, None)
+        if not call_doc:
+            return jsonify({'message': 'No waiting doctor found'}), 404
+
+        doctor_id = call_doc.to_dict().get("doctor_id")
+        return jsonify({'doctor_id': doctor_id}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+
+@app.route('/call/accept', methods=['POST'])
+def accept_call():
+    try:
+        data = request.get_json()
+        call_id = data.get('call_id')
+
+        if not call_id:
+            return jsonify({'error': 'call_id is required'}), 400
+
+        doc_ref = collection_calls.document(str(call_id))
+        doc = doc_ref.get()
+
+        if not doc.exists:
+            return jsonify({'error': 'Call not found'}), 404
+
+        doc_ref.update({
+            'is_accepted': True,
+            'started_at': datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+        })
+        return jsonify({'message': 'Call accepted successfully'}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+
+# ---- Call에서 doctor_id 반환 ----
+@app.route('/call/doctor-id', methods=['POST'])
+def get_doctor_id_from_call():
+    try:
+        data = request.get_json()
+        call_id = data.get('call_id')
+
+        if not call_id:
+            return jsonify({'error': 'call_id is required'}), 400
+
+        doc_ref = collection_calls.document(str(call_id))
+        doc = doc_ref.get()
+
+        if not doc.exists:
+            return jsonify({'error': 'Call not found'}), 404
+
+        doctor_id = doc.to_dict().get('doctor_id')
+        return jsonify({'doctor_id': doctor_id}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+
+# ---- Add patient_text to a call ----
+@app.route('/call/add-patient-text', methods=['POST'])
+def add_patient_text():
+    try:
+        data = request.get_json()
+        call_id = data.get('call_id')
+        new_text = data.get('text')
+
+        if not call_id or not new_text:
+            return jsonify({'error': 'call_id and text are required'}), 400
+
+        doc_ref = collection_calls.document(str(call_id))
+        doc = doc_ref.get()
+
+        if not doc.exists:
+            return jsonify({'error': 'Call not found'}), 404
+
+        call_data = doc.to_dict()
+        patient_text_list = call_data.get('patient_text', [])
+
+        if not isinstance(patient_text_list, list):
+            patient_text_list = []
+
+        patient_text_list.append(new_text.strip())
+        doc_ref.update({'patient_text': patient_text_list})
+
+        return jsonify({'message': 'Text added to patient_text'}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+
+# ---- Get latest doctor_text from a call ----
+@app.route('/call/latest-doctor-text', methods=['POST'])
+def get_latest_doctor_text():
+    try:
+        data = request.get_json()
+        call_id = data.get('call_id')
+
+        if not call_id:
+            return jsonify({'error': 'call_id is required'}), 400
+
+        doc_ref = collection_calls.document(str(call_id))
+        doc = doc_ref.get()
+
+        if not doc.exists:
+            return jsonify({'error': 'Call not found'}), 404
+
+        doctor_text_list = doc.to_dict().get('doctor_text', [])
+        if not isinstance(doctor_text_list, list) or not doctor_text_list:
+            return jsonify({'message': 'No doctor text found'}), 404
+
+        return jsonify({'latest_doctor_text': doctor_text_list[-1]}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# ---- End a call ----
+@app.route('/call/end', methods=['POST'])
+def end_call():
+    try:
+        data = request.get_json()
+        call_id = data.get('call_id')
+
+        if not call_id:
+            return jsonify({'error': 'call_id is required'}), 400
+
+        doc_ref = collection_calls.document(str(call_id))
+        doc = doc_ref.get()
+
+        if not doc.exists:
+            return jsonify({'error': 'Call not found'}), 404
+
+        doc_ref.update({'ended_at': datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")})
+        return jsonify({'message': 'Call ended successfully'}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 
 if __name__ == '__main__':
     app.run(debug=True)
