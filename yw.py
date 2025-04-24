@@ -47,6 +47,7 @@ verification_codes = {}
 def is_valid_phone_number(phone):
     # 010으로 시작하고 숫자만 있는 10자리 또는 11자리
     return re.fullmatch(r"^010\d{7,8}$", phone)
+
 # ---- 인증번호 요청 ----
 @app.route("/request-verification-code", methods=["POST"])
 def request_verification_code():
@@ -155,5 +156,6 @@ def verify_code_check_user():
     except Exception as e:
         return jsonify({"success": False, "message": f"오류 발생: {str(e)}"}), 500
     
+
 if __name__ == '__main__':
     app.run(debug=True)
