@@ -556,5 +556,51 @@ def confirm_reservation():
         return jsonify({'error': str(e)}), 500
    
 
+# ---- 처방전 URL 반환 ----
+@app.route('/prescription/url', methods=['GET'])
+def get_prescription_url():
+    try:
+        prescription_id = request.args.get('prescription_id')
+        if not prescription_id:
+            return jsonify({'error': 'prescription_id is required'}), 400
+
+        response = table_prescription_records.get_item(Key={'prescription_id': int(prescription_id)})
+        item = response.get('Item')
+
+        if item and 'prescription_url' in item:
+            return jsonify({'prescription_url': item['prescription_url']}), 200
+        else:
+            return jsonify({'error': 'Prescription not found'}), 404
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# ---- 진료 내역 반환 ----
+@app.route('/diagnosis/list', methods=['GET'])
+def get_diagnosis_by_patient():
+    try:
+        from urllib.parse import unquote
+        raw_email = request.args.get('email', '')
+        email = unquote(raw_email).strip().replace("'", "")
+        if not email:
+            return jsonify({'error': 'Email is required'}), 400
+
+        response = table_diagnosis_records.scan()
+        items = []
+        for item in response.get('Items', []):
+            if str(item.get('patient_id', '')).strip() == email:
+                # Convert set fields to list for JSON serialization
+                for key in ['symptoms', 'summary_text']:
+                    if isinstance(item.get(key), set):
+                        item[key] = list(item[key])
+                items.append(item)
+
+        return jsonify({'records': items}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 if __name__ == '__main__':
     app.run(debug=True)
