@@ -40,6 +40,7 @@ collection_patients = db.collection('patients')
 collection_doctors = db.collection('doctors')
 collection_admins = db.collection('admins')
 collection_calls = db.collection('calls')
+collection_counters = db.collection('fb_counters')
 
 # DynamoDB
 table_ai_consults = dynamodb.Table('ai_consults')
@@ -161,15 +162,64 @@ def patient_change_password():
         return jsonify({'error': str(e)}), 500
 
 
-
-
 # ---- 로그아웃----
-
 @app.route('/patient/logout', methods=['POST'])
 def logout():
     return jsonify({'message': '로그아웃 처리 완료'}), 200
 
 
+# ---- 환자 마이페이지 조회 ----
+@app.route('/patient/mypage', methods=['GET'])
+def get_mypage():
+    email = request.args.get('email')
+    if not email:
+        return jsonify({'error': 'Email required'}), 400
 
-if __name__ == '__main__':
-    app.run(debug=True)
+    doc = collection_patients.document(email).get()
+    if doc.exists:
+        return jsonify(doc.to_dict()), 200
+    else:
+        return jsonify({'error': 'User not found'}), 404
+    
+
+# ---- 회원 정보 수정  ----
+@app.route('/patient/update', methods=['POST'])
+def update_patient_info():
+    try:
+        data = request.get_json()
+        email = data.get('email')
+        updates = data.get('updates')  # 수정할 필드들 (딕셔너리)
+
+        if not email or not updates:
+            return jsonify({'error': 'Email and update data required'}), 400
+
+        doc_ref = collection_patients.document(email)
+        doc = doc_ref.get()
+
+        if doc.exists:
+            doc_ref.update(updates)
+            return jsonify({'message': '회원 정보 수정 완료'}), 200
+        else:
+            return jsonify({'error': 'User not found'}), 404
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# ---- 회원 탈퇴   ----
+@app.route('/patient/delete', methods=['DELETE'])
+def delete_patient():
+    data = request.get_json()
+    email = data.get('email')
+
+    if not email:
+        return jsonify({'error': 'Email required'}), 400
+
+    doc_ref = collection_patients.document(email)
+    doc = doc_ref.get()
+
+    if doc.exists:
+        doc_ref.delete()
+        return jsonify({'message': '회원 탈퇴 완료'}), 200
+    else:
+        return jsonify({'error': 'User not found'}), 404

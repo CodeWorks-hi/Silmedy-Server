@@ -62,7 +62,6 @@ table_prescription_records = dynamodb.Table('prescription_records')
 
 
 # ---- 환자 마이페이지 조회 ----
-
 @app.route('/patient/mypage', methods=['GET'])
 def get_mypage():
     email = request.args.get('email')
@@ -76,10 +75,7 @@ def get_mypage():
         return jsonify({'error': 'User not found'}), 404
     
 
-
 # ---- 회원 정보 수정  ----
-
-
 @app.route('/patient/update', methods=['POST'])
 def update_patient_info():
     try:
@@ -103,10 +99,7 @@ def update_patient_info():
         return jsonify({'error': str(e)}), 500
 
 
-
-
 # ---- 회원 탈퇴   ----
-
 @app.route('/patient/delete', methods=['DELETE'])
 def delete_patient():
     data = request.get_json()
@@ -123,10 +116,3 @@ def delete_patient():
         return jsonify({'message': '회원 탈퇴 완료'}), 200
     else:
         return jsonify({'error': 'User not found'}), 404
-
-
-
-
-# ---- 실행 시작 ----
-if __name__ == '__main__':
-    app.run(debug=True)
