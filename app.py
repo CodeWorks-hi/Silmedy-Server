@@ -4,6 +4,8 @@ import boto3
 import logging
 from datetime import datetime
 from firebase_admin import credentials, firestore
+import requests
+import toml
 
 # ---- 기본 세팅 ----
 app = Flask(__name__)
@@ -15,6 +17,8 @@ dynamodb = boto3.resource('dynamodb', region_name='ap-northeast-2')
 cred = credentials.Certificate('silmedy-23a1b-firebase-adminsdk-fbsvc-1e8c6b596b.json')
 firebase_admin.initialize_app(cred)
 db = firestore.client()
+
+config = toml.load('api_keys.toml')
 
 # ---- 테이블 목록 ----
 # Firestore
@@ -49,7 +53,7 @@ def patient_signup():
             'email': body['email'],
             'password': body['password'],
             'name': body['name'],
-            'phone': body['phone'],
+            'contact': body['contact'],
             'postal_code': body['postal_code'],
             'address': body['address'],
             'address_detail': body['address_detail'],
@@ -95,6 +99,27 @@ def patient_login():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+
+@app.route('/postal_code', methods=['GET'])
+def search_postal_code():
+    keyword = request.args.get('keyword')
+    if not keyword:
+        return jsonify({'error': 'Keyword is required'}), 400
+
+    postcode_key = config['postcode']['key']
+    try:
+        encoded_keyword = requests.utils.quote(keyword, encoding='utf-8')
+        apiUrl = f"https://business.juso.go.kr/addrlink/addrLinkApi.do?currentPage=1&countPerPage=100&keyword={encoded_keyword}&confmKey={postcode_key}&resultType=json"
+        response = requests.get(apiUrl)
+        response.raise_for_status()
+        data = response.json()
+
+        juso_list = data.get("results", {}).get("juso", [])
+        result = [{"zipNo": j.get("zipNo"), "roadAddr": j.get("roadAddr")} for j in juso_list]
+
+        return jsonify(result), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 if __name__ == '__main__':

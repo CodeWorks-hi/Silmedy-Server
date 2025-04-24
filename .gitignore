@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 
 silmedy-23a1b-firebase-adminsdk-fbsvc-1e8c6b596b.json
+api_keys.toml
 
 # C extensions
 *.so
