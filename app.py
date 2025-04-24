@@ -152,7 +152,11 @@ def patient_change_password():
 
 
 
+# ---- 로그아웃----
 
+@app.route('/patient/logout', methods=['POST'])
+def logout():
+    return jsonify({'message': '로그아웃 처리 완료'}), 200
 
 
 
