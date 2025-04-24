@@ -581,6 +581,7 @@ def get_prescription_url():
 def get_diagnosis_by_patient():
     try:
         from urllib.parse import unquote
+        from datetime import datetime
         raw_email = request.args.get('email', '')
         email = unquote(raw_email).strip().replace("'", "")
         if not email:
@@ -590,16 +591,147 @@ def get_diagnosis_by_patient():
         items = []
         for item in response.get('Items', []):
             if str(item.get('patient_id', '')).strip() == email:
-                # Convert set fields to list for JSON serialization
-                for key in ['symptoms', 'summary_text']:
-                    if isinstance(item.get(key), set):
-                        item[key] = list(item[key])
-                items.append(item)
+                diagnosis_id = item.get('diagnosis_id')
+                diagnosed_at = item.get('diagnosed_at', '')
+                try:
+                    diagnosed_date = datetime.strptime(diagnosed_at, "%Y-%m-%d %H:%M:%S").date().isoformat()
+                except ValueError:
+                    diagnosed_date = diagnosed_at  # fallback if format is wrong
+
+                delivery_scan = table_drug_deliveries.scan(
+                    FilterExpression=Attr('prescription_id').eq(diagnosis_id)
+                )
+                delivery_items = delivery_scan.get('Items', [])
+                delivery_info = delivery_items[0] if delivery_items else {}
+
+                result = {
+                    'diagnosis_id': diagnosis_id,
+                    'summary_text': list(item.get('summary_text', [])) if isinstance(item.get('summary_text'), set) else item.get('summary_text', []),
+                    'diagnosed_at': diagnosed_date,
+                    'is_delivery': delivery_info.get('is_delivery', False),
+                    'is_received': delivery_info.get('is_received', False)
+                }
+                items.append(result)
 
         return jsonify({'records': items}), 200
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+# ---- 환자 기본 주소 반환 ----
+@app.route('/patient/default-address', methods=['GET'])
+def get_default_address():
+    try:
+        data = request.get_json()
+        email = data.get('email') if data else None
+        if not email:
+            return jsonify({'error': 'Email is required'}), 400
+
+        doc = collection_patients.document(email).get()
+        if not doc.exists:
+            return jsonify({'error': 'User not found'}), 404
+
+        data_doc = doc.to_dict()
+        is_default = data_doc.get('is_default_address', False)
+
+        if is_default:
+            return jsonify({
+                'is_default_address': True,
+                'postal_code': data_doc.get('postal_code', ''),
+                'address': data_doc.get('address', ''),
+                'address_detail': data_doc.get('address_detail', '')
+            }), 200
+        else:
+            return jsonify({'is_default_address': False}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# ---- 배송 요청 등록 ----
+@app.route('/delivery/register', methods=['POST'])
+def register_delivery():
+    try:
+        data = request.get_json()
+        required_fields = ['patient_id', 'is_delivery', 'patient_contact', 'pharmacy_id', 'prescription_id']
+        if not all(field in data for field in required_fields):
+            return jsonify({'error': '필수 항목 누락'}), 400
+
+        is_delivery = data['is_delivery']
+
+        # 배송 요청일 경우 필수 필드 확인
+        if is_delivery:
+            if not all(k in data for k in ['address', 'postal_code']):
+                return jsonify({'error': '주소 및 우편번호는 필수입니다 (is_delivery=True)'})
+        
+        # delivery_id 발급
+        counter_response = table_counters.get_item(Key={"counter_name": "delivery_id"})
+        counter = counter_response.get("Item", {})
+        current_id = int(counter.get("current_id", 0)) + 1
+        table_counters.put_item(Item={"counter_name": "delivery_id", "current_id": current_id})
+
+        # 배송 정보 구성
+        delivery = {
+            "delivery_id": current_id,
+            "patient_id": data["patient_id"],
+            "is_delivery": is_delivery,
+            "patient_contact": data["patient_contact"],
+            "pharmacy_id": data["pharmacy_id"],
+            "prescription_id": data["prescription_id"],
+            "created_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+            "is_received": False
+        }
+
+        if is_delivery:
+            delivery["address"] = data["address"]
+            delivery["postal_code"] = data["postal_code"]
+            if "delivery_request" in data:
+                delivery["delivery_request"] = data["delivery_request"]
+
+        table_drug_deliveries.put_item(Item=delivery)
+
+        return jsonify({
+            "message": "배송 요청이 등록되었습니다.",
+            "delivery": delivery
+        }), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/delivery/complete', methods=['POST'])
+def mark_delivery_as_received():
+    try:
+        data = request.get_json()
+        delivery_id = data.get('delivery_id')
+        patient_id = data.get('patient_id')
+
+        if not delivery_id or not patient_id:
+            return jsonify({'error': 'delivery_id and patient_id are required'}), 400
+
+        # 해당 배송 건이 존재하는지 확인
+        response = table_drug_deliveries.get_item(Key={'delivery_id': int(delivery_id)})
+        item = response.get('Item')
+
+        if not item or item.get('patient_id') != patient_id:
+            return jsonify({'error': '해당 배송 내역을 찾을 수 없습니다.'}), 404
+
+        # 배송 수령 완료 처리
+        table_drug_deliveries.update_item(
+            Key={'delivery_id': int(delivery_id)},
+            UpdateExpression='SET is_received = :val1, delivered_at = :val2',
+            ExpressionAttributeValues={
+                ':val1': True,
+                ':val2': datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+            }
+        )
+
+        return jsonify({'message': '배송 완료 처리되었습니다.', 'delivery_id': delivery_id}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 
 
 if __name__ == '__main__':
