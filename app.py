@@ -344,7 +344,7 @@ def verify_code_check_user():
 
     except Exception as e:
         return jsonify({"success": False, "message": f"오류 발생: {str(e)}"}), 500
-    
+   
 
 if __name__ == '__main__':
     app.run(debug=True)
