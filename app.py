@@ -842,7 +842,6 @@ def add_patient_text():
         return jsonify({'error': str(e)}), 500
 
 
-
 # ---- Get latest doctor_text from a call ----
 @app.route('/call/latest-doctor-text', methods=['POST'])
 def get_latest_doctor_text():
