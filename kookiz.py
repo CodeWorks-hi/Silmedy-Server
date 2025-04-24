@@ -112,7 +112,8 @@ def patient_login():
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    
 
-
+# @app.route('/request/disease-image', methods=[])
     
     
