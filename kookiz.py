@@ -56,7 +56,6 @@ table_pharmacies = dynamodb.Table('pharmacies')
 table_prescription_records = dynamodb.Table('prescription_records')
 
 
-# ---- 환자 회원가입 ----
 @app.route('/patient/signup', methods=['POST'])
 def patient_signup():
     logger.info(f"REQUEST: {request.json}")
@@ -71,6 +70,7 @@ def patient_signup():
             'postal_code': body['postal_code'],
             'address': body['address'],
             'address_detail': body['address_detail'],
+            'sign_language_needed': body['sign_language_needed'],
             'created_at': datetime.utcnow().isoformat()
         }
 
@@ -114,62 +114,5 @@ def patient_login():
         return jsonify({'error': str(e)}), 500
 
 
-# ---- 우편번호 검색 ----
-@app.route('/postal_code', methods=['GET'])
-def search_postal_code():
-    keyword = request.args.get('keyword')
-    if not keyword:
-        return jsonify({'error': 'Keyword is required'}), 400
-
-    postcode_key =  os.getenv("POSTAL_CODE_KEY")
-    try:
-        encoded_keyword = requests.utils.quote(keyword, encoding='utf-8')
-        apiUrl = f"https://business.juso.go.kr/addrlink/addrLinkApi.do?currentPage=1&countPerPage=100&keyword={encoded_keyword}&confmKey={postcode_key}&resultType=json"
-        response = requests.get(apiUrl)
-        response.raise_for_status()
-        data = response.json()
-
-        juso_list = data.get("results", {}).get("juso", [])
-        result = [{"zipNo": j.get("zipNo"), "roadAddr": j.get("roadAddr")} for j in juso_list]
-
-        return jsonify(result), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-
-# ---- 환자 비밀번호 변경 ----
-@app.route('/patient/repassword', methods=['POST'])
-def patient_change_password():
-    try:
-        data = request.get_json()
-        email = data.get('email')
-        new_password = data.get('new_password')
-
-        if not email or not new_password:
-            return jsonify({'error': 'Email and new password required'}), 400
-
-        doc_ref = collection_patients.document(email)
-        doc = doc_ref.get()
-
-        if doc.exists:
-            doc_ref.update({'password': new_password})
-            return jsonify({'message': '비밀번호 변경 완료'}), 200
-        else:
-            return jsonify({'error': '사용자 없음'}), 404
-
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-
-
-
-# ---- 로그아웃----
-
-@app.route('/patient/logout', methods=['POST'])
-def logout():
-    return jsonify({'message': '로그아웃 처리 완료'}), 200
-
-
-
-if __name__ == '__main__':
-    app.run(debug=True)
+    
+    

@@ -6,19 +6,33 @@ from datetime import datetime
 from firebase_admin import credentials, firestore
 import requests
 import toml
+from flask_cors import CORS
+from dotenv import load_dotenv
+import os
 
 # ---- 기본 세팅 ----
 app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-dynamodb = boto3.resource('dynamodb', region_name='ap-northeast-2')
+load_dotenv()
+
+aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
+aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
+aws_region = os.getenv("AWS_REGION", "ap-northeast-2")
+
+dynamodb = boto3.resource(
+    'dynamodb',
+    region_name=aws_region,
+    aws_access_key_id=aws_access_key_id,
+    aws_secret_access_key=aws_secret_access_key
+)
 cred = credentials.Certificate('silmedy-23a1b-firebase-adminsdk-fbsvc-1e8c6b596b.json')
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
-config = toml.load('api_keys.toml')
 
 # ---- 테이블 목록 ----
 # Firestore
