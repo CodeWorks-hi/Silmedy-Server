@@ -123,6 +123,36 @@ def search_postal_code():
     
 
 
+
+# ---- 환자 비밀번호 변경 ----
+
+
+@app.route('/patient/repassword', methods=['POST'])
+def patient_change_password():
+    try:
+        data = request.get_json()
+        email = data.get('email')
+        new_password = data.get('new_password')
+
+        if not email or not new_password:
+            return jsonify({'error': 'Email and new password required'}), 400
+
+        doc_ref = collection_patients.document(email)
+        doc = doc_ref.get()
+
+        if doc.exists:
+            doc_ref.update({'password': new_password})
+            return jsonify({'message': '비밀번호 변경 완료'}), 200
+        else:
+            return jsonify({'error': '사용자 없음'}), 404
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+
+
+
 # ---- 진료 신청----
 
 
