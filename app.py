@@ -2,7 +2,7 @@ from flask import Flask, Blueprint, request, jsonify
 import firebase_admin
 import boto3
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from firebase_admin import credentials, firestore
 import requests
 import toml
@@ -407,59 +407,153 @@ def save_chat():
     except Exception as e:
         logger.error(f"Error saving chat: {e}")
         return jsonify({'error': str(e)}), 500
-    
-
-    
-# ---- 진료 예약 페이지 안내 ----
-@app.route('/chat/reserve', methods=['POST'])
-def go_to_reservation_page():
-    return jsonify({"message": "진료 예약 화면으로 이동하세요."}), 200
 
 
 # ---- 의사 목록 반환 ----
-@app.route('/chat/doctors', methods=['GET'])
+@app.route('/request/doctors', methods=['GET'])
 def get_doctor_list():
     try:
-        doctors = [doc.to_dict() for doc in collection_doctors.stream()]
+        hospital_id = request.args.get('hospital_id')
+        if not hospital_id:
+            return jsonify({'error': 'hospital_id is required'}), 400
+
+        doctors = []
+        for doc in collection_doctors.where("hospital_id", "==", int(hospital_id)).stream():
+            data = doc.to_dict()
+            doctors.append({
+                "hospital_id": data.get("hospital_id"),
+                "profile_url": data.get("profile_url"),
+                "name": data.get("name"),
+                "department": data.get("department"),
+                "gender": data.get("gender"),
+                "contact": data.get("contact"),
+                "email": data.get("email"),
+                "bio": data.get("bio"),
+                "availability": data.get("availability"),
+            })
         return jsonify(doctors), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
 # ---- 의사 진료 가능 시간 확인 ----
-@app.route('/chat/availability', methods=['GET'])
+@app.route('/request/availability', methods=['GET'])
 def get_doctor_availability():
-    return jsonify({
-        "availability": {
-            "start": "09:00",
-            "end": "18:00"
-        }
-    }), 200
+    try:
+        license_number = request.args.get('license_number')
+        if not license_number:
+            return jsonify({'error': 'license_number is required'}), 400
+        
+        # 의사 문서 조회 (license_number가 문서 ID로 사용됨)
+        doc_ref = collection_doctors.document(license_number)
+        doc = doc_ref.get()
+
+        if not doc.exists:
+            return jsonify({'error': 'Doctor not found'}), 404
+
+        doctor_id = doc.id
+
+        # 오늘과 내일 날짜 구하기
+        today = datetime.utcnow().date()
+        tomorrow = today + timedelta(days=1)
+
+        dates = [today.isoformat(), tomorrow.isoformat()]
+        reservations = []
+
+        for date_str in dates:
+            response = table_care_requests.scan()
+            for item in response.get('Items', []):
+                item_doctor_id = str(item.get('doctor_id', '')).strip()
+                item_book_date = item.get('book_date', '')
+
+                if item_doctor_id == str(doctor_id) and item_book_date == date_str:
+                    if isinstance(item.get('symptom_part'), set):
+                        item['symptom_part'] = list(item['symptom_part'])
+                    if isinstance(item.get('symptom_type'), set):
+                        item['symptom_type'] = list(item['symptom_type'])
+                    reservations.append(item)
+
+        return jsonify({'reservations': reservations}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 # ---- 수어 필요 여부 자동 확인 ----
 @app.route('/chat/signcheck', methods=['GET'])
 def check_sign_language_required():
-    # 향후 로직으로 사용자의 프로필 기반 분석 가능
-    return jsonify({"sign_language_needed": True}), 200
+    email = request.args.get('email')
+    if not email:
+        return jsonify({'error': 'Email is required'}), 400
+
+    doc = collection_patients.document(email).get()
+    if not doc.exists:
+        return jsonify({'error': 'User not found'}), 404
+
+    data = doc.to_dict()
+    sign_language_needed = data.get('sign_language_needed', False)
+    return jsonify({'sign_language_needed': sign_language_needed}), 200
 
 
 # ---- 진료 예약 확정 처리 ----
 @app.route('/chat/confirmed', methods=['POST'])
 def confirm_reservation():
-    data = request.get_json()
-    required_fields = ["name", "time", "doctor"]
+    try:
+        data = request.get_json()
+        required_fields = [
+            "patient_id", "doctor_id", "department",
+            "symptom_part", "symptom_type", "book_date",
+            "book_hour", "sign_language_needed"
+        ]
 
-    # 필수 필드 확인
-    if not all(field in data for field in required_fields):
+        if not all(field in data for field in required_fields):
+            return jsonify({"error": "Missing required reservation information."}), 400
+
+        # 카운터 조회 및 증가
+        counter_response = table_counters.get_item(Key={"counter_name": "request_id"})
+        counter = counter_response.get("Item", {})
+        current_id = int(counter.get("current_id", 0)) + 1
+        table_counters.put_item(Item={"counter_name": "request_id", "current_id": current_id})
+
+        # 예약 정보 구성 (DynamoDB 저장용)
+        reservation_item = {
+            "request_id": current_id,
+            "patient_id": data["patient_id"],
+            "doctor_id": data["doctor_id"],
+            "department": data["department"],
+            "symptom_part": set(data["symptom_part"]),
+            "symptom_type": set(data["symptom_type"]),
+            "book_date": data["book_date"],
+            "book_hour": data["book_hour"],
+            "sign_language_needed": data["sign_language_needed"],
+            "is_solved": False,
+            "requested_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+        }
+
+        # 실제 응답으로 사용할 JSON 직렬화 가능한 dict
+        reservation_response = {
+            "request_id": current_id,
+            "patient_id": data["patient_id"],
+            "doctor_id": data["doctor_id"],
+            "department": data["department"],
+            "symptom_part": list(data["symptom_part"]),
+            "symptom_type": list(data["symptom_type"]),
+            "book_date": data["book_date"],
+            "book_hour": data["book_hour"],
+            "sign_language_needed": data["sign_language_needed"],
+            "is_solved": False,
+            "requested_at": reservation_item["requested_at"]
+        }
+
+        table_care_requests.put_item(Item=reservation_item)
+
         return jsonify({
-            "error": "Missing required reservation information."
-        }), 400
+            "message": "진료 예약이 확정되었습니다.",
+            "reservation": reservation_response
+        }), 200
 
-    return jsonify({
-        "message": "진료 예약이 확정되었습니다.",
-        "reservation": data
-    }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
    
 
 if __name__ == '__main__':
