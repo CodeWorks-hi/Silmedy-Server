@@ -380,18 +380,28 @@ def save_chat():
         original_text = data.get('original_text')
 
         # 입력 유효성 검증
-        if not consult_id or not isinstance(original_text, list):
+        if not consult_id or not isinstance(original_text, str):
             return jsonify({"message": "Invalid input"}), 400
+
+        # 기존 아이템 조회
+        existing_item = table_consult_text.get_item(Key={'consult_id': int(consult_id)}).get('Item')
+        if existing_item:
+            original_list = existing_item.get('original_text', [])
+            if not isinstance(original_list, list):
+                original_list = []
+            original_list.append(original_text.strip())
+        else:
+            original_list = [original_text.strip()]
 
         # DynamoDB 저장
         table_consult_text.put_item(
             Item={
                 'consult_id': int(consult_id),
-                'original_text': original_text
+                'original_text': original_list
             }
         )
 
-        logger.info(f"[저장됨] consult_id={consult_id}, text={original_text}")
+        logger.info(f"[저장됨] consult_id={consult_id}, text={original_list}")
         return jsonify({"message": "Chat saved", "consult_id": consult_id}), 200
 
     except Exception as e:
