@@ -13,6 +13,7 @@ import random
 import string
 import re
 from boto3.dynamodb.conditions import Attr
+import uuid
 
 # ---- 기본 세팅 ----
 app = Flask(__name__)
@@ -45,14 +46,14 @@ collection_doctors = db.collection('doctors')
 collection_admins = db.collection('admins')
 collection_calls = db.collection('calls')
 collection_counters = db.collection('fb_counters')
+collection_consult_text = db.collection('consult_text')
+collection_diagnosis_text = db.collection('diagnosis_text')
 
 # DynamoDB
 table_ai_consults = dynamodb.Table('ai_consults')
 table_care_requests = dynamodb.Table('care_requests')
-table_consult_text = dynamodb.Table('consult_text')
 table_counters = dynamodb.Table('counters')
 table_diagnosis_records = dynamodb.Table('diagnosis_records')
-table_diagnosis_text = dynamodb.Table('diagnosis_text')
 table_diseases = dynamodb.Table('diseases')
 table_drug_deliveries = dynamodb.Table('drug_deliveries')
 table_drugs = dynamodb.Table('drugs')
@@ -377,36 +378,31 @@ def save_chat():
     try:
         data = request.get_json()
         consult_id = data.get('consult_id')
-        original_text = data.get('original_text')
+        sender_id = data.get('sender_id')
+        text = data.get('text')
 
-        # 입력 유효성 검증
-        if not consult_id or not isinstance(original_text, str):
-            return jsonify({"message": "Invalid input"}), 400
+        if not consult_id or not sender_id or not text:
+            return jsonify({"error": "Missing required fields"}), 400
 
-        # 기존 아이템 조회
-        existing_item = table_consult_text.get_item(Key={'consult_id': int(consult_id)}).get('Item')
-        if existing_item:
-            original_list = existing_item.get('original_text', [])
-            if not isinstance(original_list, list):
-                original_list = []
-            original_list.append(original_text.strip())
-        else:
-            original_list = [original_text.strip()]
+        chat_id = str(uuid.uuid4())
+        chat_data = {
+            'chat_id': chat_id,
+            'is_separater': False,
+            'sender_id': sender_id,
+            'text': text.strip(),
+            'created_at': datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+        }
 
-        # DynamoDB 저장
-        table_consult_text.put_item(
-            Item={
-                'consult_id': int(consult_id),
-                'original_text': original_list
-            }
-        )
+        collection_consult_text.document(str(consult_id)).collection("chats").document(chat_id).set(chat_data)
 
-        logger.info(f"[저장됨] consult_id={consult_id}, text={original_list}")
-        return jsonify({"message": "Chat saved", "consult_id": consult_id}), 200
+        logger.info(f"[Firestore 저장됨] consult_id={consult_id}, chat_id={chat_id}, data={chat_data}")
+        return jsonify({"message": "Chat saved", "chat_id": chat_id}), 200
 
     except Exception as e:
         logger.error(f"Error saving chat: {e}")
         return jsonify({'error': str(e)}), 500
+    
+
 
 
 # ---- 의사 목록 반환 ----
@@ -888,6 +884,66 @@ def end_call():
         return jsonify({'message': 'Call ended successfully'}), 200
 
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# ---- AI 채팅 저장 ----
+@app.route('/chat/save-ai', methods=['POST'])
+def save_chat_ai():
+    try:
+        data = request.get_json()
+        consult_id = data.get('consult_id')
+        text = data.get('text')
+
+        if not consult_id or not text:
+            return jsonify({"error": "Missing required fields"}), 400
+
+        chat_id = str(uuid.uuid4())
+        chat_data = {
+            'chat_id': chat_id,
+            'is_separater': False,
+            'sender_id': 'AI',
+            'text': text.strip(),
+            'created_at': datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+        }
+
+        collection_consult_text.document(str(consult_id)).collection("chats").document(chat_id).set(chat_data)
+
+        logger.info(f"[Firestore 저장됨] consult_id={consult_id}, chat_id={chat_id}, sender_id=AI")
+        return jsonify({"message": "AI Chat saved", "chat_id": chat_id}), 200
+
+    except Exception as e:
+        logger.error(f"Error saving AI chat: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+
+# ---- 채팅 구분선 추가 ----
+@app.route('/chat/add-separator', methods=['POST'])
+def add_chat_separator():
+    try:
+        data = request.get_json()
+        consult_id = data.get('consult_id')
+
+        if not consult_id:
+            return jsonify({"error": "consult_id is required"}), 400
+
+        chat_id = str(uuid.uuid4())
+        chat_data = {
+            'chat_id': chat_id,
+            'is_separater': True,
+            'sender_id': '',
+            'text': '',
+            'created_at': datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+        }
+
+        collection_consult_text.document(str(consult_id)).collection("chats").document(chat_id).set(chat_data)
+
+        logger.info(f"[Firestore 구분선 저장됨] consult_id={consult_id}, chat_id={chat_id}")
+        return jsonify({"message": "Separator added", "chat_id": chat_id}), 200
+
+    except Exception as e:
+        logger.error(f"Error adding separator: {e}")
         return jsonify({'error': str(e)}), 500
 
 
