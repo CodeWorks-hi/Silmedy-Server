@@ -15,10 +15,18 @@ import re
 from boto3.dynamodb.conditions import Attr
 import uuid
 from urllib.parse import unquote
+from flasgger import Swagger
+import yaml
 
 
 # ---- 기본 세팅 ----
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='/static')
+
+with open('api-doc.yaml', 'r', encoding='utf-8-sig') as f:
+    swagger_template = yaml.safe_load(f)
+
+swagger = Swagger(app, template=swagger_template)
+
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 logger = logging.getLogger()
@@ -239,9 +247,7 @@ def update_patient_info():
 # ---- 회원 탈퇴   ----
 @app.route('/patient/delete', methods=['DELETE'])
 def delete_patient():
-    data = request.get_json()
-    patient_id = data.get('patient_id')
-
+    patient_id = request.args.get('patient_id')
     if not patient_id:
         return jsonify({'error': 'Patient ID required'}), 400
 
@@ -643,8 +649,7 @@ def get_diagnosis_by_patient():
 @app.route('/patient/default-address', methods=['GET'])
 def get_default_address():
     try:
-        data = request.get_json()
-        patient_id = data.get('patient_id') if data else None
+        patient_id = request.args.get('patient_id')
         if not patient_id:
             return jsonify({'error': 'patient_id is required'}), 400
 

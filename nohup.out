@@ -1,0 +1,1203 @@
+[2025-04-28 14:23:38 +0900] [31947] [INFO] Starting gunicorn 23.0.0
+[2025-04-28 14:23:38 +0900] [31947] [INFO] Listening at: http://0.0.0.0:5000 (31947)
+[2025-04-28 14:23:38 +0900] [31947] [INFO] Using worker: sync
+[2025-04-28 14:23:38 +0900] [32000] [INFO] Booting worker with pid: 32000
+[2025-04-28 14:23:38 +0900] [32001] [INFO] Booting worker with pid: 32001
+[2025-04-28 14:23:38 +0900] [32002] [INFO] Booting worker with pid: 32002
+[2025-04-28 14:23:38 +0900] [32003] [INFO] Booting worker with pid: 32003
+/opt/anaconda3/envs/hi/lib/python3.10/site-packages/google/cloud/firestore_v1/base_collection.py:303: UserWarning: Detected filter using positional arguments. Prefer using the 'filter' keyword argument instead.
+  return query.where(field_path, op_string, value)
+/opt/anaconda3/envs/hi/lib/python3.10/site-packages/google/cloud/firestore_v1/base_collection.py:303: UserWarning: Detected filter using positional arguments. Prefer using the 'filter' keyword argument instead.
+  return query.where(field_path, op_string, value)
+INFO:root:[DEV] '01011223344'로 인증번호 발송됨: 319855
+INFO:root:[Firestore 저장됨] patient_id=1, chat_id=20250428062136398362, data={'patient_text': '머리가 깨질거 같이 아파요', 'ai_text': '머리가 깨질 것 같이 아파하는 증상은 여러 가지 원인으로 인해 발생할 수 있습니다. 다음과 같은 가능성들이 있습니다. 1. **뇌혈관 질환**: 뇌혈관 질환은 뇌의 혈관이 손상되거나 막혀서 발생하는 증상입니다. 이 증상은 머리가 깨질 것 같이 아파할 수 있습니다. 2. **뇌 손상**: 뇌 손상은 뇌의 일부가 손상되어 발생하는 증상입니다. 이 증상은 머리가 깨질 것 같이 아파할 수 있습니다. 3. **신경계 질환**: 신경계 질환은 신경계가 손상되어 발생하는 증상입니다. 이 증상은 머리가 깨질 것 같이 아파할 수 있습니다. 4. **스트레스**: 스트레스는 머리가 깨질 것 같이 아파할 수 있는 원인입니다. 5. **피로**: 피로는 머리가 깨질 것 같이 아파할 수 있는 원인입니다. 6. **탈수**: 탈수는 머리가 깨질 것 같이 아파할 수 있는 원인입니다. 이러한 증상은 다양한 원인으로 인해 발생할 수 있습니다. 만약 증상이 심해지거나 지속된다면, 병원에 방문하여 전문적인 진료를 받는 것이 좋습니다. 병원 방문이 권장될 때는 다음과 같습니다. * 1–2일 내 증상 호전 없음 * 심한 구토·발열·어지럼증 동반 추가 증상(구토·발열 등)을 알려주시면 더 맞춤 도움을 드릴게요.', 'created_at': '2025-04-28 06:21:36', 'is_separater': False}
+INFO:root:[Firestore 구분선 저장됨] patient_id=1, chat_id=20250428062138708121
+[2025-04-28 15:25:35 +0900] [48880] [INFO] Starting gunicorn 23.0.0
+[2025-04-28 15:25:35 +0900] [48880] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 15:25:35 +0900] [48880] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 15:25:36 +0900] [48880] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 15:25:36 +0900] [48880] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 15:25:37 +0900] [48880] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 15:25:37 +0900] [48880] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 15:25:38 +0900] [48880] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 15:25:38 +0900] [48880] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 15:25:39 +0900] [48880] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 15:25:39 +0900] [48880] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 15:25:40 +0900] [48880] [ERROR] Can't connect to ('0.0.0.0', 5000)
+[2025-04-28 15:27:53 +0900] [49585] [INFO] Starting gunicorn 23.0.0
+[2025-04-28 15:27:53 +0900] [49585] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 15:27:53 +0900] [49585] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 15:27:54 +0900] [49585] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 15:27:54 +0900] [49585] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 15:27:55 +0900] [49585] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 15:27:55 +0900] [49585] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 15:27:56 +0900] [49585] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 15:27:56 +0900] [49585] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 15:27:57 +0900] [49585] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 15:27:57 +0900] [49585] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 15:27:58 +0900] [49585] [ERROR] Can't connect to ('0.0.0.0', 5000)
+[2025-04-28 15:35:22 +0900] [51847] [INFO] Starting gunicorn 23.0.0
+[2025-04-28 15:35:22 +0900] [51847] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 15:35:22 +0900] [51847] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 15:35:23 +0900] [51847] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 15:35:23 +0900] [51847] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 15:35:24 +0900] [51847] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 15:35:24 +0900] [51847] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 15:35:25 +0900] [51847] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 15:35:25 +0900] [51847] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 15:35:26 +0900] [51847] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 15:35:26 +0900] [51847] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 15:35:27 +0900] [51847] [ERROR] Can't connect to ('0.0.0.0', 5000)
+[2025-04-28 15:37:59 +0900] [52656] [INFO] Starting gunicorn 23.0.0
+[2025-04-28 15:37:59 +0900] [52656] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 15:37:59 +0900] [52656] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 15:38:00 +0900] [52656] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 15:38:00 +0900] [52656] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 15:38:01 +0900] [52656] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 15:38:01 +0900] [52656] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 15:38:02 +0900] [52656] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 15:38:02 +0900] [52656] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 15:38:03 +0900] [52656] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 15:38:03 +0900] [52656] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 15:38:04 +0900] [52656] [ERROR] Can't connect to ('0.0.0.0', 5000)
+[2025-04-28 15:40:29 +0900] [32000] [INFO] Parent changed, shutting down: <Worker 32000>
+[2025-04-28 15:40:29 +0900] [32000] [INFO] Worker exiting (pid: 32000)
+[2025-04-28 15:40:33 +0900] [32003] [INFO] Parent changed, shutting down: <Worker 32003>
+[2025-04-28 15:40:33 +0900] [32003] [INFO] Worker exiting (pid: 32003)
+[2025-04-28 15:40:34 +0900] [32001] [INFO] Parent changed, shutting down: <Worker 32001>
+[2025-04-28 15:40:34 +0900] [32001] [INFO] Worker exiting (pid: 32001)
+[2025-04-28 15:40:34 +0900] [32002] [INFO] Parent changed, shutting down: <Worker 32002>
+[2025-04-28 15:40:34 +0900] [32002] [INFO] Worker exiting (pid: 32002)
+[2025-04-28 15:42:08 +0900] [54157] [INFO] Starting gunicorn 23.0.0
+[2025-04-28 15:42:08 +0900] [54157] [INFO] Listening at: http://0.0.0.0:5000 (54157)
+[2025-04-28 15:42:08 +0900] [54157] [INFO] Using worker: sync
+[2025-04-28 15:42:08 +0900] [54203] [INFO] Booting worker with pid: 54203
+[2025-04-28 15:42:08 +0900] [54205] [INFO] Booting worker with pid: 54205
+[2025-04-28 15:42:08 +0900] [54206] [INFO] Booting worker with pid: 54206
+[2025-04-28 15:42:08 +0900] [54207] [INFO] Booting worker with pid: 54207
+[2025-04-28 15:55:02 +0900] [57814] [INFO] Starting gunicorn 23.0.0
+[2025-04-28 15:55:02 +0900] [57814] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 15:55:02 +0900] [57814] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 15:55:03 +0900] [57814] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 15:55:03 +0900] [57814] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 15:55:04 +0900] [57814] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 15:55:04 +0900] [57814] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 15:55:05 +0900] [57814] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 15:55:05 +0900] [57814] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 15:55:06 +0900] [57814] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 15:55:06 +0900] [57814] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 15:55:07 +0900] [57814] [ERROR] Can't connect to ('0.0.0.0', 5000)
+[2025-04-28 15:56:19 +0900] [58256] [INFO] Starting gunicorn 23.0.0
+[2025-04-28 15:56:19 +0900] [58256] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 15:56:19 +0900] [58256] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 15:56:20 +0900] [58256] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 15:56:20 +0900] [58256] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 15:56:21 +0900] [58256] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 15:56:21 +0900] [58256] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 15:56:22 +0900] [58256] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 15:56:22 +0900] [58256] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 15:56:23 +0900] [58256] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 15:56:23 +0900] [58256] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 15:56:24 +0900] [58256] [ERROR] Can't connect to ('0.0.0.0', 5000)
+[2025-04-28 15:56:42 +0900] [54203] [INFO] Parent changed, shutting down: <Worker 54203>
+[2025-04-28 15:56:42 +0900] [54203] [INFO] Worker exiting (pid: 54203)
+[2025-04-28 15:56:51 +0900] [54207] [INFO] Parent changed, shutting down: <Worker 54207>
+[2025-04-28 15:56:51 +0900] [54207] [INFO] Worker exiting (pid: 54207)
+[2025-04-28 15:56:56 +0900] [54205] [INFO] Parent changed, shutting down: <Worker 54205>
+[2025-04-28 15:56:56 +0900] [54205] [INFO] Worker exiting (pid: 54205)
+[2025-04-28 15:58:11 +0900] [58970] [INFO] Starting gunicorn 23.0.0
+[2025-04-28 15:58:11 +0900] [58970] [INFO] Listening at: http://0.0.0.0:5000 (58970)
+[2025-04-28 15:58:11 +0900] [58970] [INFO] Using worker: sync
+[2025-04-28 15:58:11 +0900] [59023] [INFO] Booting worker with pid: 59023
+[2025-04-28 15:58:12 +0900] [59025] [INFO] Booting worker with pid: 59025
+[2025-04-28 15:58:12 +0900] [59026] [INFO] Booting worker with pid: 59026
+[2025-04-28 15:58:12 +0900] [59027] [INFO] Booting worker with pid: 59027
+[2025-04-28 16:08:15 +0900] [61793] [INFO] Starting gunicorn 23.0.0
+[2025-04-28 16:08:15 +0900] [61793] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 16:08:15 +0900] [61793] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 16:08:16 +0900] [61793] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 16:08:16 +0900] [61793] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 16:08:17 +0900] [61793] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 16:08:17 +0900] [61793] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 16:08:18 +0900] [61793] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 16:08:18 +0900] [61793] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 16:08:19 +0900] [61793] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 16:08:19 +0900] [61793] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 16:08:20 +0900] [61793] [ERROR] Can't connect to ('0.0.0.0', 5000)
+[2025-04-28 16:44:54 +0900] [71965] [INFO] Starting gunicorn 23.0.0
+[2025-04-28 16:44:54 +0900] [71965] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 16:44:54 +0900] [71965] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 16:44:55 +0900] [71965] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 16:44:55 +0900] [71965] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 16:44:56 +0900] [71965] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 16:44:56 +0900] [71965] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 16:44:57 +0900] [71965] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 16:44:57 +0900] [71965] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 16:44:58 +0900] [71965] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 16:44:58 +0900] [71965] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 16:44:59 +0900] [71965] [ERROR] Can't connect to ('0.0.0.0', 5000)
+[2025-04-28 16:45:20 +0900] [72191] [INFO] Starting gunicorn 23.0.0
+[2025-04-28 16:45:20 +0900] [72191] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 16:45:20 +0900] [72191] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 16:45:21 +0900] [72191] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 16:45:21 +0900] [72191] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 16:45:22 +0900] [72191] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 16:45:22 +0900] [72191] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 16:45:23 +0900] [72191] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 16:45:23 +0900] [72191] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 16:45:24 +0900] [72191] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 16:45:24 +0900] [72191] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 16:45:25 +0900] [72191] [ERROR] Can't connect to ('0.0.0.0', 5000)
+[2025-04-28 16:46:59 +0900] [72752] [INFO] Starting gunicorn 23.0.0
+[2025-04-28 16:46:59 +0900] [72752] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 16:46:59 +0900] [72752] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 16:47:00 +0900] [72752] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 16:47:00 +0900] [72752] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 16:47:01 +0900] [72752] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 16:47:01 +0900] [72752] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 16:47:02 +0900] [72752] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 16:47:02 +0900] [72752] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 16:47:03 +0900] [72752] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 16:47:03 +0900] [72752] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 16:47:04 +0900] [72752] [ERROR] Can't connect to ('0.0.0.0', 5000)
+[2025-04-28 16:47:51 +0900] [59026] [INFO] Parent changed, shutting down: <Worker 59026>
+[2025-04-28 16:47:51 +0900] [59026] [INFO] Worker exiting (pid: 59026)
+[2025-04-28 16:47:55 +0900] [59025] [INFO] Parent changed, shutting down: <Worker 59025>
+[2025-04-28 16:47:55 +0900] [59025] [INFO] Worker exiting (pid: 59025)
+[2025-04-28 16:47:55 +0900] [59027] [INFO] Parent changed, shutting down: <Worker 59027>
+[2025-04-28 16:47:55 +0900] [59027] [INFO] Worker exiting (pid: 59027)
+[2025-04-28 16:48:10 +0900] [73337] [INFO] Starting gunicorn 23.0.0
+[2025-04-28 16:48:10 +0900] [73337] [INFO] Listening at: http://0.0.0.0:5000 (73337)
+[2025-04-28 16:48:10 +0900] [73337] [INFO] Using worker: sync
+[2025-04-28 16:48:10 +0900] [73383] [INFO] Booting worker with pid: 73383
+[2025-04-28 16:48:10 +0900] [73391] [INFO] Booting worker with pid: 73391
+[2025-04-28 16:48:11 +0900] [73392] [INFO] Booting worker with pid: 73392
+[2025-04-28 16:48:11 +0900] [73394] [INFO] Booting worker with pid: 73394
+[2025-04-28 16:48:11 +0900] [73383] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/ENZO/KOOKIZ/GITHUB/Silmedy-Server/app.py", line 26, in <module>
+    swagger_template = yaml.safe_load(f)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/__init__.py", line 125, in safe_load
+    return load(stream, SafeLoader)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/__init__.py", line 79, in load
+    loader = Loader(stream)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/loader.py", line 34, in __init__
+    Reader.__init__(self, stream)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 85, in __init__
+    self.determine_encoding()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 124, in determine_encoding
+    self.update_raw()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 178, in update_raw
+    data = self.stream.read(size)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/codecs.py", line 322, in decode
+    (result, consumed) = self._buffer_decode(data, self.errors, final)
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+[2025-04-28 16:48:11 +0900] [73391] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/ENZO/KOOKIZ/GITHUB/Silmedy-Server/app.py", line 26, in <module>
+    swagger_template = yaml.safe_load(f)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/__init__.py", line 125, in safe_load
+    return load(stream, SafeLoader)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/__init__.py", line 79, in load
+    loader = Loader(stream)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/loader.py", line 34, in __init__
+    Reader.__init__(self, stream)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 85, in __init__
+    self.determine_encoding()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 124, in determine_encoding
+    self.update_raw()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 178, in update_raw
+    data = self.stream.read(size)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/codecs.py", line 322, in decode
+    (result, consumed) = self._buffer_decode(data, self.errors, final)
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+[2025-04-28 16:48:11 +0900] [73383] [INFO] Worker exiting (pid: 73383)
+[2025-04-28 16:48:11 +0900] [73391] [INFO] Worker exiting (pid: 73391)
+[2025-04-28 16:48:11 +0900] [73392] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/ENZO/KOOKIZ/GITHUB/Silmedy-Server/app.py", line 26, in <module>
+    swagger_template = yaml.safe_load(f)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/__init__.py", line 125, in safe_load
+    return load(stream, SafeLoader)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/__init__.py", line 79, in load
+    loader = Loader(stream)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/loader.py", line 34, in __init__
+    Reader.__init__(self, stream)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 85, in __init__
+    self.determine_encoding()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 124, in determine_encoding
+    self.update_raw()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 178, in update_raw
+    data = self.stream.read(size)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/codecs.py", line 322, in decode
+    (result, consumed) = self._buffer_decode(data, self.errors, final)
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+[2025-04-28 16:48:11 +0900] [73392] [INFO] Worker exiting (pid: 73392)
+[2025-04-28 16:48:11 +0900] [73337] [ERROR] Worker (pid:73391) exited with code 3
+[2025-04-28 16:48:11 +0900] [73337] [ERROR] Worker (pid:73383) was sent SIGTERM!
+[2025-04-28 16:48:11 +0900] [73337] [ERROR] Worker (pid:73392) was sent SIGTERM!
+[2025-04-28 16:48:11 +0900] [73394] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/ENZO/KOOKIZ/GITHUB/Silmedy-Server/app.py", line 26, in <module>
+    swagger_template = yaml.safe_load(f)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/__init__.py", line 125, in safe_load
+    return load(stream, SafeLoader)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/__init__.py", line 79, in load
+    loader = Loader(stream)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/loader.py", line 34, in __init__
+    Reader.__init__(self, stream)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 85, in __init__
+    self.determine_encoding()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 124, in determine_encoding
+    self.update_raw()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 178, in update_raw
+    data = self.stream.read(size)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/codecs.py", line 322, in decode
+    (result, consumed) = self._buffer_decode(data, self.errors, final)
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+[2025-04-28 16:48:11 +0900] [73394] [INFO] Worker exiting (pid: 73394)
+[2025-04-28 16:48:11 +0900] [73337] [ERROR] Worker (pid:73394) exited with code 3
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 208, in run
+    self.sleep()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 359, in sleep
+    ready = select.select([self.PIPE[0]], [], [], 1.0)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 241, in handle_chld
+    self.reap_workers()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 529, in reap_workers
+    raise HaltServer(reason, self.WORKER_BOOT_ERROR)
+gunicorn.errors.HaltServer: <HaltServer 'Worker failed to boot.' 3>
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/hi/bin/gunicorn", line 8, in <module>
+    sys.exit(run())
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 66, in run
+    WSGIApplication("%(prog)s [OPTIONS] [APP_MODULE]", prog=prog).run()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/base.py", line 235, in run
+    super().run()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/base.py", line 71, in run
+    Arbiter(self).run()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 228, in run
+    self.halt(reason=inst.reason, exit_status=inst.exit_status)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 341, in halt
+    self.stop()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 395, in stop
+    time.sleep(0.1)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 241, in handle_chld
+    self.reap_workers()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 529, in reap_workers
+    raise HaltServer(reason, self.WORKER_BOOT_ERROR)
+gunicorn.errors.HaltServer: <HaltServer 'Worker failed to boot.' 3>
+[2025-04-28 16:49:35 +0900] [73834] [INFO] Starting gunicorn 23.0.0
+[2025-04-28 16:49:35 +0900] [73834] [INFO] Listening at: http://0.0.0.0:5000 (73834)
+[2025-04-28 16:49:35 +0900] [73834] [INFO] Using worker: sync
+[2025-04-28 16:49:35 +0900] [73880] [INFO] Booting worker with pid: 73880
+[2025-04-28 16:49:35 +0900] [73887] [INFO] Booting worker with pid: 73887
+[2025-04-28 16:49:35 +0900] [73888] [INFO] Booting worker with pid: 73888
+[2025-04-28 16:49:35 +0900] [73889] [INFO] Booting worker with pid: 73889
+[2025-04-28 16:49:36 +0900] [73887] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/ENZO/KOOKIZ/GITHUB/Silmedy-Server/app.py", line 26, in <module>
+    swagger_template = yaml.safe_load(f)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/__init__.py", line 125, in safe_load
+    return load(stream, SafeLoader)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/__init__.py", line 79, in load
+    loader = Loader(stream)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/loader.py", line 34, in __init__
+    Reader.__init__(self, stream)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 85, in __init__
+    self.determine_encoding()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 124, in determine_encoding
+    self.update_raw()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 178, in update_raw
+    data = self.stream.read(size)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/codecs.py", line 322, in decode
+    (result, consumed) = self._buffer_decode(data, self.errors, final)
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+[2025-04-28 16:49:36 +0900] [73880] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/ENZO/KOOKIZ/GITHUB/Silmedy-Server/app.py", line 26, in <module>
+    swagger_template = yaml.safe_load(f)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/__init__.py", line 125, in safe_load
+    return load(stream, SafeLoader)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/__init__.py", line 79, in load
+    loader = Loader(stream)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/loader.py", line 34, in __init__
+    Reader.__init__(self, stream)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 85, in __init__
+    self.determine_encoding()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 124, in determine_encoding
+    self.update_raw()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 178, in update_raw
+    data = self.stream.read(size)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/codecs.py", line 322, in decode
+    (result, consumed) = self._buffer_decode(data, self.errors, final)
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+[2025-04-28 16:49:36 +0900] [73888] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/ENZO/KOOKIZ/GITHUB/Silmedy-Server/app.py", line 26, in <module>
+    swagger_template = yaml.safe_load(f)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/__init__.py", line 125, in safe_load
+    return load(stream, SafeLoader)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/__init__.py", line 79, in load
+    loader = Loader(stream)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/loader.py", line 34, in __init__
+    Reader.__init__(self, stream)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 85, in __init__
+    self.determine_encoding()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 124, in determine_encoding
+    self.update_raw()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 178, in update_raw
+    data = self.stream.read(size)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/codecs.py", line 322, in decode
+    (result, consumed) = self._buffer_decode(data, self.errors, final)
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+[2025-04-28 16:49:36 +0900] [73889] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/ENZO/KOOKIZ/GITHUB/Silmedy-Server/app.py", line 26, in <module>
+    swagger_template = yaml.safe_load(f)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/__init__.py", line 125, in safe_load
+    return load(stream, SafeLoader)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/__init__.py", line 79, in load
+    loader = Loader(stream)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/loader.py", line 34, in __init__
+    Reader.__init__(self, stream)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 85, in __init__
+    self.determine_encoding()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 124, in determine_encoding
+    self.update_raw()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 178, in update_raw
+    data = self.stream.read(size)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/codecs.py", line 322, in decode
+    (result, consumed) = self._buffer_decode(data, self.errors, final)
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+[2025-04-28 16:49:36 +0900] [73887] [INFO] Worker exiting (pid: 73887)
+[2025-04-28 16:49:36 +0900] [73880] [INFO] Worker exiting (pid: 73880)
+[2025-04-28 16:49:36 +0900] [73888] [INFO] Worker exiting (pid: 73888)
+[2025-04-28 16:49:36 +0900] [73889] [INFO] Worker exiting (pid: 73889)
+[2025-04-28 16:49:36 +0900] [73834] [ERROR] Worker (pid:73887) exited with code 3
+[2025-04-28 16:50:06 +0900] [73834] [ERROR] Shutting down: Master
+[2025-04-28 16:50:06 +0900] [73834] [ERROR] Reason: Worker failed to boot.
+[2025-04-28 16:50:15 +0900] [74137] [INFO] Starting gunicorn 23.0.0
+[2025-04-28 16:50:15 +0900] [74137] [INFO] Listening at: http://0.0.0.0:5000 (74137)
+[2025-04-28 16:50:15 +0900] [74137] [INFO] Using worker: sync
+[2025-04-28 16:50:15 +0900] [74183] [INFO] Booting worker with pid: 74183
+[2025-04-28 16:50:15 +0900] [74185] [INFO] Booting worker with pid: 74185
+[2025-04-28 16:50:15 +0900] [74186] [INFO] Booting worker with pid: 74186
+[2025-04-28 16:50:15 +0900] [74187] [INFO] Booting worker with pid: 74187
+[2025-04-28 16:50:15 +0900] [74187] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/ENZO/KOOKIZ/GITHUB/Silmedy-Server/app.py", line 26, in <module>
+    swagger_template = yaml.safe_load(f)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/__init__.py", line 125, in safe_load
+    return load(stream, SafeLoader)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/__init__.py", line 79, in load
+    loader = Loader(stream)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/loader.py", line 34, in __init__
+    Reader.__init__(self, stream)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 85, in __init__
+    self.determine_encoding()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 124, in determine_encoding
+    self.update_raw()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 178, in update_raw
+    data = self.stream.read(size)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/codecs.py", line 322, in decode
+    (result, consumed) = self._buffer_decode(data, self.errors, final)
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+[2025-04-28 16:50:15 +0900] [74185] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/ENZO/KOOKIZ/GITHUB/Silmedy-Server/app.py", line 26, in <module>
+    swagger_template = yaml.safe_load(f)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/__init__.py", line 125, in safe_load
+    return load(stream, SafeLoader)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/__init__.py", line 79, in load
+    loader = Loader(stream)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/loader.py", line 34, in __init__
+    Reader.__init__(self, stream)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 85, in __init__
+    self.determine_encoding()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 124, in determine_encoding
+    self.update_raw()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 178, in update_raw
+    data = self.stream.read(size)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/codecs.py", line 322, in decode
+    (result, consumed) = self._buffer_decode(data, self.errors, final)
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+[2025-04-28 16:50:15 +0900] [74186] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/ENZO/KOOKIZ/GITHUB/Silmedy-Server/app.py", line 26, in <module>
+    swagger_template = yaml.safe_load(f)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/__init__.py", line 125, in safe_load
+    return load(stream, SafeLoader)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/__init__.py", line 79, in load
+    loader = Loader(stream)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/loader.py", line 34, in __init__
+    Reader.__init__(self, stream)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 85, in __init__
+    self.determine_encoding()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 124, in determine_encoding
+    self.update_raw()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 178, in update_raw
+    data = self.stream.read(size)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/codecs.py", line 322, in decode
+    (result, consumed) = self._buffer_decode(data, self.errors, final)
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+[2025-04-28 16:50:15 +0900] [74183] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/ENZO/KOOKIZ/GITHUB/Silmedy-Server/app.py", line 26, in <module>
+    swagger_template = yaml.safe_load(f)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/__init__.py", line 125, in safe_load
+    return load(stream, SafeLoader)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/__init__.py", line 79, in load
+    loader = Loader(stream)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/loader.py", line 34, in __init__
+    Reader.__init__(self, stream)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 85, in __init__
+    self.determine_encoding()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 124, in determine_encoding
+    self.update_raw()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 178, in update_raw
+    data = self.stream.read(size)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/codecs.py", line 322, in decode
+    (result, consumed) = self._buffer_decode(data, self.errors, final)
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+[2025-04-28 16:50:15 +0900] [74187] [INFO] Worker exiting (pid: 74187)
+[2025-04-28 16:50:15 +0900] [74186] [INFO] Worker exiting (pid: 74186)
+[2025-04-28 16:50:15 +0900] [74185] [INFO] Worker exiting (pid: 74185)
+[2025-04-28 16:50:15 +0900] [74183] [INFO] Worker exiting (pid: 74183)
+[2025-04-28 16:50:15 +0900] [74137] [ERROR] Worker (pid:74186) exited with code 3
+[2025-04-28 16:50:15 +0900] [74137] [ERROR] Shutting down: Master
+[2025-04-28 16:50:15 +0900] [74137] [ERROR] Reason: Worker failed to boot.
+[2025-04-28 16:50:35 +0900] [74334] [INFO] Starting gunicorn 23.0.0
+[2025-04-28 16:50:35 +0900] [74334] [INFO] Listening at: http://0.0.0.0:5000 (74334)
+[2025-04-28 16:50:35 +0900] [74334] [INFO] Using worker: sync
+[2025-04-28 16:50:35 +0900] [74380] [INFO] Booting worker with pid: 74380
+[2025-04-28 16:50:35 +0900] [74381] [INFO] Booting worker with pid: 74381
+[2025-04-28 16:50:35 +0900] [74382] [INFO] Booting worker with pid: 74382
+[2025-04-28 16:50:35 +0900] [74383] [INFO] Booting worker with pid: 74383
+[2025-04-28 16:50:36 +0900] [74381] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/ENZO/KOOKIZ/GITHUB/Silmedy-Server/app.py", line 26, in <module>
+    swagger_template = yaml.safe_load(f)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/__init__.py", line 125, in safe_load
+    return load(stream, SafeLoader)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/__init__.py", line 79, in load
+    loader = Loader(stream)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/loader.py", line 34, in __init__
+    Reader.__init__(self, stream)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 85, in __init__
+    self.determine_encoding()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 124, in determine_encoding
+    self.update_raw()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 178, in update_raw
+    data = self.stream.read(size)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/codecs.py", line 322, in decode
+    (result, consumed) = self._buffer_decode(data, self.errors, final)
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+[2025-04-28 16:50:36 +0900] [74383] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/ENZO/KOOKIZ/GITHUB/Silmedy-Server/app.py", line 26, in <module>
+    swagger_template = yaml.safe_load(f)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/__init__.py", line 125, in safe_load
+    return load(stream, SafeLoader)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/__init__.py", line 79, in load
+    loader = Loader(stream)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/loader.py", line 34, in __init__
+    Reader.__init__(self, stream)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 85, in __init__
+    self.determine_encoding()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 124, in determine_encoding
+    self.update_raw()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 178, in update_raw
+    data = self.stream.read(size)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/codecs.py", line 322, in decode
+    (result, consumed) = self._buffer_decode(data, self.errors, final)
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+[2025-04-28 16:50:36 +0900] [74380] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/ENZO/KOOKIZ/GITHUB/Silmedy-Server/app.py", line 26, in <module>
+    swagger_template = yaml.safe_load(f)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/__init__.py", line 125, in safe_load
+    return load(stream, SafeLoader)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/__init__.py", line 79, in load
+    loader = Loader(stream)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/loader.py", line 34, in __init__
+    Reader.__init__(self, stream)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 85, in __init__
+    self.determine_encoding()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 124, in determine_encoding
+    self.update_raw()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 178, in update_raw
+    data = self.stream.read(size)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/codecs.py", line 322, in decode
+    (result, consumed) = self._buffer_decode(data, self.errors, final)
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+[2025-04-28 16:50:36 +0900] [74382] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/ENZO/KOOKIZ/GITHUB/Silmedy-Server/app.py", line 26, in <module>
+    swagger_template = yaml.safe_load(f)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/__init__.py", line 125, in safe_load
+    return load(stream, SafeLoader)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/__init__.py", line 79, in load
+    loader = Loader(stream)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/loader.py", line 34, in __init__
+    Reader.__init__(self, stream)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 85, in __init__
+    self.determine_encoding()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 124, in determine_encoding
+    self.update_raw()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 178, in update_raw
+    data = self.stream.read(size)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/codecs.py", line 322, in decode
+    (result, consumed) = self._buffer_decode(data, self.errors, final)
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+[2025-04-28 16:50:36 +0900] [74381] [INFO] Worker exiting (pid: 74381)
+[2025-04-28 16:50:36 +0900] [74383] [INFO] Worker exiting (pid: 74383)
+[2025-04-28 16:50:36 +0900] [74380] [INFO] Worker exiting (pid: 74380)
+[2025-04-28 16:50:36 +0900] [74382] [INFO] Worker exiting (pid: 74382)
+[2025-04-28 16:50:36 +0900] [74334] [ERROR] Worker (pid:74380) exited with code 3
+[2025-04-28 16:50:36 +0900] [74334] [ERROR] Shutting down: Master
+[2025-04-28 16:50:36 +0900] [74334] [ERROR] Reason: Worker failed to boot.
+[2025-04-28 16:52:02 +0900] [74912] [INFO] Starting gunicorn 23.0.0
+[2025-04-28 16:52:02 +0900] [74912] [INFO] Listening at: http://0.0.0.0:5000 (74912)
+[2025-04-28 16:52:02 +0900] [74912] [INFO] Using worker: sync
+[2025-04-28 16:52:02 +0900] [74958] [INFO] Booting worker with pid: 74958
+[2025-04-28 16:52:02 +0900] [74959] [INFO] Booting worker with pid: 74959
+[2025-04-28 16:52:02 +0900] [74961] [INFO] Booting worker with pid: 74961
+[2025-04-28 16:52:02 +0900] [74962] [INFO] Booting worker with pid: 74962
+[2025-04-28 16:52:02 +0900] [74961] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/ENZO/KOOKIZ/GITHUB/Silmedy-Server/app.py", line 26, in <module>
+    swagger_template = yaml.safe_load(f)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/__init__.py", line 125, in safe_load
+    return load(stream, SafeLoader)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/__init__.py", line 79, in load
+    loader = Loader(stream)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/loader.py", line 34, in __init__
+    Reader.__init__(self, stream)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 85, in __init__
+    self.determine_encoding()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 124, in determine_encoding
+    self.update_raw()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 178, in update_raw
+    data = self.stream.read(size)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/codecs.py", line 322, in decode
+    (result, consumed) = self._buffer_decode(data, self.errors, final)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/encodings/utf_8_sig.py", line 69, in _buffer_decode
+    return codecs.utf_8_decode(input, errors, final)
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+[2025-04-28 16:52:02 +0900] [74959] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/ENZO/KOOKIZ/GITHUB/Silmedy-Server/app.py", line 26, in <module>
+    swagger_template = yaml.safe_load(f)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/__init__.py", line 125, in safe_load
+    return load(stream, SafeLoader)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/__init__.py", line 79, in load
+    loader = Loader(stream)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/loader.py", line 34, in __init__
+    Reader.__init__(self, stream)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 85, in __init__
+    self.determine_encoding()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 124, in determine_encoding
+    self.update_raw()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 178, in update_raw
+    data = self.stream.read(size)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/codecs.py", line 322, in decode
+    (result, consumed) = self._buffer_decode(data, self.errors, final)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/encodings/utf_8_sig.py", line 69, in _buffer_decode
+    return codecs.utf_8_decode(input, errors, final)
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+[2025-04-28 16:52:02 +0900] [74962] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/ENZO/KOOKIZ/GITHUB/Silmedy-Server/app.py", line 26, in <module>
+    swagger_template = yaml.safe_load(f)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/__init__.py", line 125, in safe_load
+    return load(stream, SafeLoader)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/__init__.py", line 79, in load
+    loader = Loader(stream)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/loader.py", line 34, in __init__
+    Reader.__init__(self, stream)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 85, in __init__
+    self.determine_encoding()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 124, in determine_encoding
+    self.update_raw()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 178, in update_raw
+    data = self.stream.read(size)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/codecs.py", line 322, in decode
+    (result, consumed) = self._buffer_decode(data, self.errors, final)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/encodings/utf_8_sig.py", line 69, in _buffer_decode
+    return codecs.utf_8_decode(input, errors, final)
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+[2025-04-28 16:52:02 +0900] [74958] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/ENZO/KOOKIZ/GITHUB/Silmedy-Server/app.py", line 26, in <module>
+    swagger_template = yaml.safe_load(f)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/__init__.py", line 125, in safe_load
+    return load(stream, SafeLoader)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/__init__.py", line 79, in load
+    loader = Loader(stream)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/loader.py", line 34, in __init__
+    Reader.__init__(self, stream)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 85, in __init__
+    self.determine_encoding()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 124, in determine_encoding
+    self.update_raw()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/yaml/reader.py", line 178, in update_raw
+    data = self.stream.read(size)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/codecs.py", line 322, in decode
+    (result, consumed) = self._buffer_decode(data, self.errors, final)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/encodings/utf_8_sig.py", line 69, in _buffer_decode
+    return codecs.utf_8_decode(input, errors, final)
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+[2025-04-28 16:52:02 +0900] [74961] [INFO] Worker exiting (pid: 74961)
+[2025-04-28 16:52:02 +0900] [74959] [INFO] Worker exiting (pid: 74959)
+[2025-04-28 16:52:02 +0900] [74962] [INFO] Worker exiting (pid: 74962)
+[2025-04-28 16:52:02 +0900] [74958] [INFO] Worker exiting (pid: 74958)
+[2025-04-28 16:52:02 +0900] [74912] [ERROR] Worker (pid:74961) exited with code 3
+[2025-04-28 16:52:02 +0900] [74912] [ERROR] Worker (pid:74958) exited with code 3
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/hi/lib/python3.10/logging/__init__.py", line 1732, in isEnabledFor
+    return self._cache[level]
+KeyError: 40
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 208, in run
+    self.sleep()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 359, in sleep
+    ready = select.select([self.PIPE[0]], [], [], 1.0)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 241, in handle_chld
+    self.reap_workers()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 526, in reap_workers
+    self.log.error('Worker (pid:%s) exited with code %s', wpid, exitcode)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/glogging.py", line 270, in error
+    def error(self, msg, *args, **kwargs):
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 241, in handle_chld
+    self.reap_workers()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 526, in reap_workers
+    self.log.error('Worker (pid:%s) exited with code %s', wpid, exitcode)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/glogging.py", line 271, in error
+    self.error_log.error(msg, *args, **kwargs)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/logging/__init__.py", line 1505, in error
+    if self.isEnabledFor(ERROR):
+  File "/opt/anaconda3/envs/hi/lib/python3.10/logging/__init__.py", line 1734, in isEnabledFor
+    _acquireLock()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/logging/__init__.py", line 219, in _acquireLock
+    def _acquireLock():
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 241, in handle_chld
+    self.reap_workers()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 529, in reap_workers
+    raise HaltServer(reason, self.WORKER_BOOT_ERROR)
+gunicorn.errors.HaltServer: <HaltServer 'Worker failed to boot.' 3>
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/hi/bin/gunicorn", line 8, in <module>
+    sys.exit(run())
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 66, in run
+    WSGIApplication("%(prog)s [OPTIONS] [APP_MODULE]", prog=prog).run()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/base.py", line 235, in run
+    super().run()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/base.py", line 71, in run
+    Arbiter(self).run()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 228, in run
+    self.halt(reason=inst.reason, exit_status=inst.exit_status)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 341, in halt
+    self.stop()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 395, in stop
+    time.sleep(0.1)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 241, in handle_chld
+    self.reap_workers()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 529, in reap_workers
+    raise HaltServer(reason, self.WORKER_BOOT_ERROR)
+gunicorn.errors.HaltServer: <HaltServer 'Worker failed to boot.' 3>
+[2025-04-28 16:52:42 +0900] [75223] [INFO] Starting gunicorn 23.0.0
+[2025-04-28 16:52:42 +0900] [75223] [INFO] Listening at: http://0.0.0.0:5000 (75223)
+[2025-04-28 16:52:42 +0900] [75223] [INFO] Using worker: sync
+[2025-04-28 16:52:42 +0900] [75269] [INFO] Booting worker with pid: 75269
+[2025-04-28 16:52:42 +0900] [75270] [INFO] Booting worker with pid: 75270
+[2025-04-28 16:52:42 +0900] [75271] [INFO] Booting worker with pid: 75271
+[2025-04-28 16:52:42 +0900] [75272] [INFO] Booting worker with pid: 75272
+[2025-04-28 16:53:42 +0900] [75598] [INFO] Starting gunicorn 23.0.0
+[2025-04-28 16:53:42 +0900] [75598] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 16:53:42 +0900] [75598] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 16:53:43 +0900] [75598] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 16:53:43 +0900] [75598] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 16:53:44 +0900] [75598] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 16:53:44 +0900] [75598] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 16:53:45 +0900] [75598] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 16:53:45 +0900] [75598] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 16:53:46 +0900] [75598] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 16:53:46 +0900] [75598] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 16:53:47 +0900] [75598] [ERROR] Can't connect to ('0.0.0.0', 5000)
+[2025-04-28 16:55:11 +0900] [76117] [INFO] Starting gunicorn 23.0.0
+[2025-04-28 16:55:11 +0900] [76117] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 16:55:11 +0900] [76117] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 16:55:12 +0900] [76117] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 16:55:12 +0900] [76117] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 16:55:13 +0900] [76117] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 16:55:13 +0900] [76117] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 16:55:14 +0900] [76117] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 16:55:14 +0900] [76117] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 16:55:15 +0900] [76117] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-28 16:55:15 +0900] [76117] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-28 16:55:16 +0900] [76117] [ERROR] Can't connect to ('0.0.0.0', 5000)
+[2025-04-28 16:55:48 +0900] [75272] [INFO] Parent changed, shutting down: <Worker 75272>
+[2025-04-28 16:55:48 +0900] [75272] [INFO] Worker exiting (pid: 75272)
+[2025-04-28 16:55:48 +0900] [75271] [INFO] Parent changed, shutting down: <Worker 75271>
+[2025-04-28 16:55:48 +0900] [75271] [INFO] Worker exiting (pid: 75271)
+[2025-04-28 16:55:48 +0900] [75269] [INFO] Parent changed, shutting down: <Worker 75269>
+[2025-04-28 16:55:48 +0900] [75269] [INFO] Worker exiting (pid: 75269)
+[2025-04-28 16:55:48 +0900] [75270] [INFO] Parent changed, shutting down: <Worker 75270>
+[2025-04-28 16:55:48 +0900] [75270] [INFO] Worker exiting (pid: 75270)
+[2025-04-28 16:57:29 +0900] [76991] [INFO] Starting gunicorn 23.0.0
+[2025-04-28 16:57:29 +0900] [76991] [INFO] Listening at: http://0.0.0.0:5000 (76991)
+[2025-04-28 16:57:29 +0900] [76991] [INFO] Using worker: sync
+[2025-04-28 16:57:29 +0900] [77038] [INFO] Booting worker with pid: 77038
+[2025-04-28 16:57:29 +0900] [77039] [INFO] Booting worker with pid: 77039
+[2025-04-28 16:57:29 +0900] [77040] [INFO] Booting worker with pid: 77040
+[2025-04-28 16:57:29 +0900] [77041] [INFO] Booting worker with pid: 77041
