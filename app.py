@@ -754,34 +754,24 @@ def mark_delivery_as_received():
         return jsonify({'error': str(e)}), 500
 
 
-# ---- 전화 수신 대기 ----
 @app.route('/call/waiting-doctor', methods=['POST'])
-def create_waiting_call():
+def update_waiting_call():
     try:
         data = request.get_json()
-        doctor_id = data.get('doctor_id')
-        patient_id = data.get('patient_id')
+        room_code = data.get('room_code')
 
-        if not doctor_id or not patient_id:
-            return jsonify({'error': 'doctor_id and patient_id are required'}), 400
+        if not room_code:
+            return jsonify({'error': 'room_code is required'}), 400
 
-        created_at = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
-        status = "waiting"
+        # Locate the document by room_code (doc_id)
+        doc_ref = calls_ref.child(room_code)
+        if not doc_ref.get():
+            return jsonify({'error': 'Call not found'}), 404
 
-        # Generate document ID by combining doctor_id, patient_id, and created_at, replacing spaces and colons
-        doc_id = f"{doctor_id}_{patient_id}_{created_at.replace(' ', '_').replace(':', '-')}"
+        # Update status to 'accepted'
+        doc_ref.update({'status': 'accepted'})
 
-        call_data = {
-            'doctor_id': doctor_id,
-            'patient_id': patient_id,
-            'created_at': created_at,
-            'status': status
-        }
-
-        # Save to Realtime Database
-        calls_ref.child(doc_id).set(call_data)
-
-        return jsonify({'message': 'Waiting call created', 'doc_id': doc_id}), 200
+        return jsonify({'message': 'Call status updated to accepted'}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
@@ -813,27 +803,43 @@ def accept_call():
 
 
 
-# ---- 화면에 의사 이름 표시 ----
+
+# ---- 화면에 의사 이름 및 정보 표시 (room_code 기반) ----
 @app.route('/call/doctor-id', methods=['POST'])
-def get_doctor_id_from_call():
+def get_doctor_info_from_room_code():
     try:
         data = request.get_json()
-        call_id = data.get('call_id')
+        room_code = data.get('room_code')
 
-        if not call_id:
-            return jsonify({'error': 'call_id is required'}), 400
+        if not room_code:
+            return jsonify({'error': 'room_code is required'}), 400
 
-        doc_ref = collection_calls.document(str(call_id))
-        doc = doc_ref.get()
+        # Find the call document by room_code
+        call_doc_ref = calls_ref.child(room_code)
+        call_doc = call_doc_ref.get()
 
-        if not doc.exists:
+        if not call_doc:
             return jsonify({'error': 'Call not found'}), 404
 
-        doctor_id = doc.to_dict().get('doctor_id')
-        return jsonify({'doctor_id': doctor_id}), 200
+        doctor_id = call_doc.get('doctor_id')
+        if not doctor_id:
+            return jsonify({'error': 'Doctor ID not found in call'}), 404
+
+        # Fetch doctor information from doctors collection
+        doctor_doc = collection_doctors.document(str(doctor_id)).get()
+        if not doctor_doc.exists:
+            return jsonify({'error': 'Doctor not found'}), 404
+
+        doctor_data = doctor_doc.to_dict()
+
+        return jsonify({
+            'doctor_id': doctor_id,
+            'name': doctor_data.get('name', '')
+        }), 200
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 
 
 
@@ -842,31 +848,37 @@ def get_doctor_id_from_call():
 def add_patient_text():
     try:
         data = request.get_json()
-        call_id = data.get('call_id')
-        new_text = data.get('text')
+        room_code = data.get('room_code')
+        patient_id = data.get('patient_id')
+        patient_text = data.get('patient_text')
 
-        if not call_id or not new_text:
-            return jsonify({'error': 'call_id and text are required'}), 400
+        if not room_code or not patient_id or not patient_text:
+            return jsonify({'error': 'room_code, patient_id, and patient_text are required'}), 400
 
-        doc_ref = collection_calls.document(str(call_id))
+        doc_ref = calls_ref.child(room_code)
         doc = doc_ref.get()
 
-        if not doc.exists:
+        if not doc:
             return jsonify({'error': 'Call not found'}), 404
 
-        call_data = doc.to_dict()
-        patient_text_list = call_data.get('patient_text', [])
+        # Retrieve existing patient_texts for this room
+        existing_texts = doc.get('patient_texts', {})
 
-        if not isinstance(patient_text_list, list):
-            patient_text_list = []
+        if not isinstance(existing_texts, dict):
+            existing_texts = {}
 
-        patient_text_list.append(new_text.strip())
-        doc_ref.update({'patient_text': patient_text_list})
+        # Append new text to patient's list
+        patient_text_list = existing_texts.get(patient_id, [])
+        patient_text_list.append(patient_text.strip())
+        existing_texts[patient_id] = patient_text_list
 
-        return jsonify({'message': 'Text added to patient_text'}), 200
+        doc_ref.update({'patient_texts': existing_texts})
+
+        return jsonify({'message': 'Patient text added successfully'}), 200
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 
 
 # ---- 의사 텍스트 화면에 표출 ----
@@ -874,18 +886,18 @@ def add_patient_text():
 def get_latest_doctor_text():
     try:
         data = request.get_json()
-        call_id = data.get('call_id')
+        room_code = data.get('room_code')
 
-        if not call_id:
-            return jsonify({'error': 'call_id is required'}), 400
+        if not room_code:
+            return jsonify({'error': 'room_code is required'}), 400
 
-        doc_ref = collection_calls.document(str(call_id))
+        doc_ref = calls_ref.child(room_code)
         doc = doc_ref.get()
 
-        if not doc.exists:
+        if not doc:
             return jsonify({'error': 'Call not found'}), 404
 
-        doctor_text_list = doc.to_dict().get('doctor_text', [])
+        doctor_text_list = doc.get('doctor_text', [])
         if not isinstance(doctor_text_list, list) or not doctor_text_list:
             return jsonify({'message': 'No doctor text found'}), 404
 
@@ -900,18 +912,24 @@ def get_latest_doctor_text():
 def end_call():
     try:
         data = request.get_json()
-        call_id = data.get('call_id')
+        room_code = data.get('room_code')
 
-        if not call_id:
-            return jsonify({'error': 'call_id is required'}), 400
+        if not room_code:
+            return jsonify({'error': 'room_code is required'}), 400
 
-        doc_ref = collection_calls.document(str(call_id))
+        doc_ref = calls_ref.child(room_code)
         doc = doc_ref.get()
 
-        if not doc.exists:
+        if not doc:
             return jsonify({'error': 'Call not found'}), 404
 
-        doc_ref.update({'ended_at': datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")})
+        now = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+
+        doc_ref.update({
+            'ended_at': now,
+            'status': 'ended'
+        })
+
         return jsonify({'message': 'Call ended successfully'}), 200
 
     except Exception as e:
@@ -980,4 +998,4 @@ def add_chat_separator():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000)

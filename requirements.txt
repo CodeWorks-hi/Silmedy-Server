@@ -1,0 +1,10 @@
+flask
+firebase_admin
+boto3
+logging
+datetime
+requests
+toml
+flask_cors
+dotenv
+uuid
