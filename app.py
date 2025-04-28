@@ -3,7 +3,7 @@ import firebase_admin
 import boto3
 import logging
 from datetime import datetime, timedelta
-from firebase_admin import credentials, firestore
+from firebase_admin import credentials, firestore, db
 import requests
 import toml
 from flask_cors import CORS
@@ -14,6 +14,8 @@ import string
 import re
 from boto3.dynamodb.conditions import Attr
 import uuid
+from urllib.parse import unquote
+
 
 # ---- 기본 세팅 ----
 app = Flask(__name__)
@@ -35,19 +37,25 @@ dynamodb = boto3.resource(
     aws_secret_access_key=aws_secret_access_key
 )
 cred = credentials.Certificate('silmedy-23a1b-firebase-adminsdk-fbsvc-1e8c6b596b.json')
-firebase_admin.initialize_app(cred)
-db = firestore.client()
+firebase_admin.initialize_app(cred, {
+    'databaseURL': 'https://silmedy-23a1b-default-rtdb.firebaseio.com'
+})
+fs_db = firestore.client()
+
 
 
 # ---- 테이블 목록 ----
+# Realtime
+calls_ref = db.reference('calls')
+
 # Firestore
-collection_patients = db.collection('patients')
-collection_doctors = db.collection('doctors')
-collection_admins = db.collection('admins')
-collection_calls = db.collection('calls')
-collection_counters = db.collection('fb_counters')
-collection_consult_text = db.collection('consult_text')
-collection_diagnosis_text = db.collection('diagnosis_text')
+collection_patients = fs_db.collection('patients')
+collection_doctors = fs_db.collection('doctors')
+collection_admins = fs_db.collection('admins')
+collection_counters = fs_db.collection('fs_counters')
+collcetion_call_text = fs_db.collection('call_text')
+collection_consult_text = fs_db.collection('consult_text')
+collection_diagnosis_text = fs_db.collection('diagnosis_text')
 
 # DynamoDB
 table_ai_consults = dynamodb.Table('ai_consults')
@@ -69,6 +77,15 @@ def patient_signup():
     try:
         body = request.get_json()
 
+        # Counter 가져오기
+        counter_doc = collection_counters.document('patients').get()
+        if counter_doc.exists:
+            current_id = counter_doc.to_dict().get('current_id', 0)
+        else:
+            current_id = 0
+
+        new_doc_id = current_id + 1
+
         item = {
             'email': body['email'],
             'password': body['password'],
@@ -77,11 +94,18 @@ def patient_signup():
             'postal_code': body['postal_code'],
             'address': body['address'],
             'address_detail': body['address_detail'],
-            'created_at': datetime.utcnow().isoformat()
+            'birth_date': body['birth_date'],
+            'created_at': datetime.utcnow().isoformat(),
+            'sign_language_needed': body.get('sign_language_needed', False),
+            'is_default_address': body.get('is_default_address', False)
         }
 
-        collection_patients.document(item['email']).set(item)
+        # 새로운 환자 등록
+        collection_patients.document(str(new_doc_id)).set(item)
         logger.info(f"Inserted patient: {item}")
+
+        # 카운터 업데이트 (등록 완료 후)
+        collection_counters.document('patients').update({'current_id': new_doc_id})
 
         return jsonify({'message': '환자 등록 성공'}), 200
 
@@ -101,15 +125,16 @@ def patient_login():
         if not email or not password:
             return jsonify({'error': 'Email and password required'}), 400
 
-        doc_ref = collection_patients.document(email)
-        doc = doc_ref.get()
+        user_query = collection_patients.where("email", "==", email).limit(1).stream()
+        user_doc = next(user_query, None)
 
-        if doc.exists:
-            item = doc.to_dict()
+        if user_doc and user_doc.exists:
+            item = user_doc.to_dict()
             if item.get('password') == password:
                 return jsonify({
                     'message': 'Login successful',
-                    'name': item.get('name', '')
+                    'name': item.get('name', ''),
+                    'patient_id': user_doc.id
                 }), 200
             else:
                 return jsonify({'error': 'Invalid credentials'}), 401
@@ -154,11 +179,11 @@ def patient_change_password():
         if not email or not new_password:
             return jsonify({'error': 'Email and new password required'}), 400
 
-        doc_ref = collection_patients.document(email)
-        doc = doc_ref.get()
+        user_query = collection_patients.where("email", "==", email).limit(1).stream()
+        user_doc = next(user_query, None)
 
-        if doc.exists:
-            doc_ref.update({'password': new_password})
+        if user_doc and user_doc.exists:
+            user_doc.reference.update({'password': new_password})
             return jsonify({'message': '비밀번호 변경 완료'}), 200
         else:
             return jsonify({'error': '사용자 없음'}), 404
@@ -176,11 +201,11 @@ def logout():
 # ---- 환자 마이페이지 조회 ----
 @app.route('/patient/mypage', methods=['GET'])
 def get_mypage():
-    email = request.args.get('email')
-    if not email:
-        return jsonify({'error': 'Email required'}), 400
+    patient_id = request.args.get('patient_id')
+    if not patient_id:
+        return jsonify({'error': 'Patient ID required'}), 400
 
-    doc = collection_patients.document(email).get()
+    doc = collection_patients.document(patient_id).get()
     if doc.exists:
         return jsonify(doc.to_dict()), 200
     else:
@@ -198,11 +223,11 @@ def update_patient_info():
         if not email or not updates:
             return jsonify({'error': 'Email and update data required'}), 400
 
-        doc_ref = collection_patients.document(email)
-        doc = doc_ref.get()
+        user_query = collection_patients.where("email", "==", email).limit(1).stream()
+        user_doc = next(user_query, None)
 
-        if doc.exists:
-            doc_ref.update(updates)
+        if user_doc and user_doc.exists:
+            user_doc.reference.update(updates)
             return jsonify({'message': '회원 정보 수정 완료'}), 200
         else:
             return jsonify({'error': 'User not found'}), 404
@@ -215,12 +240,12 @@ def update_patient_info():
 @app.route('/patient/delete', methods=['DELETE'])
 def delete_patient():
     data = request.get_json()
-    email = data.get('email')
+    patient_id = data.get('patient_id')
 
-    if not email:
-        return jsonify({'error': 'Email required'}), 400
+    if not patient_id:
+        return jsonify({'error': 'Patient ID required'}), 400
 
-    doc_ref = collection_patients.document(email)
+    doc_ref = collection_patients.document(patient_id)
     doc = doc_ref.get()
 
     if doc.exists:
@@ -329,7 +354,7 @@ def verify_code_check_user():
     formatted_phone = f"{phone[:3]}-{phone[3:7]}-{phone[7:]}"  # 예: 01012341234 → 010-1234-1234
 
     try:
-        # Firestore에서 이메일과 전화번호 둘 다 일치하는 유저 찾기
+        # Firestore에서 이메일과 전화번호 둘 다 일치하는 유저 찾기 (doc id가 아닌 필드 기반)
         user_query = (
             collection_patients
             .where("email", "==", email)
@@ -372,30 +397,32 @@ def request_disease_image():
         return jsonify({'error': str(e)}), 500
     
 
-# ---- 채팅 저장 ----
 @app.route('/chat/save', methods=['POST'])
 def save_chat():
     try:
         data = request.get_json()
-        consult_id = data.get('consult_id')
-        sender_id = data.get('sender_id')
-        text = data.get('text')
+        patient_id = data.get('patient_id')
+        patient_text = data.get('patient_text')
+        ai_text = data.get('ai_text')
 
-        if not consult_id or not sender_id or not text:
+        if not patient_id or not patient_text:
             return jsonify({"error": "Missing required fields"}), 400
 
-        chat_id = str(uuid.uuid4())
+        now = datetime.utcnow()
+        chat_id = now.strftime("%Y%m%d%H%M%S%f")  # Timestamp 형식으로 chat_id 생성
+        created_at = now.strftime("%Y-%m-%d %H:%M:%S")
+
         chat_data = {
-            'chat_id': chat_id,
-            'is_separater': False,
-            'sender_id': sender_id,
-            'text': text.strip(),
-            'created_at': datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+            'patient_text': patient_text.strip(),
+            'ai_text': ai_text.strip(),
+            'created_at': created_at,
+            'is_separater': False
         }
 
-        collection_consult_text.document(str(consult_id)).collection("chats").document(chat_id).set(chat_data)
+        # Save under the patient_id document, using chat_id as document ID but do not store it in the document fields
+        collection_consult_text.document(str(patient_id)).collection("chats").document(chat_id).set(chat_data)
 
-        logger.info(f"[Firestore 저장됨] consult_id={consult_id}, chat_id={chat_id}, data={chat_data}")
+        logger.info(f"[Firestore 저장됨] patient_id={patient_id}, chat_id={chat_id}, data={chat_data}")
         return jsonify({"message": "Chat saved", "chat_id": chat_id}), 200
 
     except Exception as e:
@@ -478,11 +505,11 @@ def get_doctor_availability():
 # ---- 수어 필요 여부 자동 확인 ----
 @app.route('/chat/signcheck', methods=['GET'])
 def check_sign_language_required():
-    email = request.args.get('email')
-    if not email:
-        return jsonify({'error': 'Email is required'}), 400
+    patient_id = request.args.get('patient_id')
+    if not patient_id:
+        return jsonify({'error': 'patient_id is required'}), 400
 
-    doc = collection_patients.document(email).get()
+    doc = collection_patients.document(str(patient_id)).get()
     if not doc.exists:
         return jsonify({'error': 'User not found'}), 404
 
@@ -491,7 +518,7 @@ def check_sign_language_required():
     return jsonify({'sign_language_needed': sign_language_needed}), 200
 
 
-# ---- 진료 예약 확정 처리 ----
+# ---- 진료 예약 확정 처리 (patient_id 기반) ----
 @app.route('/chat/confirmed', methods=['POST'])
 def confirm_reservation():
     try:
@@ -576,17 +603,14 @@ def get_prescription_url():
 @app.route('/diagnosis/list', methods=['GET'])
 def get_diagnosis_by_patient():
     try:
-        from urllib.parse import unquote
-        from datetime import datetime
-        raw_email = request.args.get('email', '')
-        email = unquote(raw_email).strip().replace("'", "")
-        if not email:
-            return jsonify({'error': 'Email is required'}), 400
+        patient_id = request.args.get('patient_id', '')
+        if not patient_id:
+            return jsonify({'error': 'Patient ID is required'}), 400
 
         response = table_diagnosis_records.scan()
         items = []
         for item in response.get('Items', []):
-            if str(item.get('patient_id', '')).strip() == email:
+            if str(item.get('patient_id', '')).strip() == patient_id:
                 diagnosis_id = item.get('diagnosis_id')
                 diagnosed_at = item.get('diagnosed_at', '')
                 try:
@@ -620,11 +644,11 @@ def get_diagnosis_by_patient():
 def get_default_address():
     try:
         data = request.get_json()
-        email = data.get('email') if data else None
-        if not email:
-            return jsonify({'error': 'Email is required'}), 400
+        patient_id = data.get('patient_id') if data else None
+        if not patient_id:
+            return jsonify({'error': 'patient_id is required'}), 400
 
-        doc = collection_patients.document(email).get()
+        doc = collection_patients.document(str(patient_id)).get()
         if not doc.exists:
             return jsonify({'error': 'User not found'}), 404
 
@@ -696,6 +720,7 @@ def register_delivery():
         return jsonify({'error': str(e)}), 500
 
 
+# ---- 배송 완료 처리 ----
 @app.route('/delivery/complete', methods=['POST'])
 def mark_delivery_as_received():
     try:
@@ -729,33 +754,39 @@ def mark_delivery_as_received():
         return jsonify({'error': str(e)}), 500
 
 
-# ---- 대기중인 의사 조회 ----
+# ---- 전화 수신 대기 ----
 @app.route('/call/waiting-doctor', methods=['POST'])
-def get_waiting_doctor_for_patient():
+def create_waiting_call():
     try:
         data = request.get_json()
+        doctor_id = data.get('doctor_id')
         patient_id = data.get('patient_id')
 
-        if not patient_id:
-            return jsonify({'error': 'patient_id is required'}), 400
+        if not doctor_id or not patient_id:
+            return jsonify({'error': 'doctor_id and patient_id are required'}), 400
 
-        query = collection_calls \
-            .where("patient_id", "==", patient_id) \
-            .where("is_accepted", "==", False) \
-            .limit(1) \
-            .stream()
+        created_at = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+        status = "waiting"
 
-        call_doc = next(query, None)
-        if not call_doc:
-            return jsonify({'message': 'No waiting doctor found'}), 404
+        # Generate document ID by combining doctor_id, patient_id, and created_at, replacing spaces and colons
+        doc_id = f"{doctor_id}_{patient_id}_{created_at.replace(' ', '_').replace(':', '-')}"
 
-        doctor_id = call_doc.to_dict().get("doctor_id")
-        return jsonify({'doctor_id': doctor_id}), 200
+        call_data = {
+            'doctor_id': doctor_id,
+            'patient_id': patient_id,
+            'created_at': created_at,
+            'status': status
+        }
 
+        # Save to Realtime Database
+        calls_ref.child(doc_id).set(call_data)
+
+        return jsonify({'message': 'Waiting call created', 'doc_id': doc_id}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
 
+# ---- 전화 연결 ----
 @app.route('/call/accept', methods=['POST'])
 def accept_call():
     try:
@@ -782,7 +813,7 @@ def accept_call():
 
 
 
-# ---- Call에서 doctor_id 반환 ----
+# ---- 화면에 의사 이름 표시 ----
 @app.route('/call/doctor-id', methods=['POST'])
 def get_doctor_id_from_call():
     try:
@@ -806,7 +837,7 @@ def get_doctor_id_from_call():
 
 
 
-# ---- Add patient_text to a call ----
+# ---- 환자 텍스트 저장 ----
 @app.route('/call/add-patient-text', methods=['POST'])
 def add_patient_text():
     try:
@@ -838,7 +869,7 @@ def add_patient_text():
         return jsonify({'error': str(e)}), 500
 
 
-# ---- Get latest doctor_text from a call ----
+# ---- 의사 텍스트 화면에 표출 ----
 @app.route('/call/latest-doctor-text', methods=['POST'])
 def get_latest_doctor_text():
     try:
@@ -864,7 +895,7 @@ def get_latest_doctor_text():
         return jsonify({'error': str(e)}), 500
 
 
-# ---- End a call ----
+# ---- 전화 종료 ----
 @app.route('/call/end', methods=['POST'])
 def end_call():
     try:
@@ -923,23 +954,24 @@ def save_chat_ai():
 def add_chat_separator():
     try:
         data = request.get_json()
-        consult_id = data.get('consult_id')
+        patient_id = data.get('patient_id')
 
-        if not consult_id:
-            return jsonify({"error": "consult_id is required"}), 400
+        if not patient_id:
+            return jsonify({"error": "patient_id is required"}), 400
 
-        chat_id = str(uuid.uuid4())
+        now = datetime.utcnow()
+        chat_id = now.strftime("%Y%m%d%H%M%S%f")  # Timestamp 기반 chat_id 생성
         chat_data = {
             'chat_id': chat_id,
             'is_separater': True,
             'sender_id': '',
             'text': '',
-            'created_at': datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+            'created_at': now.strftime("%Y-%m-%d %H:%M:%S")
         }
 
-        collection_consult_text.document(str(consult_id)).collection("chats").document(chat_id).set(chat_data)
+        collection_consult_text.document(str(patient_id)).collection("chats").document(chat_id).set(chat_data)
 
-        logger.info(f"[Firestore 구분선 저장됨] consult_id={consult_id}, chat_id={chat_id}")
+        logger.info(f"[Firestore 구분선 저장됨] patient_id={patient_id}, chat_id={chat_id}")
         return jsonify({"message": "Separator added", "chat_id": chat_id}), 200
 
     except Exception as e:
