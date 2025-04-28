@@ -51,7 +51,6 @@ firebase_admin.initialize_app(cred, {
 fs_db = firestore.client()
 
 
-
 # ---- 테이블 목록 ----
 # Realtime
 calls_ref = db.reference('calls')
