@@ -1237,3 +1237,169 @@ Traceback (most recent call last):
 SystemExit: 1
 [2025-04-28 17:13:27 +0900] [78315] [INFO] Worker exiting (pid: 78315)
 [2025-04-28 17:13:28 +0900] [81716] [INFO] Booting worker with pid: 81716
+/opt/anaconda3/envs/hi/lib/python3.10/site-packages/google/cloud/firestore_v1/base_collection.py:303: UserWarning: Detected filter using positional arguments. Prefer using the 'filter' keyword argument instead.
+  return query.where(field_path, op_string, value)
+[2025-04-29 09:38:05 +0900] [98046] [INFO] Starting gunicorn 23.0.0
+[2025-04-29 09:38:05 +0900] [98046] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-29 09:38:05 +0900] [98046] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-29 09:38:06 +0900] [98046] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-29 09:38:06 +0900] [98046] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-29 09:38:07 +0900] [98046] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-29 09:38:07 +0900] [98046] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-29 09:38:08 +0900] [98046] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-29 09:38:08 +0900] [98046] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-29 09:38:09 +0900] [98046] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-29 09:38:09 +0900] [98046] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-29 09:38:10 +0900] [98046] [ERROR] Can't connect to ('0.0.0.0', 5000)
+/opt/anaconda3/envs/hi/lib/python3.10/site-packages/google/cloud/firestore_v1/base_collection.py:303: UserWarning: Detected filter using positional arguments. Prefer using the 'filter' keyword argument instead.
+  return query.where(field_path, op_string, value)
+[2025-04-29 09:39:51 +0900] [98702] [INFO] Starting gunicorn 23.0.0
+[2025-04-29 09:39:51 +0900] [98702] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-29 09:39:51 +0900] [98702] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-29 09:39:52 +0900] [98702] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-29 09:39:52 +0900] [98702] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-29 09:39:53 +0900] [98702] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-29 09:39:53 +0900] [98702] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-29 09:39:54 +0900] [98702] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-29 09:39:54 +0900] [98702] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-29 09:39:55 +0900] [98702] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-29 09:39:55 +0900] [98702] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-29 09:39:56 +0900] [98702] [ERROR] Can't connect to ('0.0.0.0', 5000)
+[2025-04-29 09:42:58 +0900] [78316] [INFO] Parent changed, shutting down: <Worker 78316>
+[2025-04-29 09:42:58 +0900] [78316] [INFO] Worker exiting (pid: 78316)
+[2025-04-29 09:43:01 +0900] [78317] [INFO] Parent changed, shutting down: <Worker 78317>
+[2025-04-29 09:43:01 +0900] [78317] [INFO] Worker exiting (pid: 78317)
+[2025-04-29 09:43:06 +0900] [78318] [INFO] Parent changed, shutting down: <Worker 78318>
+[2025-04-29 09:43:06 +0900] [78318] [INFO] Worker exiting (pid: 78318)
+[2025-04-29 09:43:06 +0900] [81716] [INFO] Parent changed, shutting down: <Worker 81716>
+[2025-04-29 09:43:06 +0900] [81716] [INFO] Worker exiting (pid: 81716)
+[2025-04-29 09:44:19 +0900] [236] [INFO] Starting gunicorn 23.0.0
+[2025-04-29 09:44:19 +0900] [236] [INFO] Listening at: http://0.0.0.0:5000 (236)
+[2025-04-29 09:44:19 +0900] [236] [INFO] Using worker: sync
+[2025-04-29 09:44:19 +0900] [282] [INFO] Booting worker with pid: 282
+[2025-04-29 09:44:19 +0900] [283] [INFO] Booting worker with pid: 283
+[2025-04-29 09:44:20 +0900] [284] [INFO] Booting worker with pid: 284
+[2025-04-29 09:44:20 +0900] [285] [INFO] Booting worker with pid: 285
+[2025-04-29 09:53:07 +0900] [236] [CRITICAL] WORKER TIMEOUT (pid:282)
+[2025-04-29 09:53:07 +0900] [282] [ERROR] Error handling request (no URI read)
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/sync.py", line 133, in handle
+    req = next(parser)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/http/parser.py", line 41, in __next__
+    self.mesg = self.mesg_class(self.cfg, self.unreader, self.source_addr, self.req_count)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/http/message.py", line 259, in __init__
+    super().__init__(cfg, unreader, peer_addr)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/http/message.py", line 60, in __init__
+    unused = self.parse(self.unreader)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/http/message.py", line 271, in parse
+    self.get_data(unreader, buf, stop=True)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/http/message.py", line 262, in get_data
+    data = unreader.read()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/http/unreader.py", line 36, in read
+    d = self.chunk()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/http/unreader.py", line 63, in chunk
+    return self.sock.recv(self.mxchunk)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 204, in handle_abort
+    sys.exit(1)
+SystemExit: 1
+[2025-04-29 09:53:07 +0900] [282] [INFO] Worker exiting (pid: 282)
+[2025-04-29 09:53:07 +0900] [2945] [INFO] Booting worker with pid: 2945
+[2025-04-29 09:59:41 +0900] [4740] [INFO] Starting gunicorn 23.0.0
+[2025-04-29 09:59:41 +0900] [4740] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-29 09:59:41 +0900] [4740] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-29 09:59:42 +0900] [4740] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-29 09:59:42 +0900] [4740] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-29 09:59:43 +0900] [4740] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-29 09:59:43 +0900] [4740] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-29 09:59:44 +0900] [4740] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-29 09:59:44 +0900] [4740] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-29 09:59:45 +0900] [4740] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-29 09:59:45 +0900] [4740] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-29 09:59:46 +0900] [4740] [ERROR] Can't connect to ('0.0.0.0', 5000)
+[2025-04-29 10:02:39 +0900] [5682] [INFO] Starting gunicorn 23.0.0
+[2025-04-29 10:02:39 +0900] [5682] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-29 10:02:39 +0900] [5682] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-29 10:02:40 +0900] [5682] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-29 10:02:40 +0900] [5682] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-29 10:02:41 +0900] [5682] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-29 10:02:41 +0900] [5682] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-29 10:02:42 +0900] [5682] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-29 10:02:42 +0900] [5682] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-29 10:02:43 +0900] [5682] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-29 10:02:43 +0900] [5682] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-29 10:02:44 +0900] [5682] [ERROR] Can't connect to ('0.0.0.0', 5000)
+[2025-04-29 10:03:14 +0900] [285] [INFO] Parent changed, shutting down: <Worker 285>
+[2025-04-29 10:03:14 +0900] [284] [INFO] Parent changed, shutting down: <Worker 284>
+[2025-04-29 10:03:14 +0900] [283] [INFO] Parent changed, shutting down: <Worker 283>
+[2025-04-29 10:03:14 +0900] [283] [INFO] Worker exiting (pid: 283)
+[2025-04-29 10:03:14 +0900] [285] [INFO] Worker exiting (pid: 285)
+[2025-04-29 10:03:14 +0900] [284] [INFO] Worker exiting (pid: 284)
+[2025-04-29 10:03:24 +0900] [6100] [INFO] Starting gunicorn 23.0.0
+[2025-04-29 10:03:24 +0900] [6100] [INFO] Listening at: http://0.0.0.0:5000 (6100)
+[2025-04-29 10:03:24 +0900] [6100] [INFO] Using worker: sync
+[2025-04-29 10:03:24 +0900] [6146] [INFO] Booting worker with pid: 6146
+[2025-04-29 10:03:25 +0900] [6147] [INFO] Booting worker with pid: 6147
+[2025-04-29 10:03:25 +0900] [6148] [INFO] Booting worker with pid: 6148
+[2025-04-29 10:03:25 +0900] [6149] [INFO] Booting worker with pid: 6149
+[2025-04-29 10:06:44 +0900] [6147] [INFO] Parent changed, shutting down: <Worker 6147>
+[2025-04-29 10:06:44 +0900] [6147] [INFO] Worker exiting (pid: 6147)
+[2025-04-29 10:06:44 +0900] [6146] [INFO] Parent changed, shutting down: <Worker 6146>
+[2025-04-29 10:06:44 +0900] [6149] [INFO] Parent changed, shutting down: <Worker 6149>
+[2025-04-29 10:06:44 +0900] [6149] [INFO] Worker exiting (pid: 6149)
+[2025-04-29 10:06:44 +0900] [6146] [INFO] Worker exiting (pid: 6146)
+[2025-04-29 10:06:44 +0900] [6148] [INFO] Parent changed, shutting down: <Worker 6148>
+[2025-04-29 10:06:44 +0900] [6148] [INFO] Worker exiting (pid: 6148)
+[2025-04-29 10:07:14 +0900] [7378] [INFO] Starting gunicorn 23.0.0
+[2025-04-29 10:07:14 +0900] [7378] [INFO] Listening at: http://0.0.0.0:5000 (7378)
+[2025-04-29 10:07:14 +0900] [7378] [INFO] Using worker: sync
+[2025-04-29 10:07:14 +0900] [7424] [INFO] Booting worker with pid: 7424
+[2025-04-29 10:07:14 +0900] [7425] [INFO] Booting worker with pid: 7425
+[2025-04-29 10:07:14 +0900] [7426] [INFO] Booting worker with pid: 7426
+[2025-04-29 10:07:14 +0900] [7427] [INFO] Booting worker with pid: 7427
+[2025-04-29 11:58:21 +0900] [49630] [INFO] Starting gunicorn 23.0.0
+[2025-04-29 11:58:21 +0900] [49630] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-29 11:58:21 +0900] [49630] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-29 11:58:22 +0900] [49630] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-29 11:58:22 +0900] [49630] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-29 11:58:23 +0900] [49630] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-29 11:58:23 +0900] [49630] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-29 11:58:24 +0900] [49630] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-29 11:58:24 +0900] [49630] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-29 11:58:25 +0900] [49630] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-29 11:58:25 +0900] [49630] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-29 11:58:26 +0900] [49630] [ERROR] Can't connect to ('0.0.0.0', 5000)
+/opt/anaconda3/envs/hi/lib/python3.10/site-packages/google/cloud/firestore_v1/base_collection.py:303: UserWarning: Detected filter using positional arguments. Prefer using the 'filter' keyword argument instead.
+  return query.where(field_path, op_string, value)
+[2025-04-29 12:15:25 +0900] [57906] [INFO] Starting gunicorn 23.0.0
+[2025-04-29 12:15:25 +0900] [57906] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-29 12:15:25 +0900] [57906] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-29 12:15:26 +0900] [57906] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-29 12:15:26 +0900] [57906] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-29 12:15:27 +0900] [57906] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-29 12:15:27 +0900] [57906] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-29 12:15:28 +0900] [57906] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-29 12:15:28 +0900] [57906] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-29 12:15:29 +0900] [57906] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-29 12:15:29 +0900] [57906] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-29 12:15:30 +0900] [57906] [ERROR] Can't connect to ('0.0.0.0', 5000)
+[2025-04-29 12:15:46 +0900] [7425] [INFO] Parent changed, shutting down: <Worker 7425>
+[2025-04-29 12:15:46 +0900] [7425] [INFO] Worker exiting (pid: 7425)
+[2025-04-29 12:15:59 +0900] [7426] [INFO] Parent changed, shutting down: <Worker 7426>
+[2025-04-29 12:15:59 +0900] [7426] [INFO] Worker exiting (pid: 7426)
+[2025-04-29 12:16:09 +0900] [58428] [INFO] Starting gunicorn 23.0.0
+[2025-04-29 12:16:09 +0900] [58428] [INFO] Listening at: http://0.0.0.0:5000 (58428)
+[2025-04-29 12:16:09 +0900] [58428] [INFO] Using worker: sync
+[2025-04-29 12:16:09 +0900] [58474] [INFO] Booting worker with pid: 58474
+[2025-04-29 12:16:09 +0900] [58475] [INFO] Booting worker with pid: 58475
+[2025-04-29 12:16:09 +0900] [58476] [INFO] Booting worker with pid: 58476
+[2025-04-29 12:16:09 +0900] [58477] [INFO] Booting worker with pid: 58477
+[2025-04-29 12:16:21 +0900] [58428] [INFO] Handling signal: hup
+[2025-04-29 12:16:21 +0900] [58428] [INFO] Hang up: Master
+[2025-04-29 12:16:21 +0900] [58428] [ERROR] Worker (pid:58474) was sent SIGHUP!
+[2025-04-29 12:16:21 +0900] [58428] [ERROR] Worker (pid:58477) was sent SIGHUP!
+[2025-04-29 12:16:21 +0900] [58428] [ERROR] Worker (pid:58476) was sent SIGHUP!
+[2025-04-29 12:16:21 +0900] [58428] [ERROR] Worker (pid:58475) was sent SIGHUP!
+[2025-04-29 12:16:21 +0900] [58621] [INFO] Booting worker with pid: 58621
+[2025-04-29 12:16:21 +0900] [58622] [INFO] Booting worker with pid: 58622
+[2025-04-29 12:16:21 +0900] [58623] [INFO] Booting worker with pid: 58623
+[2025-04-29 12:16:21 +0900] [58624] [INFO] Booting worker with pid: 58624

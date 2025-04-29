@@ -168,6 +168,21 @@ paths:
       responses:
         '200':
           description: 질병 설명 이미지 URL 반환
+  /request/department-info:
+    post:
+      summary: 증상 기반 진료과 정보 조회
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            properties:
+              symptom:
+                type: string
+      responses:
+        '200':
+          description: 진료과 정보 반환 성공
   /chat/save:
     post:
       summary: 채팅 저장

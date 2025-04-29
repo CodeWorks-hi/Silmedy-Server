@@ -380,26 +380,34 @@ def verify_code_check_user():
         return jsonify({"success": False, "message": f"오류 발생: {str(e)}"}), 500
     
     
-@app.route('/request/disease-image', methods=['POST'])
-def request_disease_image():
+@app.route('/request/result-info', methods=['POST'])
+def request_department_info():
     try:
         data = request.get_json()
-        analysis = data.get('analysis')
-
-        if not analysis:
-            return jsonify({'error': 'Analysis is required'}), 400
+        symptom = data.get('symptom')
+        if not symptom:
+            return jsonify({'error': 'symptom is required'}), 400
 
         response = table_diseases.scan(
-            FilterExpression=Attr('name_ko').eq(analysis)
+            FilterExpression=Attr('name_ko').eq(symptom)
         )
         items = response.get('Items', [])
-        item = items[0] if items else None
-
-        if item and 'desc_url' in item:
-            return jsonify({'desc_url': item['desc_url']}), 200
-        else:
+        if not items:
             return jsonify({'error': 'No matching disease found'}), 404
+        item = items[0]
+        department = item.get('department')
+        sub_departments = item.get('sub_department', '')
+        desc_url = item.get('desc_url')
 
+        if isinstance(sub_departments, str):
+            sub_departments = sub_departments.strip('{}').replace('"', '').split(',')
+
+        result = {
+            'department': department,
+            'sub_department': sub_departments[0] if sub_departments else None,
+            'desc_url': desc_url
+        }
+        return jsonify(result), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
