@@ -510,65 +510,21 @@ def save_chat():
     except Exception as e:
         logger.error(f"Error saving chat: {e}")
         return jsonify({'error': str(e)}), 500
-    
 
-# ---- 의사 목록 반환 ----
-@app.route('/request/doctors', methods=['POST'])
-def get_doctor_list():
+
+
+# ---- 의사 진료 가능 시간 + 수어 필요 여부 통합 확인 ----
+@app.route('/request/availability-signcheck', methods=['GET'])
+@jwt_required()
+def get_availability_and_signcheck():
     try:
-        data = request.get_json()
-        clinic_list = data.get('clinic_list', []) if isinstance(data, dict) else data
-        department = data.get('department')
-
-        if not clinic_list:
-            return jsonify({'error': 'clinic_list is required'}), 400
-        if not department:
-            return jsonify({'error': 'department is required'}), 400
-
-        matched_hospitals = []
-        for item in table_hospitals.scan().get('Items', []):
-            if item.get('name') in clinic_list:
-                matched_hospitals.append({
-                    "hospital_id": item.get('hospital_id'),
-                    "name": item.get('name')
-                })
-
-        doctors = []
-        for doc in collection_doctors.stream():
-            data = doc.to_dict()
-            data["license_number"] = doc.id  # 여기서 직접 추가
-            for hospital in matched_hospitals:
-                if data.get("hospital_id") == hospital["hospital_id"] and data.get("department") == department:
-                    doctors.append({
-                        "hospital_id": data.get("hospital_id"),
-                        "hospital_name": hospital["name"],
-                        "profile_url": data.get("profile_url"),
-                        "name": data.get("name"),
-                        "department": data.get("department"),
-                        "gender": data.get("gender"),
-                        "contact": data.get("contact"),
-                        "email": data.get("email"),
-                        "bio": data.get("bio"),
-                        "availability": data.get("availability"),
-                        "license_number": data.get("license_number")  # 이렇게!
-                    })
-                    break
-
-        return jsonify(doctors), 200
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-# ---- 의사 진료 가능 시간 확인 ----
-@app.route('/request/availability', methods=['GET'])
-def get_doctor_availability():
-    try:
+        patient_id = get_jwt_identity()
         license_number = request.args.get('license_number')
+
         if not license_number:
             return jsonify({'error': 'license_number is required'}), 400
-        
-        # 의사 문서 조회 (license_number가 문서 ID로 사용됨)
+
+        # Fetch doctor's reservations
         doc_ref = collection_doctors.document(license_number)
         doc = doc_ref.get()
 
@@ -576,8 +532,6 @@ def get_doctor_availability():
             return jsonify({'error': 'Doctor not found'}), 404
 
         doctor_id = doc.id
-
-        # 오늘과 내일 날짜 구하기
         today = datetime.utcnow().date()
         tomorrow = today + timedelta(days=1)
 
@@ -597,27 +551,19 @@ def get_doctor_availability():
                         item['symptom_type'] = list(item['symptom_type'])
                     reservations.append(item)
 
-        return jsonify({'reservations': reservations}), 200
-
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-
-
-# ---- 수어 필요 여부 자동 확인 ----
-@app.route('/request/signcheck', methods=['GET'])
-@jwt_required()
-def check_sign_language_required():
-    try:
-        patient_id = get_jwt_identity()
-
-        doc = collection_patients.document(str(patient_id)).get()
-        if not doc.exists:
+        # Fetch patient sign language need
+        patient_doc = collection_patients.document(str(patient_id)).get()
+        if not patient_doc.exists:
             return jsonify({'error': 'User not found'}), 404
 
-        data = doc.to_dict()
-        sign_language_needed = data.get('sign_language_needed', False)
-        return jsonify({'sign_language_needed': sign_language_needed}), 200
+        patient_data = patient_doc.to_dict()
+        sign_language_needed = patient_data.get('sign_language_needed', False)
+
+        return jsonify({
+            'reservations': reservations,
+            'sign_language_needed': sign_language_needed
+        }), 200
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -1102,74 +1048,6 @@ def add_chat_separator():
 
     except Exception as e:
         logger.error(f"Error adding separator: {e}")
-        return jsonify({'error': str(e)}), 500
-    
-
-
-
-
-# ---- 보건소 검색 ----
-@app.route('/health_centers', methods=['GET'])
-@jwt_required()
-def search_health_centers():
-    try:
-        # JWT Authorization header validation
-        patient_id = get_jwt_identity()
-        if not patient_id:
-            return jsonify({'error': 'Unauthorized'}), 401
-
-        lat_str = request.args.get('lat')
-        lng_str = request.args.get('lng')
-
-        if not lat_str or not lng_str:
-            return jsonify({"error": "Missing 'lat' or 'lng' parameter"}), 400
-
-        try:
-            lat = float(lat_str)
-            lng = float(lng_str)
-        except (TypeError, ValueError):
-            return jsonify({"error": "Invalid 'lat' or 'lng' value"}), 400
-
-        # Log lat/lng
-        logger.info(f"[health_centers] lat: {lat}, lng: {lng}")
-
-        headers = {
-            "Authorization": f"KakaoAK {KAKAO_API_KEY}"
-        }
-        params = {
-            "query": "보건소",
-            "x": str(lng),
-            "y": str(lat),
-            "radius": 10000,
-            "sort": "distance"
-        }
-
-        kakao_url = "https://dapi.kakao.com/v2/local/search/keyword.json"
-
-        response = requests.get(kakao_url, headers=headers, params=params)
-
-        if response.status_code != 200:
-            return jsonify({"error": "Kakao API error"}), 500
-
-        kakao_data = response.json()
-        documents = kakao_data.get("documents", [])
-
-        logger.info(f"[health_centers] 검색된 place_names: {[doc.get('place_name') for doc in documents]}")
-
-        health_centers = []
-        for doc in documents:
-            place_name = doc.get("place_name", "")
-            if place_name.endswith("보건소") and " " not in place_name:
-                health_centers.append(place_name)
-            if len(health_centers) >= 5:
-                break
-
-        # Log filtered health centers
-        logger.info(f"[health_centers] Filtered health centers: {health_centers}")
-
-        return jsonify(health_centers), 200
-
-    except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 
