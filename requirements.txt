@@ -1,10 +1,14 @@
 flask
 firebase_admin
 boto3
-logging
 datetime
 requests
 toml
 flask_cors
 dotenv
 uuid
+flask_jwt_extended
+flasgger
+numpy
+tflite-runtime
+Pillow

@@ -25,6 +25,7 @@ import tflite_runtime.interpreter as tflite
 from PIL import Image
 
 
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
 
 # ---- 기본 세팅 ----
 app = Flask(__name__, static_url_path='/static')
@@ -51,8 +52,6 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
-
-load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
 
 interpreter = tflite.Interpreter(model_path="model_unquant.tflite")
 interpreter.allocate_tensors()
@@ -176,7 +175,8 @@ def patient_login():
                 return jsonify({
                     'message': 'Login successful',
                     'access_token': access_token,
-                    'refresh_token': refresh_token
+                    'refresh_token': refresh_token,
+                    'username': item.get('name', '')
                 }), 200
             else:
                 return jsonify({'error': 'Invalid credentials'}), 401
