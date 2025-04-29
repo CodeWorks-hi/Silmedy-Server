@@ -800,7 +800,7 @@ def accept_call():
         if not call_id:
             return jsonify({'error': 'call_id is required'}), 400
 
-        doc_ref = collection_calls.document(str(call_id))
+        doc_ref = calls_ref.document(str(call_id))
         doc = doc_ref.get()
 
         if not doc.exists:
@@ -1013,20 +1013,24 @@ def add_chat_separator():
 
 @app.route('/health_centers', methods=['GET'])
 def search_health_centers():
-    keyword = request.args.get('keyword')
+    lat = request.args.get('lat')
+    lng = request.args.get('lng')
 
-    if not keyword:
-        return jsonify({"error": "Missing 'keyword' parameter"}), 400
+    if not lat or not lng:
+        return jsonify({"error": "Missing 'lat' or 'lng' parameter"}), 400
 
     headers = {
         "Authorization": f"KakaoAK {KAKAO_API_KEY}"
     }
     params = {
-        "query": keyword,
-        "category_group_code": "HP8"  # 병원/보건소 카테고리 코드
+        "x": lng,
+        "y": lat,
+        "radius": 20000,
+        "category_group_code": "HP8",
+        "sort": "distance"
     }
 
-    kakao_url = "https://dapi.kakao.com/v2/local/search/keyword.json"
+    kakao_url = "https://dapi.kakao.com/v2/local/search/category.json"
 
     response = requests.get(kakao_url, headers=headers, params=params)
 
@@ -1036,13 +1040,13 @@ def search_health_centers():
     kakao_data = response.json()
     documents = kakao_data.get("documents", [])
 
-    # 보건소만 필터링
     health_centers = []
     for doc in documents:
         if "보건소" in doc.get("place_name", ""):
             health_centers.append({"name": doc.get("place_name")})
 
     return jsonify({"health_centers": health_centers})
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
