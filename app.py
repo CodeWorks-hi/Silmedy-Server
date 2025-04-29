@@ -448,28 +448,44 @@ def save_chat():
 
 
 # ---- 의사 목록 반환 ----
-@app.route('/request/doctors', methods=['GET'])
+@app.route('/request/doctors', methods=['POST'])
 def get_doctor_list():
     try:
-        hospital_id = request.args.get('hospital_id')
-        if not hospital_id:
-            return jsonify({'error': 'hospital_id is required'}), 400
+        data = request.get_json()
+        clinic_list = data.get('clinic_list', []) if isinstance(data, dict) else data
+
+        if not clinic_list:
+            return jsonify({'error': 'clinic_list is required'}), 400
+
+        matched_hospitals = []
+        for item in table_hospitals.scan().get('Items', []):
+            if item.get('name') in clinic_list:
+                matched_hospitals.append({
+                    "hospital_id": item.get('hospital_id'),
+                    "name": item.get('name')
+                })
 
         doctors = []
-        for doc in collection_doctors.where("hospital_id", "==", int(hospital_id)).stream():
+        for doc in collection_doctors.stream():
             data = doc.to_dict()
-            doctors.append({
-                "hospital_id": data.get("hospital_id"),
-                "profile_url": data.get("profile_url"),
-                "name": data.get("name"),
-                "department": data.get("department"),
-                "gender": data.get("gender"),
-                "contact": data.get("contact"),
-                "email": data.get("email"),
-                "bio": data.get("bio"),
-                "availability": data.get("availability"),
-            })
+            for hospital in matched_hospitals:
+                if data.get("hospital_id") == hospital["hospital_id"]:
+                    doctors.append({
+                        "hospital_id": data.get("hospital_id"),
+                        "hospital_name": hospital["name"],
+                        "profile_url": data.get("profile_url"),
+                        "name": data.get("name"),
+                        "department": data.get("department"),
+                        "gender": data.get("gender"),
+                        "contact": data.get("contact"),
+                        "email": data.get("email"),
+                        "bio": data.get("bio"),
+                        "availability": data.get("availability"),
+                    })
+                    break
+
         return jsonify(doctors), 200
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

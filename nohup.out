@@ -1435,3 +1435,9 @@ SystemExit: 1
 [2025-04-29 13:19:50 +0900] [79173] [INFO] Booting worker with pid: 79173
 /opt/anaconda3/envs/hi/lib/python3.10/site-packages/google/cloud/firestore_v1/base_collection.py:303: UserWarning: Detected filter using positional arguments. Prefer using the 'filter' keyword argument instead.
   return query.where(field_path, op_string, value)
+[2025-04-29 14:45:39 +0900] [79173] [INFO] Parent changed, shutting down: <Worker 79173>
+[2025-04-29 14:45:39 +0900] [79173] [INFO] Worker exiting (pid: 79173)
+[2025-04-29 14:45:39 +0900] [79165] [INFO] Parent changed, shutting down: <Worker 79165>
+[2025-04-29 14:45:39 +0900] [79164] [INFO] Parent changed, shutting down: <Worker 79164>
+[2025-04-29 14:45:39 +0900] [79165] [INFO] Worker exiting (pid: 79165)
+[2025-04-29 14:45:39 +0900] [79164] [INFO] Worker exiting (pid: 79164)
