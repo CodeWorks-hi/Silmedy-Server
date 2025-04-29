@@ -1724,3 +1724,14 @@ ValueError: Could not open 'model_unquant.tflite'.
 [2025-04-29 18:14:27 +0900] [68270] [INFO] Booting worker with pid: 68270
 [2025-04-29 18:14:27 +0900] [68271] [INFO] Booting worker with pid: 68271
 [2025-04-29 18:14:27 +0900] [68272] [INFO] Booting worker with pid: 68272
+[2025-04-29 18:17:14 +0900] [68272] [INFO] Parent changed, shutting down: <Worker 68272>
+[2025-04-29 18:17:14 +0900] [68272] [INFO] Worker exiting (pid: 68272)
+[2025-04-29 18:17:16 +0900] [68270] [INFO] Parent changed, shutting down: <Worker 68270>
+[2025-04-29 18:17:16 +0900] [68270] [INFO] Worker exiting (pid: 68270)
+[2025-04-29 18:18:18 +0900] [69652] [INFO] Starting gunicorn 23.0.0
+[2025-04-29 18:18:18 +0900] [69652] [INFO] Listening at: http://0.0.0.0:5000 (69652)
+[2025-04-29 18:18:18 +0900] [69652] [INFO] Using worker: sync
+[2025-04-29 18:18:18 +0900] [69698] [INFO] Booting worker with pid: 69698
+[2025-04-29 18:18:18 +0900] [69699] [INFO] Booting worker with pid: 69699
+[2025-04-29 18:18:18 +0900] [69700] [INFO] Booting worker with pid: 69700
+[2025-04-29 18:18:18 +0900] [69701] [INFO] Booting worker with pid: 69701
