@@ -1,6 +1,6 @@
 from io import BytesIO
 from flask import Flask, Blueprint, request, jsonify
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, create_refresh_token
 import firebase_admin
 import boto3
 import logging
@@ -30,7 +30,16 @@ from PIL import Image
 app = Flask(__name__, static_url_path='/static')
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
+app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
 jwt = JWTManager(app)
+
+# ---- JWT 토큰 갱신 ----
+@app.route('/token/refresh', methods=['POST'])
+@jwt_required(refresh=True)
+def refresh_token():
+    identity = get_jwt_identity()
+    access_token = create_access_token(identity=identity)
+    return jsonify(access_token=access_token), 200
 
 with open('api-doc.yaml', 'r', encoding='utf-8-sig') as f:
     swagger_template = yaml.safe_load(f)
@@ -163,9 +172,11 @@ def patient_login():
                     identity=str(user_doc.id),
                     additional_claims={"name": item.get('name', '')}
                 )
+                refresh_token = create_refresh_token(identity=str(user_doc.id))
                 return jsonify({
                     'message': 'Login successful',
-                    'access_token': access_token
+                    'access_token': access_token,
+                    'refresh_token': refresh_token
                 }), 200
             else:
                 return jsonify({'error': 'Invalid credentials'}), 401
@@ -1094,6 +1105,7 @@ def add_chat_separator():
 
 
 
+
 # ---- 보건소 검색 ----
 @app.route('/health_centers', methods=['GET'])
 @jwt_required()
@@ -1154,6 +1166,86 @@ def search_health_centers():
         logger.info(f"[health_centers] Filtered health centers: {health_centers}")
 
         return jsonify(health_centers), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# ---- 보건소+의사 통합 검색 ----
+@app.route('/health-centers-with-doctors', methods=['GET'])
+def health_centers_with_doctors():
+    try:
+        lat_str = request.args.get('lat')
+        lng_str = request.args.get('lng')
+        department = request.args.get('department')
+
+        if not lat_str or not lng_str or not department:
+            return jsonify({"error": "Missing 'lat', 'lng' or 'department' parameter"}), 400
+
+        try:
+            lat = float(lat_str)
+            lng = float(lng_str)
+        except (TypeError, ValueError):
+            return jsonify({"error": "Invalid 'lat' or 'lng' value"}), 400
+
+        headers = {
+            "Authorization": f"KakaoAK {KAKAO_API_KEY}"
+        }
+        params = {
+            "query": "보건소",
+            "x": str(lng),
+            "y": str(lat),
+            "radius": 10000,
+            "sort": "distance"
+        }
+        kakao_url = "https://dapi.kakao.com/v2/local/search/keyword.json"
+
+        response = requests.get(kakao_url, headers=headers, params=params)
+        if response.status_code != 200:
+            return jsonify({"error": "Kakao API error"}), 500
+
+        kakao_data = response.json()
+        documents = kakao_data.get("documents", [])
+
+        clinic_list = []
+        for doc in documents:
+            place_name = doc.get("place_name", "")
+            if place_name.endswith("보건소") and " " not in place_name:
+                clinic_list.append(place_name)
+            if len(clinic_list) >= 5:
+                break
+
+        if not clinic_list:
+            return jsonify({"error": "No health centers found nearby"}), 404
+
+        matched_hospitals = []
+        for item in table_hospitals.scan().get('Items', []):
+            if item.get('name') in clinic_list:
+                matched_hospitals.append({
+                    "hospital_id": item.get('hospital_id'),
+                    "name": item.get('name')
+                })
+
+        doctors = []
+        for doc in collection_doctors.stream():
+            data = doc.to_dict()
+            for hospital in matched_hospitals:
+                if data.get("hospital_id") == hospital["hospital_id"] and data.get("department") == department:
+                    doctors.append({
+                        "hospital_id": data.get("hospital_id"),
+                        "hospital_name": hospital["name"],
+                        "profile_url": data.get("profile_url"),
+                        "name": data.get("name"),
+                        "department": data.get("department"),
+                        "gender": data.get("gender"),
+                        "contact": data.get("contact"),
+                        "email": data.get("email"),
+                        "bio": data.get("bio"),
+                        "availability": data.get("availability"),
+                    })
+                    break
+
+        return jsonify(doctors), 200
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
