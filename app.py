@@ -536,6 +536,7 @@ def get_doctor_list():
         doctors = []
         for doc in collection_doctors.stream():
             data = doc.to_dict()
+            data["license_number"] = doc.id  # 여기서 직접 추가
             for hospital in matched_hospitals:
                 if data.get("hospital_id") == hospital["hospital_id"] and data.get("department") == department:
                     doctors.append({
@@ -549,7 +550,7 @@ def get_doctor_list():
                         "email": data.get("email"),
                         "bio": data.get("bio"),
                         "availability": data.get("availability"),
-                        "license_number": doc.id
+                        "license_number": data.get("license_number")  # 이렇게!
                     })
                     break
 
