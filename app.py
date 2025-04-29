@@ -568,6 +568,7 @@ def get_availability_and_signcheck():
         return jsonify({'error': str(e)}), 500
 
 
+
 @app.route('/request/confirmed', methods=['POST'])
 @jwt_required()
 def confirm_reservation():
