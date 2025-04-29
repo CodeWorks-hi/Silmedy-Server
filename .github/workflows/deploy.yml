@@ -5,6 +5,9 @@
     chmod 600 ~/.ssh/id_rsa
     ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
+- name: Give execute permissions
+  run: ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "chmod +x ~/Silmedy-Server/deploy.sh"
+
 - name: Deploy to EC2
   run: |
     ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "cd ~/Silmedy-Server && ./deploy.sh"
