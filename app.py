@@ -38,6 +38,8 @@ aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
 aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
 aws_region = os.getenv("AWS_REGION", "ap-northeast-2")
 
+KAKAO_API_KEY = os.getenv("KAKAO_REST_API_KEY")
+
 dynamodb = boto3.resource(
     'dynamodb',
     region_name=aws_region,
@@ -999,7 +1001,40 @@ def add_chat_separator():
     except Exception as e:
         logger.error(f"Error adding separator: {e}")
         return jsonify({'error': str(e)}), 500
+    
 
+@app.route('/health_centers', methods=['GET'])
+def search_health_centers():
+    keyword = request.args.get('keyword')
+
+    if not keyword:
+        return jsonify({"error": "Missing 'keyword' parameter"}), 400
+
+    headers = {
+        "Authorization": f"KakaoAK {KAKAO_API_KEY}"
+    }
+    params = {
+        "query": keyword,
+        "category_group_code": "HP8"  # 병원/보건소 카테고리 코드
+    }
+
+    kakao_url = "https://dapi.kakao.com/v2/local/search/keyword.json"
+
+    response = requests.get(kakao_url, headers=headers, params=params)
+
+    if response.status_code != 200:
+        return jsonify({"error": "Kakao API error"}), 500
+
+    kakao_data = response.json()
+    documents = kakao_data.get("documents", [])
+
+    # 보건소만 필터링
+    health_centers = []
+    for doc in documents:
+        if "보건소" in doc.get("place_name", ""):
+            health_centers.append({"name": doc.get("place_name")})
+
+    return jsonify({"health_centers": health_centers})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
