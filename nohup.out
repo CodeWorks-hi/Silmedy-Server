@@ -1481,3 +1481,22 @@ SystemExit: 1
 [2025-04-29 15:08:38 +0900] [10391] [ERROR] Can't connect to ('0.0.0.0', 5000)
 [2025-04-29 15:09:04 +0900] [10009] [INFO] Parent changed, shutting down: <Worker 10009>
 [2025-04-29 15:09:04 +0900] [10009] [INFO] Worker exiting (pid: 10009)
+[2025-04-29 15:19:16 +0900] [14321] [INFO] Starting gunicorn 23.0.0
+[2025-04-29 15:19:16 +0900] [14321] [INFO] Listening at: http://0.0.0.0:5000 (14321)
+[2025-04-29 15:19:16 +0900] [14321] [INFO] Using worker: sync
+[2025-04-29 15:19:16 +0900] [14367] [INFO] Booting worker with pid: 14367
+[2025-04-29 15:19:16 +0900] [14368] [INFO] Booting worker with pid: 14368
+[2025-04-29 15:19:17 +0900] [14369] [INFO] Booting worker with pid: 14369
+[2025-04-29 15:19:17 +0900] [14370] [INFO] Booting worker with pid: 14370
+[2025-04-29 15:23:41 +0900] [15694] [INFO] Starting gunicorn 23.0.0
+[2025-04-29 15:23:41 +0900] [15694] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-29 15:23:41 +0900] [15694] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-29 15:23:42 +0900] [15694] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-29 15:23:42 +0900] [15694] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-29 15:23:43 +0900] [15694] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-29 15:23:43 +0900] [15694] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-29 15:23:44 +0900] [15694] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-29 15:23:44 +0900] [15694] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-29 15:23:45 +0900] [15694] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2025-04-29 15:23:45 +0900] [15694] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
+[2025-04-29 15:23:46 +0900] [15694] [ERROR] Can't connect to ('0.0.0.0', 5000)

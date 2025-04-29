@@ -216,12 +216,14 @@ paths:
                 type: array
                 items:
                   type: string
+              department:
+                type: string
       responses:
         '200':
           description: 의사 목록 반환
   /request/availability:
     get:
-      summary: 의사 진료 가능시간 확인
+      summary: 의사별 예약 확인
       parameters:
         - name: license_number
           in: query
@@ -229,7 +231,7 @@ paths:
           type: string
       responses:
         '200':
-          description: 진료 예약 가능 시간 반환
+          description: 진료 예약 불가능한 시간 반환
   /chat/signcheck:
     get:
       summary: 수어 필요 여부 자동 확인
@@ -426,6 +428,15 @@ paths:
   /patient/logout:
     post:
       summary: 로그아웃
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            properties:
+              patient_id:
+                type: integer
       responses:
         '200':
           description: 로그아웃 완료

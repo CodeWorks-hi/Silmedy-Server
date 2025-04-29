@@ -204,6 +204,13 @@ def patient_change_password():
 # ---- 로그아웃----
 @app.route('/patient/logout', methods=['POST'])
 def logout():
+    data = request.get_json()
+    patient_id = data.get('patient_id')
+
+    if not patient_id:
+        return jsonify({'error': 'patient_id is required'}), 400
+
+    logger.info(f"Patient {patient_id} logged out.")
     return jsonify({'message': '로그아웃 처리 완료'}), 200
 
 
@@ -451,9 +458,12 @@ def get_doctor_list():
     try:
         data = request.get_json()
         clinic_list = data.get('clinic_list', []) if isinstance(data, dict) else data
+        department = data.get('department')
 
         if not clinic_list:
             return jsonify({'error': 'clinic_list is required'}), 400
+        if not department:
+            return jsonify({'error': 'department is required'}), 400
 
         matched_hospitals = []
         for item in table_hospitals.scan().get('Items', []):
@@ -467,7 +477,7 @@ def get_doctor_list():
         for doc in collection_doctors.stream():
             data = doc.to_dict()
             for hospital in matched_hospitals:
-                if data.get("hospital_id") == hospital["hospital_id"]:
+                if data.get("hospital_id") == hospital["hospital_id"] and data.get("department") == department:
                     doctors.append({
                         "hospital_id": data.get("hospital_id"),
                         "hospital_name": hospital["name"],
