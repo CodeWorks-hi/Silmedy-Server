@@ -645,7 +645,7 @@ def confirm_reservation():
         reservation_item = {
             "request_id": current_id,
             "patient_id": patient_id,
-            "doctor_id": data["doctor_id"],
+            "doctor_id": int(data["doctor_id"]),
             "department": data["department"],
             "symptom_part": set(data["symptom_part"]),
             "symptom_type": set(data["symptom_type"]),
@@ -660,7 +660,7 @@ def confirm_reservation():
         reservation_response = {
             "request_id": current_id,
             "patient_id": patient_id,
-            "doctor_id": data["doctor_id"],
+            "doctor_id": int(data["doctor_id"]),
             "department": data["department"],
             "symptom_part": list(data["symptom_part"]),
             "symptom_type": list(data["symptom_type"]),
