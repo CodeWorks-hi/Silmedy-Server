@@ -549,6 +549,7 @@ def get_doctor_list():
                         "email": data.get("email"),
                         "bio": data.get("bio"),
                         "availability": data.get("availability"),
+                        "license_number": doc.id
                     })
                     break
 
