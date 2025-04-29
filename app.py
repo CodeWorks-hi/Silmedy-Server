@@ -1255,7 +1255,6 @@ def health_centers_with_doctors():
         return jsonify({'error': str(e)}), 500
 
 
-
 # ---- 약국 검색 ----
 @app.route('/pharmacies', methods=['GET'])
 @jwt_required()
