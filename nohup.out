@@ -1500,3 +1500,227 @@ SystemExit: 1
 [2025-04-29 15:23:45 +0900] [15694] [ERROR] Connection in use: ('0.0.0.0', 5000)
 [2025-04-29 15:23:45 +0900] [15694] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 48] Address already in use
 [2025-04-29 15:23:46 +0900] [15694] [ERROR] Can't connect to ('0.0.0.0', 5000)
+[2025-04-29 15:34:37 +0900] [19130] [INFO] Starting gunicorn 23.0.0
+[2025-04-29 15:34:37 +0900] [19130] [INFO] Listening at: http://0.0.0.0:5000 (19130)
+[2025-04-29 15:34:37 +0900] [19130] [INFO] Using worker: sync
+[2025-04-29 15:34:37 +0900] [19176] [INFO] Booting worker with pid: 19176
+[2025-04-29 15:34:37 +0900] [19177] [INFO] Booting worker with pid: 19177
+[2025-04-29 15:34:38 +0900] [19178] [INFO] Booting worker with pid: 19178
+[2025-04-29 15:34:38 +0900] [19179] [INFO] Booting worker with pid: 19179
+INFO:root:[DEV] '01011223344'로 인증번호 발송됨: 291869
+[2025-04-29 16:02:08 +0900] [19130] [CRITICAL] WORKER TIMEOUT (pid:19178)
+[2025-04-29 16:02:08 +0900] [19178] [ERROR] Error handling request (no URI read)
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/sync.py", line 133, in handle
+    req = next(parser)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/http/parser.py", line 41, in __next__
+    self.mesg = self.mesg_class(self.cfg, self.unreader, self.source_addr, self.req_count)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/http/message.py", line 259, in __init__
+    super().__init__(cfg, unreader, peer_addr)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/http/message.py", line 60, in __init__
+    unused = self.parse(self.unreader)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/http/message.py", line 271, in parse
+    self.get_data(unreader, buf, stop=True)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/http/message.py", line 262, in get_data
+    data = unreader.read()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/http/unreader.py", line 36, in read
+    d = self.chunk()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/http/unreader.py", line 63, in chunk
+    return self.sock.recv(self.mxchunk)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 204, in handle_abort
+    sys.exit(1)
+SystemExit: 1
+[2025-04-29 16:02:08 +0900] [19178] [INFO] Worker exiting (pid: 19178)
+[2025-04-29 16:02:08 +0900] [26645] [INFO] Booting worker with pid: 26645
+[2025-04-29 16:28:19 +0900] [19130] [CRITICAL] WORKER TIMEOUT (pid:19176)
+[2025-04-29 16:28:19 +0900] [19130] [CRITICAL] WORKER TIMEOUT (pid:19179)
+[2025-04-29 16:28:19 +0900] [19176] [ERROR] Error handling request (no URI read)
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/sync.py", line 133, in handle
+    req = next(parser)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/http/parser.py", line 41, in __next__
+    self.mesg = self.mesg_class(self.cfg, self.unreader, self.source_addr, self.req_count)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/http/message.py", line 259, in __init__
+    super().__init__(cfg, unreader, peer_addr)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/http/message.py", line 60, in __init__
+    unused = self.parse(self.unreader)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/http/message.py", line 271, in parse
+    self.get_data(unreader, buf, stop=True)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/http/message.py", line 262, in get_data
+    data = unreader.read()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/http/unreader.py", line 36, in read
+    d = self.chunk()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/http/unreader.py", line 63, in chunk
+    return self.sock.recv(self.mxchunk)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 204, in handle_abort
+    sys.exit(1)
+SystemExit: 1
+[2025-04-29 16:28:19 +0900] [19179] [ERROR] Error handling request (no URI read)
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/sync.py", line 133, in handle
+    req = next(parser)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/http/parser.py", line 41, in __next__
+    self.mesg = self.mesg_class(self.cfg, self.unreader, self.source_addr, self.req_count)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/http/message.py", line 259, in __init__
+    super().__init__(cfg, unreader, peer_addr)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/http/message.py", line 60, in __init__
+    unused = self.parse(self.unreader)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/http/message.py", line 271, in parse
+    self.get_data(unreader, buf, stop=True)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/http/message.py", line 262, in get_data
+    data = unreader.read()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/http/unreader.py", line 36, in read
+    d = self.chunk()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/http/unreader.py", line 63, in chunk
+    return self.sock.recv(self.mxchunk)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 204, in handle_abort
+    sys.exit(1)
+SystemExit: 1
+[2025-04-29 16:28:19 +0900] [19179] [INFO] Worker exiting (pid: 19179)
+[2025-04-29 16:28:19 +0900] [19176] [INFO] Worker exiting (pid: 19176)
+[2025-04-29 16:28:19 +0900] [33805] [INFO] Booting worker with pid: 33805
+[2025-04-29 16:28:19 +0900] [33815] [INFO] Booting worker with pid: 33815
+[2025-04-29 16:52:42 +0900] [33805] [INFO] Parent changed, shutting down: <Worker 33805>
+[2025-04-29 16:52:42 +0900] [33805] [INFO] Worker exiting (pid: 33805)
+[2025-04-29 16:52:54 +0900] [33815] [INFO] Parent changed, shutting down: <Worker 33815>
+[2025-04-29 16:52:54 +0900] [33815] [INFO] Worker exiting (pid: 33815)
+[2025-04-29 18:08:19 +0900] [66017] [INFO] Starting gunicorn 23.0.0
+[2025-04-29 18:08:19 +0900] [66017] [INFO] Listening at: http://0.0.0.0:5000 (66017)
+[2025-04-29 18:08:19 +0900] [66017] [INFO] Using worker: sync
+[2025-04-29 18:08:19 +0900] [66063] [INFO] Booting worker with pid: 66063
+[2025-04-29 18:08:20 +0900] [66064] [INFO] Booting worker with pid: 66064
+[2025-04-29 18:08:20 +0900] [66065] [INFO] Booting worker with pid: 66065
+[2025-04-29 18:08:20 +0900] [66066] [INFO] Booting worker with pid: 66066
+[2025-04-29 18:08:20 +0900] [66066] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/ENZO/KOOKIZ/GITHUB/Silmedy-Server/app.py", line 45, in <module>
+    interpreter = tflite.Interpreter(model_path="model_unquant.tflite")
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/tflite_runtime/interpreter.py", line 348, in __init__
+    _interpreter_wrapper.CreateWrapperFromFile(
+ValueError: Could not open 'model_unquant.tflite'.
+[2025-04-29 18:08:20 +0900] [66066] [INFO] Worker exiting (pid: 66066)
+[2025-04-29 18:08:20 +0900] [66065] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/ENZO/KOOKIZ/GITHUB/Silmedy-Server/app.py", line 45, in <module>
+    interpreter = tflite.Interpreter(model_path="model_unquant.tflite")
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/tflite_runtime/interpreter.py", line 348, in __init__
+    _interpreter_wrapper.CreateWrapperFromFile(
+ValueError: Could not open 'model_unquant.tflite'.
+[2025-04-29 18:08:20 +0900] [66065] [INFO] Worker exiting (pid: 66065)
+[2025-04-29 18:08:20 +0900] [66063] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/ENZO/KOOKIZ/GITHUB/Silmedy-Server/app.py", line 45, in <module>
+    interpreter = tflite.Interpreter(model_path="model_unquant.tflite")
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/tflite_runtime/interpreter.py", line 348, in __init__
+    _interpreter_wrapper.CreateWrapperFromFile(
+ValueError: Could not open 'model_unquant.tflite'.
+[2025-04-29 18:08:20 +0900] [66063] [INFO] Worker exiting (pid: 66063)
+[2025-04-29 18:08:20 +0900] [66064] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/opt/anaconda3/envs/hi/lib/python3.10/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/ENZO/KOOKIZ/GITHUB/Silmedy-Server/app.py", line 45, in <module>
+    interpreter = tflite.Interpreter(model_path="model_unquant.tflite")
+  File "/opt/anaconda3/envs/hi/lib/python3.10/site-packages/tflite_runtime/interpreter.py", line 348, in __init__
+    _interpreter_wrapper.CreateWrapperFromFile(
+ValueError: Could not open 'model_unquant.tflite'.
+[2025-04-29 18:08:20 +0900] [66064] [INFO] Worker exiting (pid: 66064)
+[2025-04-29 18:08:21 +0900] [66017] [ERROR] Worker (pid:66066) exited with code 3
+[2025-04-29 18:08:21 +0900] [66017] [ERROR] Worker (pid:66064) was sent SIGTERM!
+[2025-04-29 18:08:21 +0900] [66017] [ERROR] Worker (pid:66063) was sent SIGTERM!
+[2025-04-29 18:08:21 +0900] [66017] [ERROR] Worker (pid:66065) was sent SIGTERM!
+[2025-04-29 18:08:21 +0900] [66017] [ERROR] Shutting down: Master
+[2025-04-29 18:08:21 +0900] [66017] [ERROR] Reason: Worker failed to boot.
+[2025-04-29 18:14:27 +0900] [68223] [INFO] Starting gunicorn 23.0.0
+[2025-04-29 18:14:27 +0900] [68223] [INFO] Listening at: http://0.0.0.0:5000 (68223)
+[2025-04-29 18:14:27 +0900] [68223] [INFO] Using worker: sync
+[2025-04-29 18:14:27 +0900] [68269] [INFO] Booting worker with pid: 68269
+[2025-04-29 18:14:27 +0900] [68270] [INFO] Booting worker with pid: 68270
+[2025-04-29 18:14:27 +0900] [68271] [INFO] Booting worker with pid: 68271
+[2025-04-29 18:14:27 +0900] [68272] [INFO] Booting worker with pid: 68272

@@ -1,4 +1,6 @@
+from io import BytesIO
 from flask import Flask, Blueprint, request, jsonify
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 import firebase_admin
 import boto3
 import logging
@@ -17,10 +19,18 @@ import uuid
 from urllib.parse import unquote
 from flasgger import Swagger
 import yaml
+from flask import Flask, request, jsonify
+import numpy as np
+import tflite_runtime.interpreter as tflite
+from PIL import Image
+
 
 
 # ---- 기본 세팅 ----
 app = Flask(__name__, static_url_path='/static')
+app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
+jwt = JWTManager(app)
 
 with open('api-doc.yaml', 'r', encoding='utf-8-sig') as f:
     swagger_template = yaml.safe_load(f)
@@ -33,6 +43,12 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
+
+interpreter = tflite.Interpreter(model_path="model_unquant.tflite")
+interpreter.allocate_tensors()
+
+input_details = interpreter.get_input_details()
+output_details = interpreter.get_output_details()
 
 aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
 aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
@@ -77,6 +93,45 @@ table_drugs = dynamodb.Table('drugs')
 table_hospitals = dynamodb.Table('hospitals')
 table_pharmacies = dynamodb.Table('pharmacies')
 table_prescription_records = dynamodb.Table('prescription_records')
+
+
+# ---- 모델 예측 ----
+@app.route('/predict', methods=['POST'])
+def predict():
+    try:
+        class_names = [
+            "표재성", "절개성", "자상", "화상", "손발톱질환", "자가면역질환",
+            "염증성질환", "혈관종양성", "색소침착", "기생충감염", "수포성피부",
+            "바이러스질환", "세균감염", "정상피부"
+        ]
+
+        data = request.get_json()
+        image_url = data.get('image_url')
+
+        if not image_url:
+            return jsonify({'error': 'No image_url provided'}), 400
+
+        response = requests.get(image_url)
+        if response.status_code != 200:
+            return jsonify({'error': 'Failed to download image'}), 400
+
+        image = Image.open(BytesIO(response.content)).convert('RGB')
+        target_size = (224, 224)  # input shape에 맞게
+        image = image.resize(target_size)
+        input_data = np.array(image, dtype=np.float32) / 255.0
+        input_data = np.expand_dims(input_data, axis=0)
+
+        interpreter.set_tensor(input_details[0]['index'], input_data)
+        interpreter.invoke()
+        output_data = interpreter.get_tensor(output_details[0]['index'])
+
+        predicted_index = int(np.argmax(output_data))
+        predicted_class = class_names[predicted_index]
+
+        return jsonify({'prediction': predicted_class})
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 # ---- 환자 회원가입 ----
@@ -140,10 +195,13 @@ def patient_login():
         if user_doc and user_doc.exists:
             item = user_doc.to_dict()
             if item.get('password') == password:
+                access_token = create_access_token(
+                    identity=str(user_doc.id),
+                    additional_claims={"name": item.get('name', '')}
+                )
                 return jsonify({
                     'message': 'Login successful',
-                    'name': item.get('name', ''),
-                    'patient_id': user_doc.id
+                    'access_token': access_token
                 }), 200
             else:
                 return jsonify({'error': 'Invalid credentials'}), 401
@@ -203,21 +261,18 @@ def patient_change_password():
 
 # ---- 로그아웃----
 @app.route('/patient/logout', methods=['POST'])
+@jwt_required()
 def logout():
-    data = request.get_json()
-    patient_id = data.get('patient_id')
-
-    if not patient_id:
-        return jsonify({'error': 'patient_id is required'}), 400
-
+    patient_id = get_jwt_identity()
     logger.info(f"Patient {patient_id} logged out.")
     return jsonify({'message': '로그아웃 처리 완료'}), 200
 
 
 # ---- 환자 마이페이지 조회 ----
 @app.route('/patient/mypage', methods=['GET'])
+@jwt_required()
 def get_mypage():
-    patient_id = request.args.get('patient_id')
+    patient_id = get_jwt_identity()
     if not patient_id:
         return jsonify({'error': 'Patient ID required'}), 400
 
@@ -230,20 +285,19 @@ def get_mypage():
 
 # ---- 회원 정보 수정  ----
 @app.route('/patient/update', methods=['POST'])
+@jwt_required()
 def update_patient_info():
     try:
         data = request.get_json()
-        email = data.get('email')
+        patient_id = get_jwt_identity()
         updates = data.get('updates')  # 수정할 필드들 (딕셔너리)
 
-        if not email or not updates:
-            return jsonify({'error': 'Email and update data required'}), 400
+        if not updates:
+            return jsonify({'error': '업데이트 항목이 필요합니다.'}), 400
 
-        user_query = collection_patients.where("email", "==", email).limit(1).stream()
-        user_doc = next(user_query, None)
-
-        if user_doc and user_doc.exists:
-            user_doc.reference.update(updates)
+        user_doc = collection_patients.document(patient_id).get()
+        if user_doc.exists:
+            collection_patients.document(patient_id).update(updates)
             return jsonify({'message': '회원 정보 수정 완료'}), 200
         else:
             return jsonify({'error': 'User not found'}), 404
@@ -254,8 +308,9 @@ def update_patient_info():
 
 # ---- 회원 탈퇴   ----
 @app.route('/patient/delete', methods=['DELETE'])
+@jwt_required()
 def delete_patient():
-    patient_id = request.args.get('patient_id')
+    patient_id = get_jwt_identity()
     if not patient_id:
         return jsonify({'error': 'Patient ID required'}), 400
 
@@ -420,10 +475,12 @@ def request_department_info():
     
 
 @app.route('/chat/save', methods=['POST'])
+@jwt_required()
 def save_chat():
     try:
+        identity = get_jwt_identity()
+        patient_id = identity  # Since identity is now a string (patient_id)
         data = request.get_json()
-        patient_id = data.get('patient_id')
         patient_text = data.get('patient_text')
         ai_text = data.get('ai_text')
 
@@ -431,19 +488,16 @@ def save_chat():
             return jsonify({"error": "Missing required fields"}), 400
 
         now = datetime.utcnow()
-        chat_id = now.strftime("%Y%m%d%H%M%S%f")  # Timestamp 형식으로 chat_id 생성
+        chat_id = now.strftime("%Y%m%d%H%M%S%f")
         created_at = now.strftime("%Y-%m-%d %H:%M:%S")
 
         chat_data = {
-            'patient_text': patient_text.strip(),
             'ai_text': ai_text.strip(),
             'created_at': created_at,
             'is_separater': False
         }
 
-        # Save under the patient_id document, using chat_id as document ID but do not store it in the document fields
         collection_consult_text.document(str(patient_id)).collection("chats").document(chat_id).set(chat_data)
-
         logger.info(f"[Firestore 저장됨] patient_id={patient_id}, chat_id={chat_id}, data={chat_data}")
         return jsonify({"message": "Chat saved", "chat_id": chat_id}), 200
 
@@ -541,29 +595,33 @@ def get_doctor_availability():
         return jsonify({'error': str(e)}), 500
 
 
+
 # ---- 수어 필요 여부 자동 확인 ----
-@app.route('/chat/signcheck', methods=['GET'])
+@app.route('/request/signcheck', methods=['GET'])
+@jwt_required()
 def check_sign_language_required():
-    patient_id = request.args.get('patient_id')
-    if not patient_id:
-        return jsonify({'error': 'patient_id is required'}), 400
+    try:
+        patient_id = get_jwt_identity()
 
-    doc = collection_patients.document(str(patient_id)).get()
-    if not doc.exists:
-        return jsonify({'error': 'User not found'}), 404
+        doc = collection_patients.document(str(patient_id)).get()
+        if not doc.exists:
+            return jsonify({'error': 'User not found'}), 404
 
-    data = doc.to_dict()
-    sign_language_needed = data.get('sign_language_needed', False)
-    return jsonify({'sign_language_needed': sign_language_needed}), 200
+        data = doc.to_dict()
+        sign_language_needed = data.get('sign_language_needed', False)
+        return jsonify({'sign_language_needed': sign_language_needed}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
-# ---- 진료 예약 확정 처리 (patient_id 기반) ----
-@app.route('/chat/confirmed', methods=['POST'])
+@app.route('/request/confirmed', methods=['POST'])
+@jwt_required()
 def confirm_reservation():
     try:
         data = request.get_json()
+        patient_id = get_jwt_identity()
         required_fields = [
-            "patient_id", "doctor_id", "department",
+            "doctor_id", "department",
             "symptom_part", "symptom_type", "book_date",
             "book_hour", "sign_language_needed"
         ]
@@ -580,7 +638,7 @@ def confirm_reservation():
         # 예약 정보 구성 (DynamoDB 저장용)
         reservation_item = {
             "request_id": current_id,
-            "patient_id": data["patient_id"],
+            "patient_id": patient_id,
             "doctor_id": data["doctor_id"],
             "department": data["department"],
             "symptom_part": set(data["symptom_part"]),
@@ -595,7 +653,7 @@ def confirm_reservation():
         # 실제 응답으로 사용할 JSON 직렬화 가능한 dict
         reservation_response = {
             "request_id": current_id,
-            "patient_id": data["patient_id"],
+            "patient_id": patient_id,
             "doctor_id": data["doctor_id"],
             "department": data["department"],
             "symptom_part": list(data["symptom_part"]),
@@ -640,11 +698,12 @@ def get_prescription_url():
 
 # ---- 진료 내역 반환 ----
 @app.route('/diagnosis/list', methods=['GET'])
+@jwt_required()
 def get_diagnosis_by_patient():
     try:
-        patient_id = request.args.get('patient_id', '')
-        if not patient_id:
-            return jsonify({'error': 'Patient ID is required'}), 400
+        patient_id = get_jwt_identity()
+        # if not patient_id:
+        #     return jsonify({'error': 'Patient ID is required'}), 400
 
         response = table_diagnosis_records.scan()
         items = []
@@ -680,11 +739,10 @@ def get_diagnosis_by_patient():
 
 # ---- 환자 기본 주소 반환 ----
 @app.route('/patient/default-address', methods=['GET'])
+@jwt_required()
 def get_default_address():
     try:
-        patient_id = request.args.get('patient_id')
-        if not patient_id:
-            return jsonify({'error': 'patient_id is required'}), 400
+        patient_id = get_jwt_identity()
 
         doc = collection_patients.document(str(patient_id)).get()
         if not doc.exists:
@@ -709,13 +767,15 @@ def get_default_address():
 
 # ---- 배송 요청 등록 ----
 @app.route('/delivery/register', methods=['POST'])
+@jwt_required()
 def register_delivery():
     try:
         data = request.get_json()
-        required_fields = ['patient_id', 'is_delivery', 'patient_contact', 'pharmacy_id', 'prescription_id']
+        required_fields = ['is_delivery', 'patient_contact', 'pharmacy_id', 'prescription_id']
         if not all(field in data for field in required_fields):
             return jsonify({'error': '필수 항목 누락'}), 400
 
+        patient_id = get_jwt_identity()
         is_delivery = data['is_delivery']
 
         # 배송 요청일 경우 필수 필드 확인
@@ -732,7 +792,7 @@ def register_delivery():
         # 배송 정보 구성
         delivery = {
             "delivery_id": current_id,
-            "patient_id": data["patient_id"],
+            "patient_id": patient_id,
             "is_delivery": is_delivery,
             "patient_contact": data["patient_contact"],
             "pharmacy_id": data["pharmacy_id"],
@@ -760,14 +820,15 @@ def register_delivery():
 
 # ---- 배송 완료 처리 ----
 @app.route('/delivery/complete', methods=['POST'])
+@jwt_required()
 def mark_delivery_as_received():
     try:
         data = request.get_json()
         delivery_id = data.get('delivery_id')
-        patient_id = data.get('patient_id')
+        patient_id = get_jwt_identity()
 
-        if not delivery_id or not patient_id:
-            return jsonify({'error': 'delivery_id and patient_id are required'}), 400
+        if not delivery_id:
+            return jsonify({'error': 'delivery_id is required'}), 400
 
         # 해당 배송 건이 존재하는지 확인
         response = table_drug_deliveries.get_item(Key={'delivery_id': int(delivery_id)})
@@ -1008,16 +1069,17 @@ def save_chat_ai():
 
 # ---- 채팅 구분선 추가 ----
 @app.route('/chat/add-separator', methods=['POST'])
+@jwt_required()
 def add_chat_separator():
     try:
-        data = request.get_json()
-        patient_id = data.get('patient_id')
+        identity = get_jwt_identity()
+        patient_id = identity
 
-        if not patient_id:
+        if not identity:
             return jsonify({"error": "patient_id is required"}), 400
 
         now = datetime.utcnow()
-        chat_id = now.strftime("%Y%m%d%H%M%S%f")  # Timestamp 기반 chat_id 생성
+        chat_id = now.strftime("%Y%m%d%H%M%S%f")
         chat_data = {
             'chat_id': chat_id,
             'is_separater': True,
@@ -1027,7 +1089,6 @@ def add_chat_separator():
         }
 
         collection_consult_text.document(str(patient_id)).collection("chats").document(chat_id).set(chat_data)
-
         logger.info(f"[Firestore 구분선 저장됨] patient_id={patient_id}, chat_id={chat_id}")
         return jsonify({"message": "Separator added", "chat_id": chat_id}), 200
 
