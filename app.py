@@ -39,6 +39,7 @@ swagger = Swagger(app, template=swagger_template)
 
 CORS(app, resources={r"/*": {"origins": "*"}})
 
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
@@ -1091,41 +1092,136 @@ def add_chat_separator():
         return jsonify({'error': str(e)}), 500
     
 
-# @app.route('/health_centers', methods=['GET'])
-# def search_health_centers():
-#     lat = request.args.get('lat')
-#     lng = request.args.get('lng')
 
-#     if not lat or not lng:
-#         return jsonify({"error": "Missing 'lat' or 'lng' parameter"}), 400
 
-#     headers = {
-#         "Authorization": f"KakaoAK {KAKAO_API_KEY}"
-#     }
-#     params = {
-#         "x": lng,
-#         "y": lat,
-#         "radius": 20000,
-#         "category_group_code": "HP8",
-#         "sort": "distance"
-#     }
+# ---- 보건소 검색 ----
+@app.route('/health_centers', methods=['GET'])
+@jwt_required()
+def search_health_centers():
+    try:
+        # JWT Authorization header validation
+        patient_id = get_jwt_identity()
+        if not patient_id:
+            return jsonify({'error': 'Unauthorized'}), 401
 
-#     kakao_url = "https://dapi.kakao.com/v2/local/search/category.json"
+        lat_str = request.args.get('lat')
+        lng_str = request.args.get('lng')
 
-#     response = requests.get(kakao_url, headers=headers, params=params)
+        if not lat_str or not lng_str:
+            return jsonify({"error": "Missing 'lat' or 'lng' parameter"}), 400
 
-#     if response.status_code != 200:
-#         return jsonify({"error": "Kakao API error"}), 500
+        try:
+            lat = float(lat_str)
+            lng = float(lng_str)
+        except (TypeError, ValueError):
+            return jsonify({"error": "Invalid 'lat' or 'lng' value"}), 400
 
-#     kakao_data = response.json()
-#     documents = kakao_data.get("documents", [])
+        # Log lat/lng
+        logger.info(f"[health_centers] lat: {lat}, lng: {lng}")
 
-#     health_centers = []
-#     for doc in documents:
-#         if "보건소" in doc.get("place_name", ""):
-#             health_centers.append({"name": doc.get("place_name")})
+        headers = {
+            "Authorization": f"KakaoAK {KAKAO_API_KEY}"
+        }
+        params = {
+            "query": "보건소",
+            "x": str(lng),
+            "y": str(lat),
+            "radius": 10000,
+            "sort": "distance"
+        }
 
-#     return jsonify({"health_centers": health_centers})
+        kakao_url = "https://dapi.kakao.com/v2/local/search/keyword.json"
+
+        response = requests.get(kakao_url, headers=headers, params=params)
+
+        if response.status_code != 200:
+            return jsonify({"error": "Kakao API error"}), 500
+
+        kakao_data = response.json()
+        documents = kakao_data.get("documents", [])
+
+        logger.info(f"[health_centers] 검색된 place_names: {[doc.get('place_name') for doc in documents]}")
+
+        health_centers = []
+        for doc in documents:
+            place_name = doc.get("place_name", "")
+            if place_name.endswith("보건소") and " " not in place_name:
+                health_centers.append(place_name)
+            if len(health_centers) >= 5:
+                break
+
+        # Log filtered health centers
+        logger.info(f"[health_centers] Filtered health centers: {health_centers}")
+
+        return jsonify(health_centers), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# ---- 약국 검색 ----
+@app.route('/pharmacies', methods=['GET'])
+@jwt_required()
+def search_pharmacies():
+    try:
+        # JWT Authorization header validation
+        patient_id = get_jwt_identity()
+        if not patient_id:
+            return jsonify({'error': 'Unauthorized'}), 401
+
+        lat_str = request.args.get('lat')
+        lng_str = request.args.get('lng')
+
+        if not lat_str or not lng_str:
+            return jsonify({"error": "Missing 'lat' or 'lng' parameter"}), 400
+
+        try:
+            lat = float(lat_str)
+            lng = float(lng_str)
+        except (TypeError, ValueError):
+            return jsonify({"error": "Invalid 'lat' or 'lng' value"}), 400
+
+        # Log lat/lng
+        logger.info(f"[pharmacies] lat: {lat}, lng: {lng}")
+
+        headers = {
+            "Authorization": f"KakaoAK {KAKAO_API_KEY}"
+        }
+        params = {
+            "query": "약국",
+            "x": str(lng),
+            "y": str(lat),
+            "radius": 10000,
+            "sort": "distance"
+        }
+
+        kakao_url = "https://dapi.kakao.com/v2/local/search/keyword.json"
+
+        response = requests.get(kakao_url, headers=headers, params=params)
+
+        if response.status_code != 200:
+            return jsonify({"error": "Kakao API error"}), 500
+
+        kakao_data = response.json()
+        documents = kakao_data.get("documents", [])
+
+        logger.info(f"[pharmacies] 검색된 place_names: {[doc.get('place_name') for doc in documents]}")
+
+        pharmacies = []
+        for doc in documents:
+            place_name = doc.get("place_name", "")
+            if place_name.endswith("약국") and " " not in place_name:
+                pharmacies.append(place_name)
+            if len(pharmacies) >= 10:
+                break
+
+        # Log filtered pharmacies
+        logger.info(f"[pharmacies] Filtered pharmacies: {pharmacies}")
+
+        return jsonify(pharmacies), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 if __name__ == '__main__':

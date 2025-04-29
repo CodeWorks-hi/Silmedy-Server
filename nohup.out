@@ -1735,3 +1735,11 @@ ValueError: Could not open 'model_unquant.tflite'.
 [2025-04-29 18:18:18 +0900] [69699] [INFO] Booting worker with pid: 69699
 [2025-04-29 18:18:18 +0900] [69700] [INFO] Booting worker with pid: 69700
 [2025-04-29 18:18:18 +0900] [69701] [INFO] Booting worker with pid: 69701
+[2025-04-29 18:21:49 +0900] [69698] [INFO] Parent changed, shutting down: <Worker 69698>
+[2025-04-29 18:21:49 +0900] [69698] [INFO] Worker exiting (pid: 69698)
+[2025-04-29 18:21:49 +0900] [69701] [INFO] Parent changed, shutting down: <Worker 69701>
+[2025-04-29 18:21:49 +0900] [69701] [INFO] Worker exiting (pid: 69701)
+[2025-04-29 18:21:49 +0900] [69699] [INFO] Parent changed, shutting down: <Worker 69699>
+[2025-04-29 18:21:49 +0900] [69699] [INFO] Worker exiting (pid: 69699)
+[2025-04-29 18:21:50 +0900] [69700] [INFO] Parent changed, shutting down: <Worker 69700>
+[2025-04-29 18:21:50 +0900] [69700] [INFO] Worker exiting (pid: 69700)
