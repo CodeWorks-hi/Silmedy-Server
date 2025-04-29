@@ -445,8 +445,6 @@ def save_chat():
         return jsonify({'error': str(e)}), 500
     
 
-
-
 # ---- 의사 목록 반환 ----
 @app.route('/request/doctors', methods=['POST'])
 def get_doctor_list():
@@ -784,6 +782,7 @@ def mark_delivery_as_received():
         return jsonify({'error': str(e)}), 500
 
 
+# ---- 전화 대기 ----
 @app.route('/call/waiting-doctor', methods=['POST'])
 def update_waiting_call():
     try:
@@ -1027,41 +1026,41 @@ def add_chat_separator():
         return jsonify({'error': str(e)}), 500
     
 
-@app.route('/health_centers', methods=['GET'])
-def search_health_centers():
-    lat = request.args.get('lat')
-    lng = request.args.get('lng')
+# @app.route('/health_centers', methods=['GET'])
+# def search_health_centers():
+#     lat = request.args.get('lat')
+#     lng = request.args.get('lng')
 
-    if not lat or not lng:
-        return jsonify({"error": "Missing 'lat' or 'lng' parameter"}), 400
+#     if not lat or not lng:
+#         return jsonify({"error": "Missing 'lat' or 'lng' parameter"}), 400
 
-    headers = {
-        "Authorization": f"KakaoAK {KAKAO_API_KEY}"
-    }
-    params = {
-        "x": lng,
-        "y": lat,
-        "radius": 20000,
-        "category_group_code": "HP8",
-        "sort": "distance"
-    }
+#     headers = {
+#         "Authorization": f"KakaoAK {KAKAO_API_KEY}"
+#     }
+#     params = {
+#         "x": lng,
+#         "y": lat,
+#         "radius": 20000,
+#         "category_group_code": "HP8",
+#         "sort": "distance"
+#     }
 
-    kakao_url = "https://dapi.kakao.com/v2/local/search/category.json"
+#     kakao_url = "https://dapi.kakao.com/v2/local/search/category.json"
 
-    response = requests.get(kakao_url, headers=headers, params=params)
+#     response = requests.get(kakao_url, headers=headers, params=params)
 
-    if response.status_code != 200:
-        return jsonify({"error": "Kakao API error"}), 500
+#     if response.status_code != 200:
+#         return jsonify({"error": "Kakao API error"}), 500
 
-    kakao_data = response.json()
-    documents = kakao_data.get("documents", [])
+#     kakao_data = response.json()
+#     documents = kakao_data.get("documents", [])
 
-    health_centers = []
-    for doc in documents:
-        if "보건소" in doc.get("place_name", ""):
-            health_centers.append({"name": doc.get("place_name")})
+#     health_centers = []
+#     for doc in documents:
+#         if "보건소" in doc.get("place_name", ""):
+#             health_centers.append({"name": doc.get("place_name")})
 
-    return jsonify({"health_centers": health_centers})
+#     return jsonify({"health_centers": health_centers})
 
 
 if __name__ == '__main__':

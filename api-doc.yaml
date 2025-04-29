@@ -153,22 +153,7 @@ paths:
       responses:
         '200':
           description: 로그인 성공/실패
-  /request/disease-image:
-    post:
-      summary: 질병 이미지 로드
-      parameters:
-        - in: body
-          name: body
-          required: true
-          schema:
-            type: object
-            properties:
-              analysis:
-                type: string
-      responses:
-        '200':
-          description: 질병 설명 이미지 URL 반환
-  /request/department-info:
+  /request/result-info:
     post:
       summary: 증상 기반 진료과 정보 조회
       parameters:
@@ -218,13 +203,19 @@ paths:
         '200':
           description: 구분선 추가 완료
   /request/doctors:
-    get:
+    post:
       summary: 의사 목록 조회
       parameters:
-        - name: hospital_id
-          in: query
+        - in: body
+          name: body
           required: true
-          type: integer
+          schema:
+            type: object
+            properties:
+              clinic_list:
+                type: array
+                items:
+                  type: string
       responses:
         '200':
           description: 의사 목록 반환
