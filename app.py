@@ -1245,7 +1245,7 @@ def health_centers_with_doctors():
                         "email": data.get("email"),
                         "bio": data.get("bio"),
                         "availability": data.get("availability"),
-                        "license_number": data.get("license_number")  # 이렇게!
+                        "license_number": data.get("license_number")
                     })
                     break
 
