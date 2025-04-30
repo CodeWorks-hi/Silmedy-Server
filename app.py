@@ -1,6 +1,6 @@
 from io import BytesIO
 from flask import Flask, Blueprint, request, jsonify
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, create_refresh_token
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, create_refresh_token, get_jwt
 import firebase_admin
 import boto3
 import logging
@@ -9,6 +9,9 @@ from firebase_admin import credentials, firestore, db
 import requests
 import toml
 from flask_cors import CORS
+import redis
+
+redis_client = redis.StrictRedis(host='localhost', port=6379, db=0, decode_responses=True)
 from dotenv import load_dotenv
 import os
 import random
@@ -33,6 +36,12 @@ app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
 app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
 jwt = JWTManager(app)
+
+# ---- JWT Blocklist Check ----
+@jwt.token_in_blocklist_loader
+def check_if_token_revoked(jwt_header, jwt_payload):
+    jti = jwt_payload['jti']
+    return redis_client.get(jti) is not None
 
 # ---- JWT 토큰 갱신 ----
 @app.route('/token/refresh', methods=['POST'])
@@ -244,8 +253,10 @@ def patient_change_password():
 @app.route('/patient/logout', methods=['POST'])
 @jwt_required()
 def logout():
+    jti = get_jwt()['jti']
+    redis_client.set(jti, "revoked", ex=3600)  # expires in 1 hour (or match JWT expiry)
     patient_id = get_jwt_identity()
-    logger.info(f"Patient {patient_id} logged out.")
+    logger.info(f"Patient {patient_id} logged out and token revoked.")
     return jsonify({'message': '로그아웃 처리 완료'}), 200
 
 
