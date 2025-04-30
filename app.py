@@ -742,6 +742,12 @@ def register_delivery():
         patient_id = get_jwt_identity()
         is_delivery = data['is_delivery']
 
+        # 환자 정보 업데이트: is_default_address 반영
+        if 'is_default_address' in data:
+            collection_patients.document(patient_id).update({
+                'is_default_address': data['is_default_address']
+            })
+
         # 배송 요청일 경우 필수 필드 확인
         if is_delivery:
             if not all(k in data for k in ['address', 'postal_code']):
