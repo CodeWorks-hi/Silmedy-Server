@@ -12,4 +12,3 @@ flasgger
 numpy
 tflite-runtime
 Pillow
-redis
