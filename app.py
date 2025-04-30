@@ -267,7 +267,6 @@ def send_chat_stream(
             prompt += "\n\n비대면 진료가 필요하시면 '예'라고 답해주세요."
             return prompt
 
- 
 
 # ---- 환자 회원가입 ----
 @app.route('/patient/signup', methods=['POST'])
