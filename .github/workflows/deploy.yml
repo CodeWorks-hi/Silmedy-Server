@@ -26,27 +26,17 @@ jobs:
           rsync -avz --delete -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" ./ \
             ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:~/Silmedy-Server
 
-      - name: Write .env and Firebase key on EC2
-        run: |
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "
-            mkdir -p ~/Silmedy-Server &&
-            echo '${{ secrets.FIREBASE_KEY_JSON }}' | base64 -d > ~/Silmedy-Server/silmedy-23a1b-firebase-adminsdk-fbsvc-1e8c6b596b.json &&
-            echo '${{ secrets.ENV }}' | base64 -d > ~/Silmedy-Server/.env
-          "
-
       - name: Ensure Python3 and pip3 installed
         run: |
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "
-            sudo yum install -y python3 &&
-            sudo python3 -m ensurepip --upgrade
-          "
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} \
+            "sudo yum install -y python3 && sudo python3 -m ensurepip --upgrade"
 
       - name: Set deploy.sh as executable
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} \
-            'chmod +x ~/Silmedy-Server/deploy.sh'
+            "chmod +x ~/Silmedy-Server/deploy.sh"
 
-      - name: Run deployment script on EC2
+      - name: Run deployment script on EC2 with secrets
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} \
-            '~/Silmedy-Server/deploy.sh'
+            "ENV_B64='${{ secrets.ENV }}' FIREBASE_JSON_B64='${{ secrets.FIREBASE_KEY_JSON }}' ~/Silmedy-Server/deploy.sh"
