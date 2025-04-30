@@ -21,7 +21,7 @@ from flasgger import Swagger
 import yaml
 from flask import Flask, request, jsonify
 import numpy as np
-from tensorflow.lite.python.interpreter import Interpreter
+from tflite_runtime.interpreter import Interpreter
 from PIL import Image
 from openai import OpenAI
 from typing import Any, Optional
