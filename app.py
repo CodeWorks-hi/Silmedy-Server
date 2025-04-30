@@ -1244,31 +1244,29 @@ def search_pharmacies_with_details():
         documents = kakao_data.get("documents", [])
         logger.info(f"[pharmacies] 검색된 place_names: {[doc.get('place_name') for doc in documents]}")
 
-        pharmacy_names = []
+        matched_pharmacies = []
         for doc in documents:
-            place_name = doc.get("place_name", "")
-            if place_name.endswith("약국") and " " not in place_name:
-                pharmacy_names.append(place_name)
-            if len(pharmacy_names) >= 10:
-                break
+            name = doc.get("place_name", "").strip()
+            phone = doc.get("phone", "").strip()
 
-        results = []
-        for name in pharmacy_names:
-            dyn_response = table_pharmacies.scan(
-                FilterExpression=Attr('name').eq(name)
-            )
-            items = dyn_response.get('Items', [])
-            if items:
-                item = items[0]
-                results.append({
-                    'pharmacy_name': item.get('name'),
-                    'open_hour': item.get('open_hour'),
-                    'close_hour': item.get('close_hour'),
-                    'address': item.get('address'),
-                    'contact': item.get('contact')
-                })
+            if name.endswith("약국") and " " not in name and phone:
+                scan_result = table_pharmacies.scan(
+                    FilterExpression=Attr('name').eq(name) & Attr('contact').eq(phone)
+                )
+                items = scan_result.get('Items', [])
+                if items:
+                    item = items[0]
+                    matched_pharmacies.append({
+                        'pharmacy_name': item.get('name'),
+                        'open_hour': item.get('open_hour'),
+                        'close_hour': item.get('close_hour'),
+                        'address': item.get('address'),
+                        'contact': item.get('contact')
+                    })
+                if len(matched_pharmacies) >= 10:
+                    break
 
-        return jsonify(results), 200
+        return jsonify(matched_pharmacies), 200
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
