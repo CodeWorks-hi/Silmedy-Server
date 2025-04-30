@@ -20,6 +20,20 @@ jobs:
         chmod 600 ~/.ssh/id_rsa
         ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
-    - name: Deploy to EC2
+    - name: Sync project to EC2
       run: |
-        ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "cd ~/Silmedy-Server && ./deploy.sh"
+        rsync -avz -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" ./ \
+          ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:~/Silmedy-Server
+
+    - name: Make deploy.sh executable
+      run: |
+        ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} \
+        "chmod +x ~/Silmedy-Server/deploy.sh"
+
+    - name: Run deploy.sh on EC2
+      run: |
+        ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "
+          set -e
+          cd ~/Silmedy-Server
+          ./deploy.sh
+        "
