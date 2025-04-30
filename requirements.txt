@@ -16,3 +16,4 @@ Pillow
 openai
 protobuf>=5.26.1,<6.0dev
 grpcio-status
+typing
