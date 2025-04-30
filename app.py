@@ -477,12 +477,13 @@ def save_chat():
 
         # Add separator only if there are NO documents at all in the subcollection
         if not any(chat_collection.stream()):
-            separator_id = now.strftime("%Y%m%d%H%M%S%f") + "_sep"
+            separator_time = now - timedelta(milliseconds=1)
+            separator_id = separator_time.strftime("%Y%m%d%H%M%S%f")
             separator_data = {
                 'chat_id': separator_id,
                 'sender_id': '',
                 'text': '',
-                'created_at': created_at,
+                'created_at': separator_time.strftime("%Y-%m-%d %H:%M:%S"),
                 'is_separater': True
             }
             chat_collection.document(separator_id).set(separator_data)
