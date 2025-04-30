@@ -12,3 +12,4 @@ flasgger
 numpy
 tflite-runtime
 Pillow
+openai
