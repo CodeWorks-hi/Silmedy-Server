@@ -994,7 +994,6 @@ def get_doctor_info_from_room_code():
         return jsonify({'error': str(e)}), 500
 
 
-
 # ---- 환자 텍스트 저장 ----
 @app.route('/call/add-patient-text', methods=['POST'])
 def add_patient_text():
