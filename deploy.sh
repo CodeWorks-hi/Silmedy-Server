@@ -2,12 +2,12 @@
 
 cd ~/Silmedy-Server
 
-# 의존성 설치 (시스템 전역 Python 사용)
-pip install --upgrade pip
-pip install -r requirements.txt
+# pip3로 설치 (시스템 전역에)
+pip3 install --upgrade pip
+pip3 install -r requirements.txt
 
-# 기존 Flask 백그라운드 프로세스 종료 (선택 사항)
+# 기존 프로세스 종료
 pkill -f app.py
 
-# Flask 앱 백그라운드 실행 및 로그 저장
-nohup python app.py > flask.log 2>&1 &
+# Flask 실행
+nohup python3 app.py > flask.log 2>&1 &
