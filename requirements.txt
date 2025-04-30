@@ -10,7 +10,6 @@ uuid
 flask_jwt_extended
 flasgger
 numpy
-tensorflow-macos
 tensorflow-metal
 Pillow
 openai
