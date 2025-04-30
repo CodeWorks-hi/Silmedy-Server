@@ -2,6 +2,11 @@
 
 cd ~/Silmedy-Server || exit 1
 
+# 🔐 .env 및 Firebase JSON 복원
+echo "📦 Restoring secrets..."
+echo "${ENV_B64}" | base64 -d > .env
+echo "${FIREBASE_JSON_B64}" | base64 -d > silmedy-23a1b-firebase-adminsdk-fbsvc-1e8c6b596b.json
+
 # 1. Python3 설치 여부 확인
 if ! command -v python3 &> /dev/null; then
   echo "❌ Python3 not found. Please install it."
