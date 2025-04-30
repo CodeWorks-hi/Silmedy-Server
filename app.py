@@ -21,9 +21,10 @@ from flasgger import Swagger
 import yaml
 from flask import Flask, request, jsonify
 import numpy as np
-import tflite_runtime.interpreter as tflite
+from tensorflow.lite.python.interpreter import Interpreter
 from PIL import Image
 from openai import OpenAI
+from typing import Any, Optional
 
 
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
@@ -54,7 +55,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-interpreter = tflite.Interpreter(model_path="model_unquant.tflite")
+interpreter = Interpreter(model_path="model_unquant.tflite")
 interpreter.allocate_tensors()
 
 input_details = interpreter.get_input_details()
@@ -107,30 +108,121 @@ table_prescription_records = dynamodb.Table('prescription_records')
 
 
 def generate_llama_response(patient_id, chat_history):
-    logger.info(f"[Llama 호출] patient_id={patient_id}, chat_history={chat_history}")
+    """
+    1) 외과 긴급 키워드 감지 → '외과' 반환
+    2) few-shot prompt로 LLM 분류 → '내과' or '외과'
+    """
+    last_msg = chat_history[-1]
+    logger.info(f"[Llama 호출] patient_id={patient_id}, message=\"{last_msg}\"")
 
-    # 외과 키워드 감지
-    SURGICAL_KEYWORDS = ["외과", "수술", "절개", "골절", "탈구", "출혈", "상처", "깁스"]
-    lowered_text = chat_history[-1].lower()
-    if any(kw in lowered_text for kw in SURGICAL_KEYWORDS):
-        logger.info("[Llama 중단] 외과 키워드 포함. 분석 생략.")
+    # 1) 외과 긴급 키워드 목록 (최소화)
+    SURGICAL_KEYWORDS = ["골절", "뼈 부러짐", "상처", "출혈"]
+    lower = last_msg.lower()
+    if any(kw in lower for kw in SURGICAL_KEYWORDS):
+        logger.info("[Llama 중단] 외과 키워드 감지됨. ‘외과’ 반환.")
         return "외과"
 
-    api_key = os.getenv("HUGGINGFACE_API_KEY")
-    api_url = os.getenv("HUGGINGFACE_API_URL")
+    # 2) 환경변수에서 API 설정 읽기
+    api_key = os.getenv("HUGGINGFACE_API_KEY") 
+    api_url = os.getenv("HUGGINGFACE_API_URL") 
 
     if not api_key or not api_url:
         logger.error("Hugging Face API 키 또는 URL이 설정되지 않았습니다.")
         return "AI 응답을 가져오지 못했습니다."
+    # fallback: ensure a string is always returned
+    return "AI 응답을 가져오지 못했습니다."
 
-    try:
-        client = OpenAI(
-            base_url=api_url,
-            api_key=api_key
-        )
+def classify_or_prompt(self, prompt: str, sentence: str, cb: Any, category: str) -> None:
+        lower = sentence.lower()
 
-        def build_system_prompt(prev_symptom, user_message, is_combined):
-            prompt = "안녕하세요!🩺 저는 Slimedy AI 닥터링(Dr.Link)입니다.\n궁금한 증상을 말씀해 주시면 쉽게 안내해 드릴게요.\n\n"
+        # 3) 외과 긴급 키워드 감지
+        for kw in self.SURGICAL_EMERGENCY_KEYWORDS:
+            if kw in lower:
+                cb.on_surgical_question(
+                    "외과 진료가 필요해 보여요.\n"
+                    "편하실 때 촬영을 통해 증상을 확인해 보실 수 있습니다.\n"
+                    "지금 터치로 증상 확인 페이지로 이동해 보시겠어요? (예/아니오)"
+                )
+                return
+
+        # 2) few-shot prompt로 LLM 분류
+        try:
+            system_prompt = (
+                "너는 병원 접수 담당자야. 환자 문장을 보면 반드시 '내과' 또는 '외과'로 분류해.\n"
+                "다음 예시를 참고해:\n"
+                "예시1: \"손가락이 아파요\" → 내과\n"
+                "예시2: \"팔이 부러진 것 같아요\" → 외과\n"
+                "예시3: \"배가 너무 아파요\" → 내과\n"
+                "예시4: \"심하게 베였어요\" → 외과\n"
+                f"이제 문장: \"{sentence}\"\n"
+                "출력은 한 단어(내과 또는 외과)만."
+            )
+
+
+    # 3) LLM 호출
+            resp: OpenAIObject = self.client.chat.completions.create(
+                model="meta-llama/Llama-3.1-8B-Instruct",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": sentence}
+                ],
+                temperature=0.0,
+                max_tokens=5
+            )
+            cat = resp.choices[0].message.content.strip()
+            if cat not in ("내과", "외과"):
+                logger.warning(f"Unexpected classification '{cat}', fallback to '내과'")
+                cat = "내과"
+            cb.on_classification(cat, category)
+
+        except Exception as e:
+            cb.on_error(e)
+
+def send_chat_stream(
+        self,
+        user_id: str,
+        prev_symptom: Optional[str],
+        user_message: str,
+        cb: Any
+    ) -> None:
+        """
+        AI 문진·케어 스트리밍 헬퍼
+        """
+        try:
+            # 1) 외과 긴급 키워드 감지
+            lower = user_message.lower()
+            if any(kw in lower for kw in self.SURGICAL_EMERGENCY_KEYWORDS):
+                cb.on_error(Exception("외과 증상 감지, 스트림 중단"))
+                return
+
+            # 2) 시스템 프롬프트 생성
+            is_combined = bool(prev_symptom)
+            system_prompt = self._build_system_prompt(prev_symptom or "", user_message, is_combined)
+
+            # 3) 스트리밍 호출
+            stream = self.client.chat.completions.create(
+                model="meta-llama/Llama-3.1-8B-Instruct",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_message}
+                ],
+                temperature=0.3,
+                max_tokens=512,
+                stream=True
+            )
+            # 4) 델타 단위로 콜백
+            for chunk in stream:
+                delta = chunk.choices[0].delta.get("content")
+                if delta:
+                    cb.on_chunk(delta)
+            cb.on_complete()
+
+        except Exception as e:
+            cb.on_error(e)
+
+        def _build_system_prompt(self, prev: str, msg: str, combined: bool) -> str:
+            sb = [
+                   "안녕하세요!🩺 저는 Slimedy AI 닥터링(Dr.Link)입니다.","궁금한 증상을 말씀해 주시면 쉽게 안내해 드릴게요.\n"]
             if is_combined:
                 prompt += (
                     f"✏️ [복합 증상 분석]\n"
@@ -172,28 +264,7 @@ def generate_llama_response(patient_id, chat_history):
             prompt += "\n\n비대면 진료가 필요하시면 '예'라고 답해주세요."
             return prompt
 
-        prev_symptom = chat_history[-2] if len(chat_history) > 1 else ""
-        user_message = chat_history[-1]
-        is_combined = bool(prev_symptom)
-
-        prompt_text = build_system_prompt(prev_symptom, user_message, is_combined)
-
-        completion = client.chat.completions.create(
-            model="meta-llama/Llama-3.1-8B-Instruct",
-            messages=[
-                {"role": "user", "content": prompt_text}
-            ],
-            max_tokens=512
-        )
-
-        result_text = completion.choices[0].message.content.strip()
-        logger.info(f"[Llama 응답] {result_text}")
-        return result_text
-
-    except Exception as e:
-        logger.error(f"Llama 응답 실패: {e}")
-        return "AI 응답을 가져오지 못했습니다."
-    
+ 
 
 # ---- 환자 회원가입 ----
 @app.route('/patient/signup', methods=['POST'])
