@@ -21,6 +21,11 @@ jobs:
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
         shell: bash
 
+      - name: Write Firebase Credential
+        run: |
+          echo "${{ secrets.FIREBASE_KEY_JSON }}" | base64 -d > ~/Silmedy-Server/silmedy-23a1b-firebase-adminsdk-fbsvc-1e8c6b596b.json
+          echo "${{ secrets.ENV }}" | base64 -d > ~/Silmedy-Server/.env
+
       - name: Sync project to EC2 via rsync
         run: |
           rsync -avz --delete -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" ./ \
