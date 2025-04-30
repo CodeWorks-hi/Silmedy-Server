@@ -20,8 +20,7 @@ pkill -f "python3 app.py" || echo "No existing app.py process."
 # 4. 로그 파일 이름 설정
 LOG_FILE="flask_$(date +%Y%m%d_%H%M%S).log"
 
-# 5. Flask 서버 백그라운드 실행
-echo "🚀 Starting Flask app..."
-nohup python3 app.py > "$LOG_FILE" 2>&1 &
-
+# 5. Flask 서버 백그라운드 실행 (nohup + setsid)
+echo "🚀 Starting Flask app with nohup..."
+setsid nohup python3 app.py > "$LOG_FILE" 2>&1 < /dev/null &
 echo "✅ Deploy complete. Logs: $LOG_FILE"
