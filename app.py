@@ -1199,12 +1199,12 @@ def health_centers_with_doctors():
         return jsonify({'error': str(e)}), 500
 
 
-# ---- 약국 검색 ----
-@app.route('/pharmacies', methods=['GET'])
+
+# ---- 약국 근처 상세 정보 통합 반환 ----
+@app.route('/pharmacies/nearby-info', methods=['GET'])
 @jwt_required()
-def search_pharmacies():
+def search_pharmacies_with_details():
     try:
-        # JWT Authorization header validation
         patient_id = get_jwt_identity()
         if not patient_id:
             return jsonify({'error': 'Unauthorized'}), 401
@@ -1221,7 +1221,6 @@ def search_pharmacies():
         except (TypeError, ValueError):
             return jsonify({"error": "Invalid 'lat' or 'lng' value"}), 400
 
-        # Log lat/lng
         logger.info(f"[pharmacies] lat: {lat}, lng: {lng}")
 
         headers = {
@@ -1236,7 +1235,6 @@ def search_pharmacies():
         }
 
         kakao_url = "https://dapi.kakao.com/v2/local/search/keyword.json"
-
         response = requests.get(kakao_url, headers=headers, params=params)
 
         if response.status_code != 200:
@@ -1244,24 +1242,40 @@ def search_pharmacies():
 
         kakao_data = response.json()
         documents = kakao_data.get("documents", [])
-
         logger.info(f"[pharmacies] 검색된 place_names: {[doc.get('place_name') for doc in documents]}")
 
-        pharmacies = []
+        pharmacy_names = []
         for doc in documents:
             place_name = doc.get("place_name", "")
             if place_name.endswith("약국") and " " not in place_name:
-                pharmacies.append(place_name)
-            if len(pharmacies) >= 10:
+                pharmacy_names.append(place_name)
+            if len(pharmacy_names) >= 10:
                 break
 
-        # Log filtered pharmacies
-        logger.info(f"[pharmacies] Filtered pharmacies: {pharmacies}")
+        results = []
+        for name in pharmacy_names:
+            dyn_response = table_pharmacies.scan(
+                FilterExpression=Attr('name').eq(name)
+            )
+            items = dyn_response.get('Items', [])
+            if items:
+                item = items[0]
+                results.append({
+                    'pharmacy_name': item.get('name'),
+                    'open_hour': item.get('open_hour'),
+                    'close_hour': item.get('close_hour'),
+                    'address': item.get('address'),
+                    'contact': item.get('contact')
+                })
 
-        return jsonify(pharmacies), 200
+        return jsonify(results), 200
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+
+
 
 
 if __name__ == '__main__':
