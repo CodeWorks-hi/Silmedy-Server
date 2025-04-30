@@ -109,6 +109,13 @@ table_prescription_records = dynamodb.Table('prescription_records')
 def generate_llama_response(patient_id, chat_history):
     logger.info(f"[Llama 호출] patient_id={patient_id}, chat_history={chat_history}")
 
+    # 외과 키워드 감지
+    SURGICAL_KEYWORDS = ["외과", "수술", "절개", "골절", "탈구", "출혈", "상처", "깁스"]
+    lowered_text = chat_history[-1].lower()
+    if any(kw in lowered_text for kw in SURGICAL_KEYWORDS):
+        logger.info("[Llama 중단] 외과 키워드 포함. 분석 생략.")
+        return "외과"
+
     api_key = os.getenv("HUGGINGFACE_API_KEY")
     api_url = os.getenv("HUGGINGFACE_API_URL")
 
@@ -583,6 +590,14 @@ def save_chat():
         # 2. Generate LLM response using helper function
         chat_history = [patient_text]  # 필요시 과거 채팅 내역도 포함 가능
         ai_response = generate_llama_response(patient_id, chat_history)
+
+        # 외과 키워드 응답 시 저장 중단 및 조기 반환
+        if ai_response.strip() == "외과":
+            logger.info("[Chat 저장 중단] 외과 키워드로 인해 AI 응답 저장 생략")
+            return jsonify({
+                "message": "외과 관련 질문으로 판단되어 AI 응답은 생략되었습니다.",
+                "chat_ids": [patient_chat_id]
+            }), 200
 
         # 3. Save AI response
         ai_chat_id = (now + timedelta(milliseconds=1)).strftime("%Y%m%d%H%M%S%f")
