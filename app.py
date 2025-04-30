@@ -25,6 +25,7 @@ from tensorflow.lite.python.interpreter import Interpreter
 from PIL import Image
 from openai import OpenAI
 from typing import Any, Optional
+from openai.types.chat import ChatCompletion
 
 
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
@@ -161,7 +162,7 @@ def classify_or_prompt(self, prompt: str, sentence: str, cb: Any, category: str)
 
 
     # 3) LLM 호출
-            resp: OpenAIObject = self.client.chat.completions.create(
+            resp: ChatCompletion = self.client.chat.completions.create(
                 model="meta-llama/Llama-3.1-8B-Instruct",
                 messages=[
                     {"role": "system", "content": system_prompt},
