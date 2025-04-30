@@ -8,27 +8,20 @@ if ! command -v python3 &> /dev/null; then
   exit 1
 fi
 
-# 2. 가상환경 재설치 (기존 venv 삭제 후 생성)
-echo "🔁 Recreating virtual environment..."
-rm -rf venv
-python3 -m venv venv
-
-source venv/bin/activate
-
-# 3. pip 업그레이드 및 패키지 설치
+# 2. 패키지 설치 (시스템 Python에 설치)
 echo "⬆️  Upgrading pip and installing dependencies..."
-pip install --upgrade pip setuptools
-pip install -r requirements.txt
+pip3 install --upgrade pip setuptools
+pip3 install -r requirements.txt
 
-# 4. 기존 Flask 프로세스 종료
+# 3. 기존 Flask 프로세스 종료
 echo "🛑 Killing previous app.py process..."
-pkill -f "venv/bin/python app.py" || echo "No existing app.py process."
+pkill -f "python3 app.py" || echo "No existing app.py process."
 
-# 5. 로그 파일 이름 설정
+# 4. 로그 파일 이름 설정
 LOG_FILE="flask_$(date +%Y%m%d_%H%M%S).log"
 
-# 6. Flask 서버 백그라운드 실행
+# 5. Flask 서버 백그라운드 실행
 echo "🚀 Starting Flask app..."
-nohup venv/bin/python app.py > "$LOG_FILE" 2>&1 &
+nohup python3 app.py > "$LOG_FILE" 2>&1 &
 
 echo "✅ Deploy complete. Logs: $LOG_FILE"
