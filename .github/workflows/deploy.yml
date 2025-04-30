@@ -1,16 +1,28 @@
-- name: Setup SSH
-  run: |
-    mkdir -p $HOME/.ssh
-    echo "${{ secrets.EC2_SSH_KEY }}" > $HOME/.ssh/id_rsa
-    chmod 600 $HOME/.ssh/id_rsa
-    ssh-keyscan -H ${{ secrets.EC2_HOST }} >> $HOME/.ssh/known_hosts
-    echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
-    chmod 600 ~/.ssh/id_rsa
-    ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+name: Deploy to EC2
 
-- name: Give execute permissions
-  run: ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "chmod +x ~/Silmedy-Server/deploy.sh"
+on:
+  push:
+    branches:
+      - main
 
-- name: Deploy to EC2
-  run: |
-    ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "cd ~/Silmedy-Server && ./deploy.sh"
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Give execute permissions
+        run: ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "chmod +x ~/Silmedy-Server/deploy.sh"
+
+      - name: Deploy to EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "cd ~/Silmedy-Server && ./deploy.sh"
