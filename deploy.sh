@@ -8,17 +8,16 @@ if ! command -v python3 &> /dev/null; then
   exit 1
 fi
 
-# 2. 가상환경 생성 및 활성화
-if [ ! -d "venv" ]; then
-  echo "📦 Creating virtual environment..."
-  python3 -m venv venv
-fi
+# 2. 가상환경 재설치 (기존 venv 삭제 후 생성)
+echo "🔁 Recreating virtual environment..."
+rm -rf venv
+python3 -m venv venv
 
 source venv/bin/activate
 
 # 3. pip 업그레이드 및 패키지 설치
 echo "⬆️  Upgrading pip and installing dependencies..."
-pip install --upgrade pip
+pip install --upgrade pip setuptools
 pip install -r requirements.txt
 
 # 4. 기존 Flask 프로세스 종료
