@@ -422,69 +422,6 @@ def verify_code_check_user():
     except Exception as e:
         return jsonify({"success": False, "message": f"오류 발생: {str(e)}"}), 500
     
-    
-
-# ---- 모델 예측 및 결과 정보 통합 ----
-@app.route('/predict-and-result', methods=['POST'])
-def predict_and_result():
-    try:
-        class_names = [
-            "표재성", "절개성", "자상", "화상", "손발톱질환", "자가면역질환",
-            "염증성질환", "혈관종양성", "색소침착", "기생충감염", "수포성피부",
-            "바이러스질환", "세균감염", "정상피부"
-        ]
-
-        data = request.get_json()
-        image_url = data.get('image_url')
-
-        if not image_url:
-            return jsonify({'error': 'No image_url provided'}), 400
-
-        response = requests.get(image_url)
-        if response.status_code != 200:
-            return jsonify({'error': 'Failed to download image'}), 400
-
-        image = Image.open(BytesIO(response.content)).convert('RGB')
-        target_size = (224, 224)
-        image = image.resize(target_size)
-        input_data = np.array(image, dtype=np.float32) / 255.0
-        input_data = np.expand_dims(input_data, axis=0)
-
-        interpreter.set_tensor(input_details[0]['index'], input_data)
-        interpreter.invoke()
-        output_data = interpreter.get_tensor(output_details[0]['index'])
-
-        predicted_index = int(np.argmax(output_data))
-        predicted_class = class_names[predicted_index]
-
-        # predicted_class를 symptom으로 삼아서 department/sub_department/desc_url 조회
-        response = table_diseases.scan(
-            FilterExpression=Attr('name_ko').eq(predicted_class)
-        )
-        items = response.get('Items', [])
-        if not items:
-            return jsonify({'error': 'No matching disease found'}), 404
-
-        item = items[0]
-        department = item.get('department')
-        sub_departments = item.get('sub_department', '')
-        desc_url = item.get('desc_url')
-
-        if isinstance(sub_departments, str):
-            sub_departments = sub_departments.strip('{}').replace('"', '').split(',')
-
-        result = {
-            'prediction': predicted_class,
-            'department': department,
-            'sub_department': sub_departments[0] if sub_departments else None,
-            'desc_url': desc_url
-        }
-
-        return jsonify(result), 200
-
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-    
 
  # ---- 증상으로 관련 정보 조회 ----
 @app.route('/info-by-symptom', methods=['POST'])
@@ -535,22 +472,36 @@ def save_chat():
             return jsonify({"error": "Missing required fields"}), 400
 
         now = datetime.utcnow()
-        chat_id = now.strftime("%Y%m%d%H%M%S%f")
         created_at = now.strftime("%Y-%m-%d %H:%M:%S")
+        chat_collection = collection_consult_text.document(str(patient_id)).collection("chats")
 
-        # TODO: Llama 모델 호출 및 응답 텍스트 받아오기
-        ai_text = "LLM 응답 텍스트 (여기에 나중에 모델 결과를 삽입)"
-
-        chat_data = {
-            'patient_text': patient_text.strip(),
-            'ai_text': ai_text.strip(),
+        # 1. Save patient text
+        patient_chat_id = now.strftime("%Y%m%d%H%M%S%f")
+        patient_chat_data = {
+            'chat_id': patient_chat_id,
+            'sender_id': '나',
+            'text': patient_text.strip(),
             'created_at': created_at,
-            'is_separator': False
+            'is_separater': False
         }
+        chat_collection.document(patient_chat_id).set(patient_chat_data)
 
-        collection_consult_text.document(str(patient_id)).collection("chats").document(chat_id).set(chat_data)
-        logger.info(f"[Firestore 저장됨] patient_id={patient_id}, chat_id={chat_id}, data={chat_data}")
-        return jsonify({"message": "Chat saved", "chat_id": chat_id}), 200
+        # 2. Simulate LLM response (replace this part later)
+        ai_response = "LLM 응답 텍스트 (여기에 나중에 모델 결과를 삽입)"
+
+        # 3. Save AI response
+        ai_chat_id = (now + timedelta(milliseconds=1)).strftime("%Y%m%d%H%M%S%f")
+        ai_chat_data = {
+            'chat_id': ai_chat_id,
+            'sender_id': 'AI',
+            'text': ai_response.strip(),
+            'created_at': created_at,
+            'is_separater': False
+        }
+        chat_collection.document(ai_chat_id).set(ai_chat_data)
+
+        logger.info(f"[Firestore 저장됨] patient_id={patient_id}, patient_chat_id={patient_chat_id}, ai_chat_id={ai_chat_id}")
+        return jsonify({"message": "Chat saved", "chat_ids": [patient_chat_id, ai_chat_id]}), 200
 
     except Exception as e:
         logger.error(f"Error saving chat: {e}")
