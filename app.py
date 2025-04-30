@@ -29,6 +29,7 @@ from openai.types.chat import ChatCompletion
 
 
 
+
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
 
 # ---- 기본 세팅 ----
