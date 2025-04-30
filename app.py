@@ -23,6 +23,7 @@ from flask import Flask, request, jsonify
 import numpy as np
 import tflite_runtime.interpreter as tflite
 from PIL import Image
+from openai import OpenAI
 
 
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
@@ -104,6 +105,87 @@ table_pharmacies = dynamodb.Table('pharmacies')
 table_prescription_records = dynamodb.Table('prescription_records')
 
 
+
+def generate_llama_response(patient_id, chat_history):
+    logger.info(f"[Llama 호출] patient_id={patient_id}, chat_history={chat_history}")
+
+    api_key = os.getenv("HUGGINGFACE_API_KEY")
+    api_url = os.getenv("HUGGINGFACE_API_URL")
+
+    if not api_key or not api_url:
+        logger.error("Hugging Face API 키 또는 URL이 설정되지 않았습니다.")
+        return "AI 응답을 가져오지 못했습니다."
+
+    try:
+        client = OpenAI(
+            base_url=api_url,
+            api_key=api_key
+        )
+
+        def build_system_prompt(prev_symptom, user_message, is_combined):
+            prompt = "안녕하세요! Slimedy AI입니다. 증상을 분석해 드립니다 🩺\n(※ 반드시 한국어로만 답변해주세요)\n\n"
+            if is_combined:
+                prompt += (
+                    f"✏️ [복합 증상 분석]\n"
+                    f"• 증상1: {prev_symptom}\n"
+                    f"• 증상2: {user_message}\n"
+                    f"• 가능성 예시:\n"
+                    f"  1) {prev_symptom}과 {user_message} 간 관련성 가능\n"
+                    f"  2) 스트레스 또는 일시적 피로\n\n"
+                )
+            else:
+                prompt += (
+                    f"✏️ [단일 증상 분석]\n"
+                    f"• 주요 증상: {user_message}\n"
+                    f"• 가능성 예시:\n"
+                    f"  1) 일시적 피로\n"
+                    f"  2) 환경 변화 영향\n\n"
+                )
+            prompt += (
+                "🏠 [자가 관리]\n"
+                "  → 30분 간격 미지근한 물 섭취\n"
+                "  → 1-2시간 편안히 휴식\n"
+                "  → 체온·통증 기록하기\n"
+            )
+            if "열" in user_message:
+                prompt += "  → 체온 38.5℃ 이상 시 해열제 복용\n"
+            if "통증" in user_message:
+                prompt += "  → 통증 부위 5분간 찜질\n"
+            if any(x in user_message for x in ["구토", "설사"]):
+                prompt += "  → 전해질 음료(이온음료) 섭취\n"
+            prompt += (
+                "\n⚠️ [즉시 병원 방문]\n"
+                "• 증상 6시간 이상 지속\n"
+            )
+            if any(x in user_message for x in ["흉통", "호흡곤란"]):
+                prompt += "• 가슴 답답함/호흡 곤란 → 119 신고\n"
+            if "의식저하" in user_message:
+                prompt += "• 의식 흐려짐/말 어눌해짐\n"
+            prompt += "\n\n비대면 진료를 원하시나요?"
+            return prompt
+
+        prev_symptom = chat_history[-2] if len(chat_history) > 1 else ""
+        user_message = chat_history[-1]
+        is_combined = bool(prev_symptom)
+
+        prompt_text = build_system_prompt(prev_symptom, user_message, is_combined)
+
+        completion = client.chat.completions.create(
+            model="meta-llama/Llama-3.1-8B-Instruct",
+            messages=[
+                {"role": "user", "content": prompt_text}
+            ],
+            max_tokens=512
+        )
+
+        result_text = completion.choices[0].message.content.strip()
+        logger.info(f"[Llama 응답] {result_text}")
+        return result_text
+
+    except Exception as e:
+        logger.error(f"Llama 응답 실패: {e}")
+        return "AI 응답을 가져오지 못했습니다."
+    
 
 
 # ---- 환자 회원가입 ----
@@ -499,8 +581,9 @@ def save_chat():
         }
         chat_collection.document(patient_chat_id).set(patient_chat_data)
 
-        # 2. Simulate LLM response (replace this part later)
-        ai_response = "LLM 응답 텍스트 (여기에 나중에 모델 결과를 삽입)"
+        # 2. Generate LLM response using helper function
+        chat_history = [patient_text]  # 필요시 과거 채팅 내역도 포함 가능
+        ai_response = generate_llama_response(patient_id, chat_history)
 
         # 3. Save AI response
         ai_chat_id = (now + timedelta(milliseconds=1)).strftime("%Y%m%d%H%M%S%f")
@@ -1004,37 +1087,6 @@ def end_call():
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
-
-# ---- AI 채팅 저장 ----
-@app.route('/chat/save-ai', methods=['POST'])
-def save_chat_ai():
-    try:
-        data = request.get_json()
-        consult_id = data.get('consult_id')
-        text = data.get('text')
-
-        if not consult_id or not text:
-            return jsonify({"error": "Missing required fields"}), 400
-
-        chat_id = str(uuid.uuid4())
-        chat_data = {
-            'chat_id': chat_id,
-            'is_separater': False,
-            'sender_id': 'AI',
-            'text': text.strip(),
-            'created_at': datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
-        }
-
-        collection_consult_text.document(str(consult_id)).collection("chats").document(chat_id).set(chat_data)
-
-        logger.info(f"[Firestore 저장됨] consult_id={consult_id}, chat_id={chat_id}, sender_id=AI")
-        return jsonify({"message": "AI Chat saved", "chat_id": chat_id}), 200
-
-    except Exception as e:
-        logger.error(f"Error saving AI chat: {e}")
-        return jsonify({'error': str(e)}), 500
-
 
 
 # ---- 채팅 구분선 추가 ----
