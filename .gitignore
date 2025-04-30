@@ -8,6 +8,8 @@ __pycache__/
 silmedy-23a1b-firebase-adminsdk-fbsvc-1e8c6b596b.json
 api_keys.toml
 
+.DS_Store
+
 # C extensions
 *.so
 

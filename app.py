@@ -485,10 +485,9 @@ def predict_and_result():
 def save_chat():
     try:
         identity = get_jwt_identity()
-        patient_id = identity  # Since identity is now a string (patient_id)
+        patient_id = identity
         data = request.get_json()
         patient_text = data.get('patient_text')
-        ai_text = data.get('ai_text')
 
         if not patient_id or not patient_text:
             return jsonify({"error": "Missing required fields"}), 400
@@ -497,10 +496,14 @@ def save_chat():
         chat_id = now.strftime("%Y%m%d%H%M%S%f")
         created_at = now.strftime("%Y-%m-%d %H:%M:%S")
 
+        # TODO: Llama 모델 호출 및 응답 텍스트 받아오기
+        ai_text = "LLM 응답 텍스트 (여기에 나중에 모델 결과를 삽입)"
+
         chat_data = {
+            'patient_text': patient_text.strip(),
             'ai_text': ai_text.strip(),
             'created_at': created_at,
-            'is_separater': False
+            'is_separator': False
         }
 
         collection_consult_text.document(str(patient_id)).collection("chats").document(chat_id).set(chat_data)
