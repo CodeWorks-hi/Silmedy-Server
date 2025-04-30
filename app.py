@@ -366,7 +366,6 @@ def patient_login():
         return jsonify({'error': str(e)}), 500
 
 
-
 # ---- 우편번호 검색 ----
 @app.route('/postal_code', methods=['GET'])
 def search_postal_code():
