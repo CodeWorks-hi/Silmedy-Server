@@ -475,19 +475,17 @@ def save_chat():
         created_at = now.strftime("%Y-%m-%d %H:%M:%S")
         chat_collection = collection_consult_text.document(str(patient_id)).collection("chats")
 
-        # If this is a new chat (empty collection), insert a separator first
-        existing_chats = list(chat_collection.limit(1).stream())
-        if not existing_chats:
-            initial_chat_id = now.strftime("%Y%m%d%H%M%S%f")
+        # Add separator only if there are NO documents at all in the subcollection
+        if not any(chat_collection.stream()):
+            separator_id = now.strftime("%Y%m%d%H%M%S%f") + "_sep"
             separator_data = {
-                'chat_id': initial_chat_id,
+                'chat_id': separator_id,
                 'sender_id': '',
                 'text': '',
                 'created_at': created_at,
                 'is_separater': True
             }
-            chat_collection.document(initial_chat_id).set(separator_data)
-            logger.info(f"[초기 구분선 추가됨] patient_id={patient_id}, chat_id={initial_chat_id}")
+            chat_collection.document(separator_id).set(separator_data)
 
         # 1. Save patient text
         patient_chat_id = now.strftime("%Y%m%d%H%M%S%f")
