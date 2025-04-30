@@ -22,5 +22,5 @@ LOG_FILE="flask_$(date +%Y%m%d_%H%M%S).log"
 
 # 5. Flask 서버 백그라운드 실행 (nohup + setsid)
 echo "🚀 Starting Flask app with nohup..."
-setsid nohup python3 app.py > "$LOG_FILE" 2>&1 < /dev/null &
+nohup python3 app.py > "$LOG_FILE" 2>&1 &
 echo "✅ Deploy complete. Logs: $LOG_FILE"
