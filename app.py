@@ -486,6 +486,42 @@ def predict_and_result():
         return jsonify({'error': str(e)}), 500
     
 
+ # ---- 증상으로 관련 정보 조회 ----
+@app.route('/disease/info-by-symptom', methods=['POST'])
+def get_disease_info_by_symptom():
+    try:
+        data = request.get_json()
+        symptom = data.get('symptom')
+
+        if not symptom:
+            return jsonify({'error': 'symptom is required'}), 400
+
+        response = table_diseases.scan(
+            FilterExpression=Attr('name_ko').eq(symptom)
+        )
+        items = response.get('Items', [])
+        if not items:
+            return jsonify({'error': 'No matching disease found'}), 404
+
+        item = items[0]
+        department = item.get('department')
+        sub_departments = item.get('sub_department', '')
+        desc_url = item.get('desc_url')
+
+        if isinstance(sub_departments, str):
+            sub_departments = sub_departments.strip('{}').replace('"', '').split(',')
+
+        return jsonify({
+            'department': department,
+            'sub_department': sub_departments[0] if sub_departments else None,
+            'desc_url': desc_url
+        }), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+    
+
 @app.route('/chat/save', methods=['POST'])
 @jwt_required()
 def save_chat():
