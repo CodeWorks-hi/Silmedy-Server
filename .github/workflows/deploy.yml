@@ -19,7 +19,6 @@ jobs:
           echo "${{ secrets.EC2_SSH_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
-        shell: bash
 
       - name: Sync project to EC2 via rsync
         run: |
@@ -34,4 +33,4 @@ jobs:
       - name: Run deployment script on EC2
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} \
-            "cd ~/Silmedy-Server && ./deploy.sh"
+            "~/Silmedy-Server/deploy.sh"
