@@ -112,6 +112,12 @@ def patient_signup():
     logger.info(f"REQUEST: {request.json}")
     try:
         body = request.get_json()
+        email = body['email']
+
+        # 이메일 중복 확인
+        existing_user = collection_patients.where("email", "==", email).limit(1).stream()
+        if next(existing_user, None):
+            return jsonify({'error': '이미 사용 중인 이메일입니다.'}), 409
 
         # Counter 가져오기
         counter_doc = collection_counters.document('patients').get()
@@ -123,7 +129,7 @@ def patient_signup():
         new_doc_id = current_id + 1
 
         item = {
-            'email': body['email'],
+            'email': email,
             'password': body['password'],
             'name': body['name'],
             'contact': body['contact'],
