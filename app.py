@@ -487,7 +487,7 @@ def predict_and_result():
     
 
  # ---- 증상으로 관련 정보 조회 ----
-@app.route('/disease/info-by-symptom', methods=['POST'])
+@app.route('/info-by-symptom', methods=['POST'])
 def get_disease_info_by_symptom():
     try:
         data = request.get_json()
