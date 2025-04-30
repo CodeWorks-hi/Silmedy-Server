@@ -339,19 +339,14 @@ def patient_login():
         if user_doc and user_doc.exists:
             item = user_doc.to_dict()
             if item.get('password') == password:
-                # Generate new document ID based on fs_counters
-                counter_doc = collection_counters.document('patients').get()
-                if counter_doc.exists:
-                    current_id = counter_doc.to_dict().get('current_id', 0)
-                else:
-                    current_id = 0
-                new_doc_id = current_id + 1
+                patient_id = user_doc.id  # ✔️ 실제 로그인한 환자의 ID
 
                 access_token = create_access_token(
-                    identity=str(new_doc_id),
+                    identity=patient_id,
                     additional_claims={"name": item.get('name', '')}
                 )
-                refresh_token = create_refresh_token(identity=str(new_doc_id))
+                refresh_token = create_refresh_token(identity=patient_id)
+
                 return jsonify({
                     'message': 'Login successful',
                     'access_token': access_token,
