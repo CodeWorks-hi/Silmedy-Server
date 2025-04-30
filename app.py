@@ -1036,6 +1036,50 @@ def add_chat_separator():
         if not identity:
             return jsonify({"error": "patient_id is required"}), 400
 
+        # Step 1: Fetch recent chats in descending order
+        chat_collection = collection_consult_text.document(str(patient_id)).collection("chats")
+        from firebase_admin import firestore as _firestore
+        chats = chat_collection.order_by("created_at", direction=_firestore.Query.DESCENDING).stream()
+
+        chat_list = []
+        last_separator_time = None
+
+        for chat in chats:
+            chat_data = chat.to_dict()
+            chat_list.append(chat_data)
+            # Accept both is_separator and is_separater for compatibility
+            if chat_data.get("is_separator") or chat_data.get("is_separater"):
+                last_separator_time = chat_data.get("created_at")
+                break
+
+        # Step 2: Filter chats after the last separator
+        texts_to_summarize = []
+        if last_separator_time:
+            # Since chat_list is descending, reverse for ascending
+            for chat in reversed(chat_list):
+                # Compare created_at as string (lexicographically works for "%Y-%m-%d %H:%M:%S")
+                if chat.get("created_at") > last_separator_time:
+                    patient_text = chat.get("patient_text", "")
+                    ai_text = chat.get("ai_text", "")
+                    if patient_text:
+                        texts_to_summarize.append(patient_text.strip())
+                    if ai_text:
+                        texts_to_summarize.append(ai_text.strip())
+        else:
+            # No separator found, summarize everything
+            for chat in reversed(chat_list):
+                patient_text = chat.get("patient_text", "")
+                ai_text = chat.get("ai_text", "")
+                if patient_text:
+                    texts_to_summarize.append(patient_text.strip())
+                if ai_text:
+                    texts_to_summarize.append(ai_text.strip())
+
+        # Step 3: Simulate summary result (TODO: replace with real model call)
+        symptom_part = ["전신"]  # 예시 출력
+        symptom_type = ["두통", "구토"]  # 예시 출력
+
+        # Step 4: Add separator chat document
         now = datetime.utcnow()
         chat_id = now.strftime("%Y%m%d%H%M%S%f")
         chat_data = {
@@ -1046,9 +1090,15 @@ def add_chat_separator():
             'created_at': now.strftime("%Y-%m-%d %H:%M:%S")
         }
 
-        collection_consult_text.document(str(patient_id)).collection("chats").document(chat_id).set(chat_data)
+        chat_collection.document(chat_id).set(chat_data)
         logger.info(f"[Firestore 구분선 저장됨] patient_id={patient_id}, chat_id={chat_id}")
-        return jsonify({"message": "Separator added", "chat_id": chat_id}), 200
+
+        return jsonify({
+            "message": "Separator added",
+            "chat_id": chat_id,
+            "symptom_part": symptom_part,
+            "symptom_type": symptom_type
+        }), 200
 
     except Exception as e:
         logger.error(f"Error adding separator: {e}")
