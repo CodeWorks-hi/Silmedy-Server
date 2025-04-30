@@ -187,7 +187,6 @@ def generate_llama_response(patient_id, chat_history):
         return "AI 응답을 가져오지 못했습니다."
     
 
-
 # ---- 환자 회원가입 ----
 @app.route('/patient/signup', methods=['POST'])
 def patient_signup():
