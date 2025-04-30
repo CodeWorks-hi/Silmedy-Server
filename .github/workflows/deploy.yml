@@ -23,6 +23,7 @@ jobs:
 
       - name: Write Firebase Credential
         run: |
+          mkdir -p ~/Silmedy-Server
           echo "${{ secrets.FIREBASE_KEY_JSON }}" | base64 -d > ~/Silmedy-Server/silmedy-23a1b-firebase-adminsdk-fbsvc-1e8c6b596b.json
           echo "${{ secrets.ENV }}" | base64 -d > ~/Silmedy-Server/.env
 
