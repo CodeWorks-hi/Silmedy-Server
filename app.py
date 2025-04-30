@@ -132,6 +132,7 @@ def generate_llama_response(patient_id, chat_history):
     # fallback: ensure a string is always returned
     return "AI 응답을 가져오지 못했습니다."
 
+
 def classify_or_prompt(self, prompt: str, sentence: str, cb: Any, category: str) -> None:
         lower = sentence.lower()
 
@@ -274,12 +275,12 @@ def patient_signup():
         body = request.get_json()
         email = body['email']
 
-        # 이메일 중복 확인
+        # 이메일 중복 확인 (반드시 doc id 생성 전에)
         existing_user = collection_patients.where("email", "==", email).limit(1).stream()
         if next(existing_user, None):
             return jsonify({'error': '이미 사용 중인 이메일입니다.'}), 409
 
-        # Counter 가져오기
+        # Counter 가져오기 (이메일 중복 확인 이후에 진행)
         counter_doc = collection_counters.document('patients').get()
         if counter_doc.exists:
             current_id = counter_doc.to_dict().get('current_id', 0)
@@ -333,11 +334,19 @@ def patient_login():
         if user_doc and user_doc.exists:
             item = user_doc.to_dict()
             if item.get('password') == password:
+                # Generate new document ID based on fs_counters
+                counter_doc = collection_counters.document('patients').get()
+                if counter_doc.exists:
+                    current_id = counter_doc.to_dict().get('current_id', 0)
+                else:
+                    current_id = 0
+                new_doc_id = current_id + 1
+
                 access_token = create_access_token(
-                    identity=str(user_doc.id),
+                    identity=str(new_doc_id),
                     additional_claims={"name": item.get('name', '')}
                 )
-                refresh_token = create_refresh_token(identity=str(user_doc.id))
+                refresh_token = create_refresh_token(identity=str(new_doc_id))
                 return jsonify({
                     'message': 'Login successful',
                     'access_token': access_token,
