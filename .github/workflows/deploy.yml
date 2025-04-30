@@ -19,18 +19,25 @@ jobs:
           echo "${{ secrets.EC2_SSH_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+        shell: bash
 
       - name: Sync project to EC2 via rsync
         run: |
           rsync -avz --delete -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" ./ \
             ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:~/Silmedy-Server
 
+      - name: Ensure Python3 and pip3 installed
+        run: |
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "
+            sudo yum install -y python3 && sudo python3 -m ensurepip --upgrade
+          "
+
       - name: Set deploy.sh as executable
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} \
-            "chmod +x ~/Silmedy-Server/deploy.sh"
+            'chmod +x ~/Silmedy-Server/deploy.sh'
 
       - name: Run deployment script on EC2
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} \
-            "~/Silmedy-Server/deploy.sh"
+            '~/Silmedy-Server/deploy.sh'
