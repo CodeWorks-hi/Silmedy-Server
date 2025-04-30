@@ -596,7 +596,11 @@ def save_chat():
         chat_collection.document(ai_chat_id).set(ai_chat_data)
 
         logger.info(f"[Firestore 저장됨] patient_id={patient_id}, patient_chat_id={patient_chat_id}, ai_chat_id={ai_chat_id}")
-        return jsonify({"message": "Chat saved", "chat_ids": [patient_chat_id, ai_chat_id]}), 200
+        return jsonify({
+            "message": "Chat saved",
+            "chat_ids": [patient_chat_id, ai_chat_id],
+            "ai_text": ai_response.strip()
+        }), 200
 
     except Exception as e:
         logger.error(f"Error saving chat: {e}")
