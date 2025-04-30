@@ -9,7 +9,7 @@ dotenv
 uuid
 flask_jwt_extended
 flasgger
-numpy
+numpy<2.0
 tflite-runtime
 Pillow
 openai
