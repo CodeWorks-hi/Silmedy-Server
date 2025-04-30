@@ -180,6 +180,7 @@ def classify_or_prompt(self, prompt: str, sentence: str, cb: Any, category: str)
         except Exception as e:
             cb.on_error(e)
 
+
 def send_chat_stream(
         self,
         user_id: str,
