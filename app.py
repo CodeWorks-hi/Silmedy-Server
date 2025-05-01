@@ -976,7 +976,14 @@ def get_default_address():
                 'contact': data_doc.get('contact', '')
             }), 200
         else:
-            return jsonify({'is_default_address': False}), 200
+            return jsonify({
+                'is_default_address': False,
+                'postal_code': data_doc.get('postal_code', ''),
+                'address': data_doc.get('address', ''),
+                'address_detail': data_doc.get('address_detail', ''),
+                'name': data_doc.get('name', ''),
+                'contact': data_doc.get('contact', '')
+                }), 200
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
