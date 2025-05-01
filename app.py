@@ -611,6 +611,30 @@ def verify_code_check_user():
         return jsonify({"success": False, "message": f"오류 발생: {str(e)}"}), 500
     
 
+
+# ---- 환자 이름 반환 ----
+@app.route('/patient/name', methods=['GET'])
+@jwt_required()
+def get_patient_name():
+    try:
+        patient_id = get_jwt_identity()
+        if not patient_id:
+            return jsonify({'error': 'Unauthorized'}), 401
+
+        doc = collection_patients.document(str(patient_id)).get()
+        if not doc.exists:
+            return jsonify({'error': 'User not found'}), 404
+
+        data = doc.to_dict()
+        name = data.get('name', '')
+
+        return jsonify({'name': name}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+
  # ---- 증상으로 관련 정보 조회 ----
 @app.route('/info-by-symptom', methods=['POST'])
 def get_disease_info_by_symptom():
