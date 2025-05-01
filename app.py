@@ -270,7 +270,26 @@ def send_chat_stream(
             prompt += "\n\n비대면 진료가 필요하시면 '예'라고 답해주세요."
             return prompt
 
- 
+
+# ---- 환자 이메일 중복 확인 ----
+@app.route('/patient/check-email', methods=['POST'])
+def check_patient_email():
+    try:
+        body = request.get_json()
+        email = body.get('email', '').strip()
+        if not email:
+            return jsonify({'error': 'Email is required'}), 400
+
+        existing_user = collection_patients.where("email", "==", email).limit(1).stream()
+        if next(existing_user, None):
+            return jsonify({'exists': True, 'message': '이미 사용 중인 이메일입니다.'}), 200
+        else:
+            return jsonify({'exists': False, 'message': '사용 가능한 이메일입니다.'}), 200
+
+    except Exception as e:
+        logger.error(f"Error checking email: {e}")
+        return jsonify({'error': str(e)}), 500
+
 
 # ---- 환자 회원가입 ----
 @app.route('/patient/signup', methods=['POST'])
