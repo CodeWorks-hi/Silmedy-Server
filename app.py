@@ -995,9 +995,12 @@ def get_default_address():
 def register_delivery():
     try:
         data = request.get_json()
+        print(f"[DEBUG] Incoming data: {data}")
         required_fields = ['is_delivery', 'patient_contact', 'pharmacy_id', 'prescription_id']
-        if not all(field in data for field in required_fields):
-            return jsonify({'error': '필수 항목 누락'}), 400
+        missing_fields = [field for field in required_fields if field not in data]
+        if missing_fields:
+            print(f"[DEBUG] Missing required fields: {missing_fields}")
+            return jsonify({'error': f'필수 항목 누락: {missing_fields}'}), 400
 
         patient_id = get_jwt_identity()
         is_delivery = data['is_delivery']
@@ -1011,7 +1014,8 @@ def register_delivery():
         # 배송 요청일 경우 필수 필드 확인
         if is_delivery:
             if not all(k in data for k in ['address', 'postal_code']):
-                return jsonify({'error': '주소 및 우편번호는 필수입니다 (is_delivery=True)'})
+                print(f"[DEBUG] Missing address or postal_code for delivery: address={data.get('address')}, postal_code={data.get('postal_code')}")
+                return jsonify({'error': '주소 및 우편번호는 필수입니다 (is_delivery=True)'}), 400
         
         # delivery_id 발급
         counter_response = table_counters.get_item(Key={"counter_name": "delivery_id"})
@@ -1045,6 +1049,7 @@ def register_delivery():
         }), 200
 
     except Exception as e:
+        print(f"[ERROR] Exception during delivery registration: {e}")
         return jsonify({'error': str(e)}), 500
 
 
