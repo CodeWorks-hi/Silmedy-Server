@@ -21,7 +21,7 @@ from flasgger import Swagger
 import yaml
 from flask import Flask, request, jsonify
 import numpy as np
-from tflite_runtime.interpreter import Interpreter
+from tensorflow.lite.python.interpreter import Interpreter
 from PIL import Image
 from openai import OpenAI
 from typing import Any, Optional
@@ -120,7 +120,7 @@ def generate_llama_response(patient_id, chat_history):
     logger.info(f"[Llama 호출] patient_id={patient_id}, message=\"{last_msg}\"")
 
     # 1) 외과 긴급 키워드 목록 (최소화)
-    SURGICAL_KEYWORDS = ["골절", "뼈 부러짐", "상처", "출혈"]
+    SURGICAL_KEYWORDS = ["골절", "뼈 부러짐", "상처", "출혈","멍"]
     lower = last_msg.lower()
     if any(kw in lower for kw in SURGICAL_KEYWORDS):
         logger.info("[Llama 중단] 외과 키워드 감지됨. ‘외과’ 반환.")
@@ -676,7 +676,9 @@ def save_chat():
         if ai_response.strip() == "외과":
             logger.info("[Chat 저장 중단] 외과 키워드로 인해 AI 응답 저장 생략")
             return jsonify({
-                "message": "외과 관련 질문으로 판단되어 AI 응답은 생략되었습니다.",
+                "message":"외과 진료가 필요해 보여요.\n"
+                    "편하실 때 촬영을 통해 증상을 확인해 보실 수 있습니다.\n"
+                    "지금 터치로 증상 확인 페이지로 이동해 보시겠어요? (예/아니오 : 팝업창 실행)",
                 "chat_ids": [patient_chat_id]
             }), 200
 
