@@ -102,6 +102,7 @@ table_ai_consults = dynamodb.Table('ai_consults')
 table_care_requests = dynamodb.Table('care_requests')
 table_counters = dynamodb.Table('counters')
 table_diagnosis_records = dynamodb.Table('diagnosis_records')
+table_diseases_teachable = dynamodb.Table('diseases_teachable_machine')
 table_diseases = dynamodb.Table('diseases')
 table_drug_deliveries = dynamodb.Table('drug_deliveries')
 table_drugs = dynamodb.Table('drugs')
@@ -645,7 +646,7 @@ def get_disease_info_by_symptom():
         if not symptom:
             return jsonify({'error': 'symptom is required'}), 400
 
-        response = table_diseases.scan(
+        response = table_diseases_teachable.scan(
             FilterExpression=Attr('name_ko').eq(symptom)
         )
         items = response.get('Items', [])
