@@ -870,8 +870,11 @@ def confirm_reservation():
 
 # ---- 처방전 URL 반환 ----
 @app.route('/prescription/url', methods=['GET'])
+@jwt_required()
 def get_prescription_url():
     try:
+        data = request.get_json()
+        patient_id = get_jwt_identity()
         diagnosis_id = request.args.get('diagnosis_id')
         if not diagnosis_id:
             return jsonify({'error': 'diagnosis_id is required'}), 400
