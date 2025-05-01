@@ -869,8 +869,6 @@ def get_prescription_url():
 def get_diagnosis_by_patient():
     try:
         patient_id = get_jwt_identity()
-        # if not patient_id:
-        #     return jsonify({'error': 'Patient ID is required'}), 400
 
         response = table_diagnosis_records.scan()
         items = []
@@ -878,23 +876,23 @@ def get_diagnosis_by_patient():
             if str(item.get('patient_id', '')).strip() == patient_id:
                 diagnosis_id = item.get('diagnosis_id')
                 diagnosed_at = item.get('diagnosed_at', '')
+                doctor_id = item.get('doctor_id', '')
+                summary_text = list(item.get('summary_text', [])) if isinstance(item.get('summary_text'), set) else item.get('summary_text', [])
+
                 try:
                     diagnosed_date = datetime.strptime(diagnosed_at, "%Y-%m-%d %H:%M:%S").date().isoformat()
                 except ValueError:
                     diagnosed_date = diagnosed_at  # fallback if format is wrong
 
-                delivery_scan = table_drug_deliveries.scan(
-                    FilterExpression=Attr('prescription_id').eq(diagnosis_id)
-                )
-                delivery_items = delivery_scan.get('Items', [])
-                delivery_info = delivery_items[0] if delivery_items else {}
+                # doctor_id 기반 hospital_id 가져오기
+                doctor_doc = collection_doctors.document(str(doctor_id)).get()
+                hospital_id = doctor_doc.to_dict().get('hospital_id') if doctor_doc.exists else None
 
                 result = {
                     'diagnosis_id': diagnosis_id,
-                    'summary_text': list(item.get('summary_text', [])) if isinstance(item.get('summary_text'), set) else item.get('summary_text', []),
                     'diagnosed_at': diagnosed_date,
-                    'is_delivery': delivery_info.get('is_delivery', False),
-                    'is_received': delivery_info.get('is_received', False)
+                    'summary_text': summary_text,
+                    'hospital_id': hospital_id
                 }
                 items.append(result)
 
