@@ -873,7 +873,6 @@ def confirm_reservation():
 @jwt_required()
 def get_prescription_url():
     try:
-        data = request.get_json()
         patient_id = get_jwt_identity()
         diagnosis_id = request.args.get('diagnosis_id')
         if not diagnosis_id:
@@ -899,6 +898,7 @@ def get_prescription_url():
         is_made = bool(delivery_items)
 
         return jsonify({
+            'prescription_id': prescription_id,
             'prescription_url': prescription_url,
             'is_made': is_made
         }), 200
