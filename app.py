@@ -971,7 +971,9 @@ def get_default_address():
                 'is_default_address': True,
                 'postal_code': data_doc.get('postal_code', ''),
                 'address': data_doc.get('address', ''),
-                'address_detail': data_doc.get('address_detail', '')
+                'address_detail': data_doc.get('address_detail', ''),
+                'name': data_doc.get('name', ''),
+                'contact': data_doc.get('contact', '')
             }), 200
         else:
             return jsonify({'is_default_address': False}), 200
