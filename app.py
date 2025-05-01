@@ -884,15 +884,21 @@ def get_diagnosis_by_patient():
                 except ValueError:
                     diagnosed_date = diagnosed_at  # fallback if format is wrong
 
-                # doctor_id 기반 hospital_id 가져오기
+                # doctor_id 기반 hospital_id 가져오기 및 hospital_name 조회
                 doctor_doc = collection_doctors.document(str(doctor_id)).get()
                 hospital_id = doctor_doc.to_dict().get('hospital_id') if doctor_doc.exists else None
+
+                hospital_name = None
+                if hospital_id:
+                    hospital_doc = table_hospitals.get_item(Key={'hospital_id': int(hospital_id)})
+                    if 'Item' in hospital_doc:
+                        hospital_name = hospital_doc['Item'].get('name')
 
                 result = {
                     'diagnosis_id': diagnosis_id,
                     'diagnosed_at': diagnosed_date,
                     'summary_text': summary_text,
-                    'hospital_id': hospital_id
+                    'hospital_name': hospital_name
                 }
                 items.append(result)
 
