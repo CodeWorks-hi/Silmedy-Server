@@ -995,7 +995,7 @@ def get_default_address():
 def register_delivery():
     try:
         data = request.get_json()
-        required_fields = ['is_delivery', 'pharmacy_id', 'prescription_id']
+        required_fields = ['is_delivery', 'prescription_id']
         if not all(field in data for field in required_fields):
             return jsonify({'error': '필수 항목 누락'}), 400
 
