@@ -18,5 +18,4 @@ re
 TypeDeserializer
 List
 json
-ChatCompletion
-Any, Optional
+
