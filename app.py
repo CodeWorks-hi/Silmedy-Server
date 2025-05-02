@@ -21,12 +21,17 @@ from flasgger import Swagger
 import yaml
 from flask import Flask, request, jsonify
 import numpy as np
-from tflite_runtime.interpreter import Interpreter
+from tensorflow.lite.python.interpreter import Interpreter
 from PIL import Image
 from openai import OpenAI
 from typing import Any, Optional
 from openai.types.chat import ChatCompletion
-
+import json
+from typing import List, Dict
+from boto3.dynamodb.types import TypeDeserializer
+import re
+from requests.exceptions import ReadTimeout, RequestException
+import time
 
 
 
@@ -39,6 +44,8 @@ app.secret_key = os.getenv("JWT_SECRET_KEY")
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
 app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
 jwt = JWTManager(app)
+
+
 
 # ---- JWT 토큰 갱신 ----
 @app.route('/token/refresh', methods=['POST'])
@@ -71,6 +78,12 @@ aws_region = os.getenv("AWS_REGION", "ap-northeast-2")
 
 KAKAO_API_KEY = os.getenv("KAKAO_REST_API_KEY")
 
+
+# Hugging Face Inference API 설정
+load_dotenv()
+API_KEY = os.getenv("HUGGINGFACE_API_KEY")
+API_URL = os.getenv("HUGGINGFACE_API_URL")
+
 dynamodb = boto3.resource(
     'dynamodb',
     region_name=aws_region,
@@ -82,6 +95,8 @@ firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://silmedy-23a1b-default-rtdb.firebaseio.com'
 })
 fs_db = firestore.client()
+
+
 
 
 # ---- 테이블 목록 ----
@@ -110,187 +125,229 @@ table_hospitals = dynamodb.Table('hospitals')
 table_pharmacies = dynamodb.Table('pharmacies')
 table_prescription_records = dynamodb.Table('prescription_records')
 
+# 전처리 함수들
+def normalize(text: str) -> str:
+    """한글, 숫자만 남기고 소문자화, 공백 제거"""
+    return re.sub(r"[^가-힣0-9]", "", text.lower())
 
-
-def generate_llama_response(patient_id, chat_history):
+def clean_symptom(text: str) -> str:
     """
-    1) 외과 긴급 키워드 감지 → '외과' 반환
-    2) few-shot prompt로 LLM 분류 → '내과' or '외과'
+    사용자 증상 입력에서
+    1) 불필요한 종결·요청 표현 제거
+    2) 조사(을/를, 이/가, 은/는) 제거
+    3) 공백 정리 후 반환
     """
-    last_msg = chat_history[-1]
-    logger.info(f"[Llama 호출] patient_id={patient_id}, message=\"{last_msg}\"")
+    unnecessary = [
+        "을", "를", "이", "가", "은", "는",
+        "가요", "요", "설명해 줘", "말해 줘",
+        "알겠습니다", "알려주세요", "알려 줘",
+        "네", "아니요", "혹시"
+    ]
+    unnecessary.sort(key=len, reverse=True)
+    pattern = r"\b(" + "|".join(map(re.escape, unnecessary)) + r")\b"
+    s = re.sub(pattern, "", text, flags=re.IGNORECASE)
+    s = re.sub(r"\b(을|를|이|가|은|는)\b", "", s)
+    return re.sub(r"\s+", "", s).strip()
 
-    # 1) 외과 긴급 키워드 목록 (최소화)
-    SURGICAL_KEYWORDS = ["골절", "뼈 부러짐", "상처", "출혈","멍"]
-    lower = last_msg.lower()
-    if any(kw in lower for kw in SURGICAL_KEYWORDS):
-        logger.info("[Llama 중단] 외과 키워드 감지됨. ‘외과’ 반환.")
-        return "외과"
+# DynamoDB AttributeValue -> Python 타입 변환
+deserializer = TypeDeserializer()
 
-    # 2) 환경변수에서 API 설정 읽기
-    api_key = os.getenv("HUGGINGFACE_API_KEY") 
-    api_url = os.getenv("HUGGINGFACE_API_URL") 
+def _deserialize_item(av_map: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    DynamoDB AttributeValue 맵({"S":..., "L":[...]})을
+    순수 Python dict/list/str/... 으로 변환합니다.
+    """
+    return {k: deserializer.deserialize(v) for k, v in av_map.items()}
 
-    if not api_key or not api_url:
-        logger.error("Hugging Face API 키 또는 URL이 설정되지 않았습니다.")
-        return "AI 응답을 가져오지 못했습니다."
-    # fallback: ensure a string is always returned
-    return "AI 응답을 가져오지 못했습니다."
+# 보조 함수: 어떤 값이든 리스트로 변환
+def to_list(val: Any) -> List[Any]:
+    if val is None:
+        return []
+    if isinstance(val, (list, tuple)):
+        return list(val)
+    return [val]
+
+# 외과 긴급 키워드 목록
+class HybridLlamaService:
+    # 외과 긴급 키워드 목록
+    SURGICAL_KEYWORDS = ["골절", "뼈 부러짐", "상처", "출혈", "멍"]
+
+    def _classify_text(self, text: str) -> str:
+        lower = text.lower()
+        return "외과" if any(kw in lower for kw in self.SURGICAL_KEYWORDS) else "내과"
+
+    def _load_rules(self) -> List[Dict[str, Any]]:
+        try:
+            items = table_diseases.scan().get("Items", [])
+            if not items:
+                return []
+            first = next(iter(items[0].values()))
+            if isinstance(first, dict) and ("S" in first or "L" in first):
+                return [_deserialize_item(i) for i in items]
+            return items
+        except Exception as e:
+            logger.warning(f"룰 로드 실패: {e}")
+            return []
+    def _call_llm_for_symptom(self, symptom: str) -> str:
+        """
+        Hugging Face Inference API 호출 (inputs 기반)
+        """
+        if not API_KEY or not API_URL:
+            return "죄송합니다. LLM API 설정이 필요합니다."
+
+        url = API_URL.rstrip("/")  # ex: https://api-inference.huggingface.co/models/meta-llama/Llama-3.1-8B-Instruct
+        headers = {
+            "Authorization": f"Bearer {API_KEY}",
+            "Content-Type": "application/json"
+        }
+
+        prompt = (
+            "너는 친절한 내과 상담 AI야. 예상 원인 1~2가지, 자가관리법 1~2가지, "
+            "이럴 땐 병원 방문 안내를 2~3줄로 알려줘.\n\n"
+            f"Symptom: {symptom}"
+        )
+
+        body = {
+            "inputs": prompt,
+            "parameters": {
+                "max_new_tokens": 150,
+                "temperature": 0.3
+            }
+        }
+
+        max_retries = 3
+        connect_timeout = 5
+        read_timeout = 60
+
+        for attempt in range(1, max_retries + 1):
+            try:
+                resp = requests.post(
+                    url,
+                    headers=headers,
+                    json=body,
+                    timeout=(connect_timeout, read_timeout)
+                )
+                resp.raise_for_status()
+                data = resp.json()
+
+                # generated_text 추출
+                if isinstance(data, list) and data and "generated_text" in data[0]:
+                    full_text = data[0]["generated_text"]
+                else:
+                    full_text = data.get("generated_text", "")
+
+                # 프롬프트 부분 제거
+                if full_text.startswith(prompt):
+                    answer = full_text[len(prompt):].lstrip("\n :")
+                else:
+                    answer = full_text
+
+                return answer.strip() or "죄송합니다. 결과가 없습니다."
+
+            except requests.RequestException as e:
+                logger.error(f"LLM 호출 오류 (시도 {attempt}): {e}", exc_info=True)
+                if attempt == max_retries:
+                    return "죄송합니다. 현재 해당 증상에 대한 정보를 생성할 수 없습니다."
+                time.sleep(attempt)
 
 
-def classify_or_prompt(self, prompt: str, sentence: str, cb: Any, category: str) -> None:
-        lower = sentence.lower()
+    def generate_llama_response(self, patient_id: str, chat_history: List[Any]) -> Dict[str, Any]:
+        """
+        1) 외과 키워드 → 즉시 외과 안내
+        2) 분류 → 내과/외과 결정
+        3) 내과 → LLM 호출 후 룰 매칭
+        4) 기타 과목 → 선택 유도
+        5) 외과 fallback
+        """
+        raw = chat_history[-1]
+        last_msg = (raw.get("patient_text") if isinstance(raw, dict) else str(raw)).strip()
+        lower = last_msg.lower()
+        logger.info(f"[generate_llm_for_symptom] patient_id={patient_id}, message=\"{last_msg}\"")
 
-        # 3) 외과 긴급 키워드 감지
-        for kw in self.SURGICAL_EMERGENCY_KEYWORDS:
-            if kw in lower:
-                cb.on_surgical_question(
+        # 1) 외과 긴급 키워드
+        if any(kw in lower for kw in self.SURGICAL_KEYWORDS):
+            return {
+                "category": "외과",
+                "text": (
                     "외과 진료가 필요해 보여요.\n"
                     "편하실 때 촬영을 통해 증상을 확인해 보실 수 있습니다.\n"
                     "지금 터치로 증상 확인 페이지로 이동해 보시겠어요? (예/아니오)"
                 )
-                return
+            }
 
-        # 2) few-shot prompt로 LLM 분류
-        try:
-            system_prompt = (
-                "너는 병원 접수 담당자야. 환자 문장을 보면 반드시 '내과' 또는 '외과'로 분류해.\n"
-                "다음 예시를 참고해:\n"
-                "예시1: \"손가락이 아파요\" → 내과\n"
-                "예시2: \"팔이 부러진 것 같아요\" → 외과\n"
-                "예시3: \"배가 너무 아파요\" → 내과\n"
-                "예시4: \"심하게 베였어요\" → 외과\n"
-                f"이제 문장: \"{sentence}\"\n"
-                "출력은 한 단어(내과 또는 외과)만."
-            )
+        # 2) 분류
+        category = self._classify_text(last_msg)
+
+        # 3) 내과 처리
+        if category == "내과":
+            # 1차: LLM 호출
+            ai_text = self._call_llm_for_symptom(last_msg)
+
+            # 2차: DB 룰 매칭
+            for rule in self._load_rules():
+                sub_category = rule.get("sub_category") or []
+                main_symptoms = rule.get("main_symptoms") or []
+                kws = list(sub_category) + list(main_symptoms)
+
+                # 매칭 여부 확인
+                if any(isinstance(kw, str) and kw.lower() in lower for kw in kws):
+                    # 의심질환
+                    suspected = rule.get("suspected_conditions")
+                    if not suspected:
+                        suspected_str = "정보 없음"
+                    elif isinstance(suspected, (list, tuple)):
+                        suspected_str = ", ".join(map(str, suspected))
+                    else:
+                        suspected_str = str(suspected)
+
+                    # 자가관리
+                    home_actions = rule.get("home_actions")
+                    if not home_actions:
+                        home_str = "정보 없음"
+                    elif isinstance(home_actions, (list, tuple)):
+                        home_str = ", ".join(map(str, home_actions))
+                    else:
+                        home_str = str(home_actions)
+
+                    # 응급안내
+                    emergency_advice = rule.get("emergency_advice")
+                    if not emergency_advice:
+                        emerg_str = "정보 없음"
+                    elif isinstance(emergency_advice, (list, tuple)):
+                        emerg_str = ", ".join(map(str, emergency_advice))
+                    else:
+                        emerg_str = str(emergency_advice)
+
+                    text = (
+                        f"예상 질환: {suspected_str}\n"
+                        f"자가관리: {home_str}\n"
+                        f"이럴 땐 병원: {emerg_str}\n"
+                        "비대면 진료가 필요하면 '예'라고 답해주세요.\n"
+                        "(※ 정확한 진단은 전문가 상담을 통해 진행하세요.)"
+                    )
+                    return {"category": "내과", "text": ai_text}
 
 
-    # 3) LLM 호출
-            resp: ChatCompletion = self.client.chat.completions.create(
-                model="meta-llama/Llama-3.1-8B-Instruct",
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": sentence}
-                ],
-                temperature=0.0,
-                max_tokens=5
-            )
-            cat = resp.choices[0].message.content.strip()
-            if cat not in ("내과", "외과"):
-                logger.warning(f"Unexpected classification '{cat}', fallback to '내과'")
-                cat = "내과"
-            cb.on_classification(cat, category)
 
-        except Exception as e:
-            cb.on_error(e)
-
-
-def send_chat_stream(
-        self,
-        user_id: str,
-        prev_symptom: Optional[str],
-        user_message: str,
-        cb: Any
-    ) -> None:
-        """
-        AI 문진·케어 스트리밍 헬퍼
-        """
-        try:
-            # 1) 외과 긴급 키워드 감지
-            lower = user_message.lower()
-            if any(kw in lower for kw in self.SURGICAL_EMERGENCY_KEYWORDS):
-                cb.on_error(Exception("외과 증상 감지, 스트림 중단"))
-                return
-
-            # 2) 시스템 프롬프트 생성
-            is_combined = bool(prev_symptom)
-            system_prompt = self._build_system_prompt(prev_symptom or "", user_message, is_combined)
-
-            # 3) 스트리밍 호출
-            stream = self.client.chat.completions.create(
-                model="meta-llama/Llama-3.1-8B-Instruct",
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_message}
-                ],
-                temperature=0.3,
-                max_tokens=512,
-                stream=True
-            )
-            # 4) 델타 단위로 콜백
-            for chunk in stream:
-                delta = chunk.choices[0].delta.get("content")
-                if delta:
-                    cb.on_chunk(delta)
-            cb.on_complete()
-
-        except Exception as e:
-            cb.on_error(e)
-
-        def _build_system_prompt(self, prev: str, msg: str, combined: bool) -> str:
-            sb = [
-                   "안녕하세요!🩺 저는 Slimedy AI 닥터링(Dr.Link)입니다.","궁금한 증상을 말씀해 주시면 쉽게 안내해 드릴게요.\n"]
-            if is_combined:
-                prompt += (
-                    f"✏️ [복합 증상 분석]\n"
-                    f"- 증상1: {prev_symptom}\n"
-                    f"- 증상2: {user_message}\n"
-                    f"- 원인 예시:\n"
-                    f"  1) {prev_symptom}과 {user_message} 간 관련성 가능\n"
-                    f"  2) 스트레스 또는 일시적 피로\n\n"
+        # 4) 기타 과목 → 전문의 선택 유도
+        if category not in ("내과", "외과"):
+            return {
+                "category": "기타",
+                "text": (
+                    "전문의 상담이 필요해 보이는 증상입니다.\n"
+                    "내과 또는 외과 중 추가로 원하시는 상담이 있나요? (내과/외과)"
                 )
-            else:
-                prompt += (
-                    f"✏️ [증상 분석]\n"
-                    f"- 증상: {user_message}\n"
-                    f"- 원인 예시:\n"
-                    f"  1) 일시적 피로\n"
-                    f"  2) 환경 변화\n\n"
-                )
-            prompt += (
-                "🏠 [집에서 할 수 있는 관리]\n"
-                "  → 30분마다 미지근한 물을 조금씩 마셔보세요\n"
-                "    (단, 신장질환·심부전·부종·삼킴 곤란·금식 등은 의료진과 상의)\n"
-                "  → 1~2시간 편하게 쉬세요\n"
-                "  → 증상과 체온을 기록해 두세요\n"
+            }
+
+        # 5) 외과 fallback
+        return {
+            "category": "외과",
+            "text": (
+                "외과 진료가 필요해 보여요.\n"
+                "편하실 때 촬영을 통해 증상을 확인해 보실 수 있습니다.\n"
+                "지금 터치로 증상 확인 페이지로 이동해 보시겠어요? (예/아니오)"
             )
-            if "열" in user_message:
-                prompt += "  → 38.5℃ 이상이면 해열제 복용\n"
-            if "통증" in user_message:
-                prompt += "  → 아픈 부위 5분간 찜질\n"
-            if any(x in user_message for x in ["구토", "설사"]):
-                prompt += "  → 이온음료(전해질 음료)로 수분 보충\n"
-            prompt += (
-                "\n⚠️ [이럴 땐 병원 방문]\n"
-                "• 증상이 6시간 이상 계속됨\n"
-            )
-            if any(x in user_message for x in ["흉통", "호흡곤란"]):
-                prompt += "• 가슴 답답/숨쉬기 힘듦 → 119 신고\n"
-            if "의식저하" in user_message:
-                prompt += "• 의식이 흐려짐/이상 행동\n"
-            prompt += "\n\n비대면 진료가 필요하시면 '예'라고 답해주세요."
-            return prompt
-
-
-# ---- 환자 이메일 중복 확인 ----
-@app.route('/patient/check-email', methods=['POST'])
-def check_patient_email():
-    try:
-        body = request.get_json()
-        email = body.get('email', '').strip()
-        if not email:
-            return jsonify({'error': 'Email is required'}), 400
-
-        existing_user = collection_patients.where("email", "==", email).limit(1).stream()
-        if next(existing_user, None):
-            return jsonify({'exists': True, 'message': '이미 사용 중인 이메일입니다.'}), 200
-        else:
-            return jsonify({'exists': False, 'message': '사용 가능한 이메일입니다.'}), 200
-
-    except Exception as e:
-        logger.error(f"Error checking email: {e}")
-        return jsonify({'error': str(e)}), 500
-
+        }
 
 # ---- 환자 회원가입 ----
 @app.route('/patient/signup', methods=['POST'])
@@ -672,82 +729,75 @@ def get_disease_info_by_symptom():
 
     
 
+
+
+# ─────── AI 채팅 저장 ───────
+
+# ── 전역 서비스 인스턴스 ───
+service = HybridLlamaService()
+
 @app.route('/chat/save', methods=['POST'])
 @jwt_required()
 def save_chat():
     try:
-        identity = get_jwt_identity()
-        patient_id = identity
+        patient_id = get_jwt_identity()
         data = request.get_json()
-        patient_text = data.get('patient_text')
-
+        patient_text = data.get('patient_text', '').strip()
         if not patient_id or not patient_text:
             return jsonify({"error": "Missing required fields"}), 400
 
-        now = datetime.utcnow()
-        created_at = now.strftime("%Y-%m-%d %H:%M:%S")
-        chat_collection = collection_consult_text.document(str(patient_id)).collection("chats")
+        now  = datetime.utcnow()
+        ts   = now.strftime("%Y-%m-%d %H:%M:%S")
+        coll = collection_consult_text.document(str(patient_id)).collection("chats")
 
-        # Add separator only if there are NO documents at all in the subcollection
-        if not any(chat_collection.stream()):
-            separator_time = now - timedelta(milliseconds=1)
-            separator_id = separator_time.strftime("%Y%m%d%H%M%S%f")
-            separator_data = {
-                'chat_id': separator_id,
-                'sender_id': '',
-                'text': '',
-                'created_at': separator_time.strftime("%Y-%m-%d %H:%M:%S"),
+        # 최초 구분자
+        if not any(coll.stream()):
+            sep = now - timedelta(milliseconds=1)
+            sid = sep.strftime("%Y%m%d%H%M%S%f")
+            coll.document(sid).set({
+                'chat_id': sid, 'sender_id':'',
+                'text':'',
+                'created_at': sep.strftime("%Y-%m-%d %H:%M:%S"),
                 'is_separater': True
-            }
-            chat_collection.document(separator_id).set(separator_data)
+            })
 
-        # 1. Save patient text
-        patient_chat_id = now.strftime("%Y%m%d%H%M%S%f")
-        patient_chat_data = {
-            'chat_id': patient_chat_id,
-            'sender_id': '나',
-            'text': patient_text.strip(),
-            'created_at': created_at,
+        # 1) 환자 메시지 저장
+        pid = now.strftime("%Y%m%d%H%M%S%f")
+        coll.document(pid).set({
+            'chat_id': pid, 
+            'sender_id':'나',
+            'text': patient_text, 
+            'created_at': ts,
             'is_separater': False
-        }
-        chat_collection.document(patient_chat_id).set(patient_chat_data)
+        })
 
-        # 2. Generate LLM response using helper function
-        chat_history = [patient_text]  # 필요시 과거 채팅 내역도 포함 가능
-        ai_response = generate_llama_response(patient_id, chat_history)
+        # 2) AI 응답 생성
+        ai_resp = service.generate_llama_response(patient_id, [patient_text])
+        ai_text = ai_resp.get("text") if isinstance(ai_resp, dict) else str(ai_resp)
 
-        # 외과 키워드 응답 시 저장 중단 및 조기 반환
-        if ai_response.strip() == "외과":
-            logger.info("[Chat 저장 중단] 외과 키워드로 인해 AI 응답 저장 생략")
-            return jsonify({
-                "message":"외과 진료가 필요해 보여요.\n"
-                    "편하실 때 촬영을 통해 증상을 확인해 보실 수 있습니다.\n"
-                    "지금 터치로 증상 확인 페이지로 이동해 보시겠어요? (예/아니오 : 팝업창 실행)",
-                "chat_ids": [patient_chat_id]
-            }), 200
+        # 외과 단답형 조기 반환
+        if ai_text.strip() == "외과":
+            return jsonify({"message": ai_text, "chat_ids":[pid]}), 200
 
-        # 3. Save AI response
-        ai_chat_id = (now + timedelta(milliseconds=1)).strftime("%Y%m%d%H%M%S%f")
-        ai_chat_data = {
-            'chat_id': ai_chat_id,
-            'sender_id': 'AI',
-            'text': ai_response.strip(),
-            'created_at': created_at,
+        # 3) AI 메시지 저장
+        aid = (now + timedelta(milliseconds=1)).strftime("%Y%m%d%H%M%S%f")
+        coll.document(aid).set({
+            'chat_id': aid, 
+            'sender_id':'AI',
+            'text': ai_text, 
+            'created_at': ts,
             'is_separater': False
-        }
-        chat_collection.document(ai_chat_id).set(ai_chat_data)
+        })
 
-        logger.info(f"[Firestore 저장됨] patient_id={patient_id}, patient_chat_id={patient_chat_id}, ai_chat_id={ai_chat_id}")
         return jsonify({
             "message": "Chat saved",
-            "chat_ids": [patient_chat_id, ai_chat_id],
-            "ai_text": ai_response.strip()
+            "chat_ids": [pid, aid],
+            "ai_text": ai_text
         }), 200
 
     except Exception as e:
         logger.error(f"Error saving chat: {e}")
         return jsonify({'error': str(e)}), 500
-
 
 
 # ---- 의사 진료 가능 시간 + 수어 필요 여부 통합 확인 ----

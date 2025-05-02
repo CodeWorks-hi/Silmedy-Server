@@ -14,3 +14,9 @@ tflite-runtime
 Pillow
 openai
 typing
+re
+TypeDeserializer
+List
+json
+ChatCompletion
+Any, Optional
