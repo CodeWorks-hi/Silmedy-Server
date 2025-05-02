@@ -1025,16 +1025,27 @@ def register_delivery():
         table_counters.put_item(Item={"counter_name": "delivery_id", "current_id": current_id})
 
         # 배송 정보 구성
-        delivery = {
-            "delivery_id": current_id,
-            "patient_id": patient_id,
-            "is_delivery": is_delivery,
-            "patient_contact": contact,
-            "pharmacy_id": data["pharmacy_id"],
-            "prescription_id": data["prescription_id"],
-            "created_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
-            "is_received": False
-        }
+        if 'pharmacy_id' not in data:
+            delivery = {
+                "delivery_id": current_id,
+                "patient_id": patient_id,
+                "is_delivery": is_delivery,
+                "patient_contact": contact,
+                "prescription_id": data["prescription_id"],
+                "created_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+                "is_received": False
+            }
+        else:
+            delivery = {
+                "delivery_id": current_id,
+                "patient_id": patient_id,
+                "is_delivery": is_delivery,
+                "patient_contact": contact,
+                "pharmacy_id": data["pharmacy_id"],
+                "prescription_id": data["prescription_id"],
+                "created_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+                "is_received": False
+            }
 
         if is_delivery:
             delivery["address"] = data["address"]
