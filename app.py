@@ -656,7 +656,7 @@ def get_disease_info_by_symptom():
         item = items[0]
         department = item.get('department')
         sub_departments = item.get('sub_department', '')
-        desc_url = item.get('desc_url')
+        image_url = item.get('image_url')
 
         if isinstance(sub_departments, str):
             sub_departments = sub_departments.strip('{}').replace('"', '').split(',')
@@ -664,7 +664,7 @@ def get_disease_info_by_symptom():
         return jsonify({
             'department': department,
             'sub_department': sub_departments[0] if sub_departments else None,
-            'desc_url': desc_url
+            'image_url': image_url
         }), 200
 
     except Exception as e:
