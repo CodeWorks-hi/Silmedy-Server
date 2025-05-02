@@ -85,6 +85,7 @@ load_dotenv()
 API_KEY = os.getenv("HUGGINGFACE_API_KEY")
 API_URL = os.getenv("HUGGINGFACE_API_URL")
 
+
 dynamodb = boto3.resource(
     'dynamodb',
     region_name=aws_region,
@@ -197,7 +198,7 @@ class HybridLlamaService:
         if not API_KEY or not API_URL:
             return "죄송합니다. LLM API 설정이 필요합니다."
 
-        url = API_URL.rstrip("/")  # ex: https://api-inference.huggingface.co/models/meta-llama/Llama-3.1-8B-Instruct
+        url = API_URL.rstrip("/") 
         headers = {
             "Authorization": f"Bearer {API_KEY}",
             "Content-Type": "application/json"
@@ -289,8 +290,14 @@ class HybridLlamaService:
             for rule in self._load_rules():
                 sub_category = rule.get("sub_category") or []
                 main_symptoms = rule.get("main_symptoms") or []
-                synonyms  = rule.get("symptom_synonyms", []) or []
-                kws = list(sub_category) + list(main_symptoms)
+                diseases_similar = rule.get("diseases_similar") or []
+                kws = list(sub_category) + list(main_symptoms)+ list(diseases_similar)
+                if not kws:
+                    continue
+                # 키워드 정규화
+                kws = [normalize(kw) for kw in kws]
+                # 증상 정규화       
+                lower = normalize(last_msg)
 
                 # 매칭 여부 확인
                 if any(isinstance(kw, str) and kw.lower() in lower for kw in kws):
