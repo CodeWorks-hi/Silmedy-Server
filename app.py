@@ -1484,6 +1484,7 @@ def search_pharmacies_with_details():
                 if items:
                     item = items[0]
                     matched_pharmacies.append({
+                        'pharmacy_id': item.get('pharmacy_id'),
                         'pharmacy_name': item.get('name'),
                         'open_hour': item.get('open_hour'),
                         'close_hour': item.get('close_hour'),
