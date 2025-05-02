@@ -995,7 +995,7 @@ def get_default_address():
 def register_delivery():
     try:
         data = request.get_json()
-        required_fields = ['is_delivery', 'patient_contact', 'pharmacy_id', 'prescription_id']
+        required_fields = ['is_delivery', 'pharmacy_id', 'prescription_id']
         if not all(field in data for field in required_fields):
             return jsonify({'error': '필수 항목 누락'}), 400
 
@@ -1007,6 +1007,11 @@ def register_delivery():
             collection_patients.document(patient_id).update({
                 'is_default_address': data['is_default_address']
             })
+
+        if 'patient_contact' in data:
+            contact = data['patient_contact']
+        else:
+            contact = collection_patients.document(patient_id).get().to_dict().get('contact', '')
 
         # 배송 요청일 경우 필수 필드 확인
         if is_delivery:
@@ -1024,7 +1029,7 @@ def register_delivery():
             "delivery_id": current_id,
             "patient_id": patient_id,
             "is_delivery": is_delivery,
-            "patient_contact": data["patient_contact"],
+            "patient_contact": contact,
             "pharmacy_id": data["pharmacy_id"],
             "prescription_id": data["prescription_id"],
             "created_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
