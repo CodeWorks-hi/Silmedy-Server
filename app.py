@@ -21,7 +21,6 @@ from flasgger import Swagger
 import yaml
 from flask import Flask, request, jsonify
 import numpy as np
-from tensorflow.lite.python.interpreter import Interpreter
 from PIL import Image
 from openai import OpenAI
 from typing import Any, Optional
@@ -33,7 +32,9 @@ import re
 from requests.exceptions import ReadTimeout, RequestException
 import time
 
-
+#   푸쉬 할때 바꿔서 
+# from tensorflow.lite.python.interpreter import Interpreter
+from tflite_runtime.interpreter import Interpreter
 
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
 
@@ -119,6 +120,7 @@ table_counters = dynamodb.Table('counters')
 table_diagnosis_records = dynamodb.Table('diagnosis_records')
 table_diseases_teachable = dynamodb.Table('diseases_teachable')
 table_diseases = dynamodb.Table('diseases')
+table_diseases_similar = dynamodb.Table('diseases_similar')
 table_drug_deliveries = dynamodb.Table('drug_deliveries')
 table_drugs = dynamodb.Table('drugs')
 table_hospitals = dynamodb.Table('hospitals')
@@ -287,6 +289,7 @@ class HybridLlamaService:
             for rule in self._load_rules():
                 sub_category = rule.get("sub_category") or []
                 main_symptoms = rule.get("main_symptoms") or []
+                synonyms  = rule.get("symptom_synonyms", []) or []
                 kws = list(sub_category) + list(main_symptoms)
 
                 # 매칭 여부 확인
