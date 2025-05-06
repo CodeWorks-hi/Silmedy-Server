@@ -32,8 +32,7 @@ import re
 from requests.exceptions import ReadTimeout, RequestException
 import time
 
-#   푸쉬 할때 바꿔서 
-# from tensorflow.lite.python.interpreter import Interpreter
+
 from tflite_runtime.interpreter import Interpreter
 
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
