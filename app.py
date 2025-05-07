@@ -437,7 +437,8 @@ def patient_login():
                     'message': 'Login successful',
                     'access_token': access_token,
                     'refresh_token': refresh_token,
-                    'username': item.get('name', '')
+                    'username': item.get('name', ''),
+                    'fcm_token': item.get('fcm_token', '')
                 }), 200
             else:
                 return jsonify({'error': 'Invalid credentials'}), 401
