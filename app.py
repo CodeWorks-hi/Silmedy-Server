@@ -448,6 +448,30 @@ def patient_login():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+# ---- FCM 토큰 등록 ----
+@app.route('/patient/fcm-token', methods=['POST'])
+@jwt_required()
+def register_fcm_token():
+    try:
+        patient_id = get_jwt_identity()  # JWT의 sub (환자 ID 또는 이메일)
+
+        data = request.get_json()
+        fcm_token = data.get('fcm_token')
+        if not fcm_token:
+            return jsonify({'error': 'FCM 토큰이 필요합니다.'}), 400
+
+        # Firestore에서 이메일 또는 ID 기반 문서 찾기
+        user_query = collection_patients.document(patient_id).get()
+        if not user_query.exists:
+            return jsonify({'error': '사용자를 찾을 수 없습니다.'}), 404
+
+        user_query.reference.update({'fcm_token': fcm_token})
+        return jsonify({'message': 'FCM 토큰이 성공적으로 저장되었습니다.'}), 200
+
+    except Exception as e:
+        logger.error(f"FCM 토큰 저장 오류: {e}")
+        return jsonify({'error': '서버 오류로 저장에 실패했습니다.'}), 500
+
 
 # ---- 우편번호 검색 ----
 @app.route('/postal_code', methods=['GET'])
