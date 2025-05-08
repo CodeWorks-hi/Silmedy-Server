@@ -367,6 +367,7 @@ class HybridLlamaService:
             )
         }
 
+
 # ---- 환자 회원가입 ----
 @app.route('/patient/signup', methods=['POST'])
 def patient_signup():
@@ -961,8 +962,8 @@ def confirm_reservation():
         return jsonify({'error': str(e)}), 500
    
 
-# ---- 처방전 URL 반환 ----
-@app.route('/prescription/url', methods=['GET'])
+# ---- 처방전 삽입 정보 반환 ----
+@app.route('/prescription/data', methods=['GET'])
 @jwt_required()
 def get_prescription_url():
     try:
@@ -971,17 +972,54 @@ def get_prescription_url():
         if not diagnosis_id:
             return jsonify({'error': 'diagnosis_id is required'}), 400
 
-        # Step 1: Find prescription record matching diagnosis_id
         prescription_items = table_prescription_records.scan(
             FilterExpression=Attr('diagnosis_id').eq(int(diagnosis_id))
         ).get('Items', [])
-
         if not prescription_items:
             return jsonify({'error': 'Prescription not found for this diagnosis'}), 404
-
+        
         prescription_item = prescription_items[0]
         prescription_id = prescription_item.get('prescription_id')
-        prescription_url = prescription_item.get('prescription_url')
+        doctor_id = prescription_item.get('doctor_id')
+        medication_days = prescription_item.get('medication_days', [])
+        medication_list = prescription_item.get('medication_list', [])
+        # 안전한 타입 체크 및 반복
+        if isinstance(medication_list, list):
+            for med in medication_list:
+                if isinstance(med, dict):
+                    disease_id = med.get('disease_id')
+                    drug_id = med.get('drug_id')
+                    print(f"Disease: {disease_id}, Drug: {drug_id}")
+
+
+        patient_items = collection_patients.document(str(patient_id)).get()
+        if not patient_items.exists:
+            return jsonify({'error': 'User not found'}), 404
+        
+        patient_data = patient_items.to_dict()
+        patient_name = patient_data.get('name', '')
+        patient_identity = patient_data.get('birth_date', '').replace("-", "").strip()[2:]
+
+
+        doctor_items = collection_doctors.document(str(doctor_id)).get()
+        if not doctor_items.exists:
+            return jsonify({'error': 'Doctor not found'}), 404
+        
+        doctor_data = doctor_items.to_dict()
+        doctor_name = doctor_data.get('name', '')
+        hospital_id = doctor_data.get('hospital_id', '')
+        
+
+        hospital_items = table_hospitals.scan(
+            FilterExpression=Attr('hospital_id').eq(hospital_id)
+        ).get('Items', [])
+        if not hospital_items:
+            return jsonify({'error': 'Hospital not found'}), 404
+        
+        hospital_item = hospital_items[0]
+        hospital_name = hospital_item.get('name', '')
+        hospital_contact = hospital_item.get('contact', '')
+
 
         # Step 2: Check if delivery exists for this prescription_id
         delivery_items = table_drug_deliveries.scan(
@@ -992,12 +1030,59 @@ def get_prescription_url():
 
         return jsonify({
             'prescription_id': prescription_id,
-            'prescription_url': prescription_url,
+            'doctor_id': doctor_id,
+            'medication_days': medication_days,
+            'medication_list': medication_list,
+            'patient_name': patient_name,
+            'patient_identity': patient_identity,
+            'doctor_name': doctor_name,
+            'hospital_name': hospital_name,
+            'hospital_contact': hospital_contact,
             'is_made': is_made
         }), 200
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    
+
+
+# # ---- 처방전 URL 반환 ----
+# @app.route('/prescription/url', methods=['GET'])
+# @jwt_required()
+# def get_prescription_url():
+#     try:
+#         patient_id = get_jwt_identity()
+#         diagnosis_id = request.args.get('diagnosis_id')
+#         if not diagnosis_id:
+#             return jsonify({'error': 'diagnosis_id is required'}), 400
+
+#         # Step 1: Find prescription record matching diagnosis_id
+#         prescription_items = table_prescription_records.scan(
+#             FilterExpression=Attr('diagnosis_id').eq(int(diagnosis_id))
+#         ).get('Items', [])
+
+#         if not prescription_items:
+#             return jsonify({'error': 'Prescription not found for this diagnosis'}), 404
+
+#         prescription_item = prescription_items[0]
+#         prescription_id = prescription_item.get('prescription_id')
+#         prescription_url = prescription_item.get('prescription_url')
+
+#         # Step 2: Check if delivery exists for this prescription_id
+#         delivery_items = table_drug_deliveries.scan(
+#             FilterExpression=Attr('prescription_id').eq(int(prescription_id))
+#         ).get('Items', [])
+
+#         is_made = bool(delivery_items)
+
+#         return jsonify({
+#             'prescription_id': prescription_id,
+#             'prescription_url': prescription_url,
+#             'is_made': is_made
+#         }), 200
+
+#     except Exception as e:
+#         return jsonify({'error': str(e)}), 500
 
 
 # ---- 진료 내역 반환 ----
