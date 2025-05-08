@@ -1,40 +1,56 @@
-from io import BytesIO
-from flask import Flask, Blueprint, request, jsonify
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, create_refresh_token
-import firebase_admin
-import boto3
-import logging
-from datetime import datetime, timedelta
-from firebase_admin import credentials, firestore, db
-import requests
-import toml
-from flask_cors import CORS
-from dotenv import load_dotenv
+# 표준 라이브러리 
 import os
+import re
+import time
+import uuid
+import json
+import logging
 import random
 import string
-import re
-from boto3.dynamodb.conditions import Attr
-import uuid
+from datetime import datetime, timedelta
+from io import BytesIO
 from urllib.parse import unquote
-from flasgger import Swagger
-import yaml
-from flask import Flask, request, jsonify
+from typing import Any, Dict, List, Optional
+
+#  서드파티 라이브러리 
+import torch
 import numpy as np
+import requests
+import boto3
+import toml
+import yaml
 from PIL import Image
-from openai import OpenAI
-from typing import Any, Optional
-from openai.types.chat import ChatCompletion
-import json
-from typing import List, Dict
-from boto3.dynamodb.types import TypeDeserializer
-import re
+from flask import Flask, Blueprint, request, jsonify
+from flask_cors import CORS
+from flask_jwt_extended import (
+    JWTManager,
+    create_access_token,
+    create_refresh_token,
+    get_jwt_identity,
+    jwt_required,
+)
+from flasgger import Swagger
+from dotenv import load_dotenv
 from requests.exceptions import ReadTimeout, RequestException
-import time
+from boto3.dynamodb.conditions import Attr
 from boto3.dynamodb.types import TypeDeserializer
+from openai import OpenAI
+from openai.types.chat import ChatCompletion
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
+# Firebase 관련 
+import firebase_admin
+from firebase_admin import credentials, firestore, db
 
+#  TensorFlow Lite (푸쉬 할때 바꿔서) 
+# from tensorflow.lite.python.interpreter import Interpreter
 from tflite_runtime.interpreter import Interpreter
+
+
+# TensorFlow Lite 인터프리터
+interpreter = Interpreter(model_path="model_unquant.tflite")
+interpreter.allocate_tensors()
+
 
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
 
@@ -82,8 +98,15 @@ KAKAO_API_KEY = os.getenv("KAKAO_REST_API_KEY")
 
 # Hugging Face Inference API 설정
 load_dotenv()
-API_KEY = os.getenv("HUGGINGFACE_API_KEY")
-API_URL = os.getenv("HUGGINGFACE_API_URL")
+HF_API_KEY = os.getenv("HUGGINGFACE_API_KEY")
+HF_MODEL   = "mistralai/Mistral-7B-Instruct-v0.3"
+HF_API_URL = f"https://router.huggingface.co/hf-inference/models/{HF_MODEL}/v1/chat/completions"
+
+
+HEADERS = {
+    "Authorization": f"Bearer {HF_API_KEY}",
+    "Content-Type":  "application/json"
+}
 
 
 dynamodb = boto3.resource(
@@ -130,45 +153,66 @@ table_prescription_records = dynamodb.Table('prescription_records')
 
 # 전처리 함수들
 def normalize(text: str) -> str:
-    """한글, 숫자만 남기고 소문자화, 공백 제거"""
-    return re.sub(r"[^가-힣0-9]", "", text.lower())
+    """
+    한글과 숫자만 남기고:
+    - 모든 문자를 소문자화
+    - 공백 제거
+    """
+    # 한글(jamo 제외)과 숫자만 남김
+    cleaned = re.sub(r"[^가-힣0-9\s]", "", text)
+    # 소문자화 후 공백 제거
+    return cleaned.lower().replace(" ", "")
 
 def clean_symptom(text: str) -> str:
     """
-    사용자 증상 입력에서
-    1) 불필요한 종결·요청 표현 제거
-    2) 조사(을/를, 이/가, 은/는) 제거
-    3) 공백 정리 후 반환
+    사용자 증상 입력에서:
+      1) 불필요한 표현 제거
+      2) 한국어 조사 제거
+      3) 연속된 공백 제거
     """
     unnecessary = [
-        "을", "를", "이", "가", "은", "는",
-        "가요", "요", "설명해 줘", "말해 줘",
-        "알겠습니다", "알려주세요", "알려 줘",
-        "네", "아니요", "혹시"
+        "설명해 줘", "말해 줘", "알려주세요", "알려 줘", "가요",
+        "알겠습니다", "네", "아니요", "혹시", "요"
     ]
+    # 긴 표현 우선 제거
     unnecessary.sort(key=len, reverse=True)
-    pattern = r"\b(" + "|".join(map(re.escape, unnecessary)) + r")\b"
-    s = re.sub(pattern, "", text, flags=re.IGNORECASE)
-    s = re.sub(r"\b(을|를|이|가|은|는)\b", "", s)
-    return re.sub(r"\s+", "", s).strip()
+    for token in unnecessary:
+        text = re.sub(token, "", text, flags=re.IGNORECASE)
+    # 한국어 조사 제거
+    text = re.sub(r"(을|를|이|가|은|는)\b", "", text)
+    # 공백 정리
+    return re.sub(r"\s+", "", text).strip()
 
 # DynamoDB AttributeValue -> Python 타입 변환
 deserializer = TypeDeserializer()
 
 def _deserialize_item(av_map: Dict[str, Any]) -> Dict[str, Any]:
     """
-    DynamoDB AttributeValue 맵({"S":..., "L":[...]})을
-    순수 Python dict/list/str/... 으로 변환합니다.
+    DynamoDB AttributeValue 맵을 순수 Python 타입으로 변환
     """
     return {k: deserializer.deserialize(v) for k, v in av_map.items()}
 
-# 보조 함수: 어떤 값이든 리스트로 변환
 def to_list(val: Any) -> List[Any]:
+    """
+    입력값이 리스트가 아니면 리스트로 감싸서 반환
+    """
     if val is None:
         return []
     if isinstance(val, (list, tuple)):
         return list(val)
     return [val]
+     # HF API 호출 공용 함수
+
+def query(payload: dict) -> dict:
+    """HF Inference API 에 안전하게 POST 한 뒤 JSON 리턴"""
+    for attempt in range(1, 4):
+        try:
+            r = requests.post(HF_API_URL, headers=HEADERS, json=payload, timeout=(5,60))
+            r.raise_for_status()
+            return r.json()
+        except requests.RequestException as e:
+            logger.warning(f"[HF_API] attempt {attempt} failed: {e}")
+    raise RuntimeError("HF API 호출 3회 모두 실패")
 
 # 외과 긴급 키워드 목록
 class HybridLlamaService:
@@ -191,84 +235,65 @@ class HybridLlamaService:
         except Exception as e:
             logger.warning(f"룰 로드 실패: {e}")
             return []
+
     def _call_llm_for_symptom(self, symptom: str) -> str:
         """
-        Hugging Face Inference API 호출 (inputs 기반)
+        1) OpenAI‐style HF router client 호출 시도
+        2) 실패 시 HTTP POST(query) 폴백
         """
-        if not API_KEY or not API_URL:
-            return "죄송합니다. LLM API 설정이 필요합니다."
-
-        url = API_URL.rstrip("/") 
-        headers = {
-            "Authorization": f"Bearer {API_KEY}",
-            "Content-Type": "application/json"
-        }
-
         prompt = (
             "너는 친절한 내과 상담 AI야. 예상 원인 1~2가지, 자가관리법 1~2가지, "
             "이럴 땐 병원 방문 안내를 2~3줄로 알려줘.\n\n"
             f"Symptom: {symptom}"
         )
 
-        body = {
-            "inputs": prompt,
-            "parameters": {
-                "max_new_tokens": 150,
-                "temperature": 0.3
-            }
+        # 1) HTTP POST 폴백
+        payload = {
+            "model": HF_MODEL,
+            "messages": [
+                {"role": "system", "content": "너는 친절한 내과 상담 AI야."},
+                {"role": "user",   "content": prompt}
+            ],
+            "max_tokens": 150,
+            "temperature": 0.3,
+            "top_p": 0.9,
+            "n": 1
         }
+        try:
+            data = query(payload)
+             # chat‐completion 응답 처리
+            if isinstance(data, dict) and data.get("choices"):
+                return data["choices"][0]["message"]["content"].strip()
+            # text‐generation 응답 처리
+            if isinstance(data, list) and data and "generated_text" in data[0]:
+                return data[0]["generated_text"].strip()
+        except Exception as e:
+            logger.error(f"[HF_API] 폴백 호출 전체 실패: {e}")
 
-        max_retries = 3
-        connect_timeout = 5
-        read_timeout = 60
-
-        for attempt in range(1, max_retries + 1):
-            try:
-                resp = requests.post(
-                    url,
-                    headers=headers,
-                    json=body,
-                    timeout=(connect_timeout, read_timeout)
-                )
-                resp.raise_for_status()
-                data = resp.json()
-
-                # generated_text 추출
-                if isinstance(data, list) and data and "generated_text" in data[0]:
-                    full_text = data[0]["generated_text"]
-                else:
-                    full_text = data.get("generated_text", "")
-
-                # 프롬프트 부분 제거
-                if full_text.startswith(prompt):
-                    answer = full_text[len(prompt):].lstrip("\n :")
-                else:
-                    answer = full_text
-
-                return answer.strip() or "죄송합니다. 결과가 없습니다."
-
-            except requests.RequestException as e:
-                logger.error(f"LLM 호출 오류 (시도 {attempt}): {e}", exc_info=True)
-                if attempt == max_retries:
-                    return "죄송합니다. 현재 해당 증상에 대한 정보를 생성할 수 없습니다."
-                time.sleep(attempt)
-
+        return "죄송합니다. 현재 해당 증상에 대한 정보를 생성할 수 없습니다."
 
     def generate_llama_response(self, patient_id: str, chat_history: List[Any]) -> Dict[str, Any]:
         """
-        1) 외과 키워드 → 즉시 외과 안내
-        2) 분류 → 내과/외과 결정
-        3) 내과 → LLM 호출 후 룰 매칭
-        4) 기타 과목 → 선택 유도
-        5) 외과 fallback
+        1) 외과 키워드 → 즉시 외과 안내  
+        2) 분류 → 내과/외과 결정  
+        3) 내과 → LLM 호출 후 룰 매칭  
+        4) 기타 과목 → 선택 유도  
+        5) 외과 fallback  
         """
-        raw = chat_history[-1]
+        raw      = chat_history[-1]
         last_msg = (raw.get("patient_text") if isinstance(raw, dict) else str(raw)).strip()
-        lower = last_msg.lower()
-        logger.info(f"[generate_llm_for_symptom] patient_id={patient_id}, message=\"{last_msg}\"")
+        symptom  = clean_symptom(last_msg)
+        norm     = normalize(symptom)
+        logger.info(f"[generate] patient_id={patient_id}, symptom={symptom}")
+        
+
+
+        # # 2) AI 응답 생성
+        # ai_resp = service.generate_llama_response(patient_id, [patient_text])
+        # ai_text = ai_resp.get("text") if isinstance(ai_resp, dict) else str(ai_resp)
 
         # 1) 외과 긴급 키워드
-        if any(kw in lower for kw in self.SURGICAL_KEYWORDS):
+        if any(kw in norm for kw in self.SURGICAL_KEYWORDS):
             return {
                 "category": "외과",
                 "text": (
@@ -286,56 +311,35 @@ class HybridLlamaService:
             # 1차: LLM 호출
             ai_text = self._call_llm_for_symptom(last_msg)
 
-            # 2차: DB 룰 매칭
+            # 2차: DB 룰 매칭 (sub_category, main_symptoms, symptom_synonyms, name_ko)
+            # Clean and normalize user symptom
+            symptom = last_msg
+            norm = normalize(clean_symptom(symptom))
             for rule in self._load_rules():
-                sub_category = rule.get("sub_category") or []
-                main_symptoms = rule.get("main_symptoms") or []
-                diseases_similar = rule.get("diseases_similar") or []
-                kws = list(sub_category) + list(main_symptoms)+ list(diseases_similar)
-                if not kws:
-                    continue
-                # 키워드 정규화
-                kws = [normalize(kw) for kw in kws]
-                # 증상 정규화       
-                lower = normalize(last_msg)
-
-                # 매칭 여부 확인
-                if any(isinstance(kw, str) and kw.lower() in lower for kw in kws):
-                    # 의심질환
-                    suspected = rule.get("suspected_conditions")
-                    if not suspected:
-                        suspected_str = "정보 없음"
-                    elif isinstance(suspected, (list, tuple)):
-                        suspected_str = ", ".join(map(str, suspected))
-                    else:
-                        suspected_str = str(suspected)
-
-                    # 자가관리
-                    home_actions = rule.get("home_actions")
-                    if not home_actions:
-                        home_str = "정보 없음"
-                    elif isinstance(home_actions, (list, tuple)):
-                        home_str = ", ".join(map(str, home_actions))
-                    else:
-                        home_str = str(home_actions)
-
-                    # 응급안내
-                    emergency_advice = rule.get("emergency_advice")
-                    if not emergency_advice:
-                        emerg_str = "정보 없음"
-                    elif isinstance(emergency_advice, (list, tuple)):
-                        emerg_str = ", ".join(map(str, emergency_advice))
-                    else:
-                        emerg_str = str(emergency_advice)
-
-                    text = (
-                        f"예상 질환: {suspected_str}\n"
-                        f"자가관리: {home_str}\n"
-                        f"이럴 땐 병원: {emerg_str}\n"
-                        "비대면 진료가 필요하면 '예'라고 답해주세요.\n"
-                        "(※ 정확한 진단은 전문가 상담을 통해 진행하세요.)"
-                    )
-                    return {"category": "내과", "text": ai_text}
+                # gather potential match keywords
+                main_syms = to_list(rule.get("main_symptoms"))
+                syns      = to_list(rule.get("symptom_synonyms"))
+                subs      = to_list(rule.get("sub_category"))
+                name_ko   = [rule.get("name_ko")] if rule.get("name_ko") else []
+                kws       = subs + main_syms + syns + name_ko
+                # normalize keywords
+                kws_norm  = [normalize(kw) for kw in kws if isinstance(kw, str)]
+                # match against normalized user symptom
+                if any(kw in norm for kw in kws_norm):
+                    # format outputs
+                    name = to_list(rule.get("name_ko")) or ["정보 없음"]
+                    home_act  = to_list(rule.get("home_actions"))       or ["정보 없음"]
+                    emerg     = to_list(rule.get("emergency_advice"))   or ["정보 없음"]
+                    return {
+                        "category": "내과",
+                        "text": (
+                            f"예상 질환: {', '.join(name)}\n"
+                            f"자가관리: {', '.join(home_act)}\n"
+                            f"이럴 땐 병원: {', '.join(emerg)}\n"
+                            "비대면 진료가 필요하면 '예'라고 답해주세요.\n"
+                            "(※ 정확한 진단은 전문가 상담을 통해 진행하세요.)"
+                        )
+                    }
 
 
 
@@ -358,6 +362,7 @@ class HybridLlamaService:
                 "지금 터치로 증상 확인 페이지로 이동해 보시겠어요? (예/아니오)"
             )
         }
+
 
 # ---- 환자 회원가입 ----
 @app.route('/patient/signup', methods=['POST'])
