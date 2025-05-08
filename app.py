@@ -41,9 +41,8 @@ import firebase_admin
 from firebase_admin import credentials, firestore, db
 
 #  TensorFlow Lite (푸쉬 할때 바꿔서) 
-# from tensorflow.lite.python.interpreter import Interpreter
 from tflite_runtime.interpreter import Interpreter
-
+# from tensorflow.lite.python.interpreter import Interpreter
 
 # TensorFlow Lite 인터프리터
 interpreter = Interpreter(model_path="model_unquant.tflite")
@@ -100,6 +99,15 @@ HF_API_KEY = os.getenv("HUGGINGFACE_API_KEY")
 HF_MODEL   = "mistralai/Mistral-7B-Instruct-v0.3"
 HF_API_URL = f"https://router.huggingface.co/hf-inference/models/{HF_MODEL}/v1/chat/completions"
 
+<<<<<<< Updated upstream
+=======
+client = OpenAI(
+    base_url=f"https://router.huggingface.co/hf-inference/models/{HF_MODEL}/v1",
+    api_key=HF_API_KEY,
+)
+
+
+>>>>>>> Stashed changes
 
 HEADERS = {
     "Authorization": f"Bearer {HF_API_KEY}",
@@ -199,10 +207,13 @@ def to_list(val: Any) -> List[Any]:
     if isinstance(val, (list, tuple)):
         return list(val)
     return [val]
-     # HF API 호출 공용 함수
 
+<<<<<<< Updated upstream
+=======
+# HF API 호출 공용 함수
+>>>>>>> Stashed changes
 def query(payload: dict) -> dict:
-    """HF Inference API 에 안전하게 POST 한 뒤 JSON 리턴"""
+    """HF Inference API 에 안전하게 POST 한 뒤 JSON 리턴 (3회 재시도)"""
     for attempt in range(1, 4):
         try:
             r = requests.post(HF_API_URL, headers=HEADERS, json=payload, timeout=(5,60))
@@ -210,6 +221,7 @@ def query(payload: dict) -> dict:
             return r.json()
         except requests.RequestException as e:
             logger.warning(f"[HF_API] attempt {attempt} failed: {e}")
+            time.sleep(attempt)
     raise RuntimeError("HF API 호출 3회 모두 실패")
 
 # 외과 긴급 키워드 목록
@@ -219,7 +231,10 @@ class HybridLlamaService:
 
     def _classify_text(self, text: str) -> str:
         lower = text.lower()
-        return "외과" if any(kw in lower for kw in self.SURGICAL_KEYWORDS) else "내과"
+        if any(kw in lower for kw in self.SURGICAL_KEYWORDS):
+            return "외과"
+        return "내과"
+
 
     def _load_rules(self) -> List[Dict[str, Any]]:
         try:
@@ -236,27 +251,57 @@ class HybridLlamaService:
 
     def _call_llm_for_symptom(self, symptom: str) -> str:
         """
-        1) OpenAI‐style HF router client 호출 시도
+        1) OpenAI‑style HF router client 호출 시도
         2) 실패 시 HTTP POST(query) 폴백
         """
         prompt = (
-            "너는 친절한 내과 상담 AI야. 예상 원인 1~2가지, 자가관리법 1~2가지, "
-            "이럴 땐 병원 방문 안내를 2~3줄로 알려줘.\n\n"
-            f"Symptom: {symptom}"
+            f"환자 증상: {symptom}\n"
+            "예상 질환: 1~2가지,\n"
+            "자가관리: 1~2가지,\n"
+            "이럴 땐 병원 방문: 1~2가지\n"
+            "환자의 증상에 대해서 다시한번 이야기하지 않아도 됩니다.\n"
+            "아래 예시처럼 형식에 맞춰 200자 내외로 작성해주세요:\n"
+            "예상 질환: 혈압, 당뇨병\n"
+            "자가관리: 혈압 측정, 혈당 측정, 식단 관리, 운동 및 삶의 습관 조절\n"
+            "이럴 땐 병원 방문: 혈압 및 당뇨 치료 약물 처방\n"
+            "비대면 진료가 필요하면 '예'라고 답해주세요.\n"
+            "(※ 정확한 진단은 전문가 상담을 통해 진행하세요.)\n"
         )
 
-        # 1) HTTP POST 폴백
+
+        # 1) OpenAI‑style client 호출
+        try:
+            completion = client.chat.completions.create(
+                model=HF_MODEL,
+                messages=[
+                    {"role": "system", "content": "너는 친절한 내과 상담 AI야." "한국어로 환자가 불안하지 않게 대답해줘,"},
+                    {"role": "user",   "content": prompt}
+                ],
+                max_tokens=300,
+                temperature=0.3,
+                top_p=0.9,
+                n=1
+            )
+            llm_text = completion.choices[0].message.content.strip()
+            # llm_text가 비어있지 않다면 곧바로 반환
+            if llm_text:
+                return llm_text
+        except Exception as e:
+            logger.warning(f"[HF_CLIENT] OpenAI‑style 호출 실패: {e}")
+
+        # 2) HTTP POST 폴백
         payload = {
-            "model": HF_MODEL,
+            "model":      HF_MODEL,
             "messages": [
                 {"role": "system", "content": "너는 친절한 내과 상담 AI야."},
                 {"role": "user",   "content": prompt}
             ],
             "max_tokens": 150,
-            "temperature": 0.3,
-            "top_p": 0.9,
-            "n": 1
+            "temperature":0.3,
+            "top_p":      0.9,
+            "n":          1
         }
+<<<<<<< Updated upstream
         try:
             data = query(payload)
              # chat‐completion 응답 처리
@@ -269,6 +314,17 @@ class HybridLlamaService:
             logger.error(f"[HF_API] 폴백 호출 전체 실패: {e}")
 
         return "죄송합니다. 현재 해당 증상에 대한 정보를 생성할 수 없습니다."
+=======
+        data = query(payload)
+        # chat‑completion 형식 처리
+        if isinstance(data, dict) and data.get("choices"):
+            return data["choices"][0]["message"]["content"].strip()
+        # text‑generation 형식 처리
+        if isinstance(data, list) and data and "generated_text" in data[0]:
+            return data[0]["generated_text"].strip()
+
+        return ""  # 둘 다 실패하면 빈 문자열
+>>>>>>> Stashed changes
 
     def generate_llama_response(self, patient_id: str, chat_history: List[Any]) -> Dict[str, Any]:
         """
@@ -285,82 +341,62 @@ class HybridLlamaService:
         logger.info(f"[generate] patient_id={patient_id}, symptom={symptom}")
         
 
-
-        # # 2) AI 응답 생성
-        # ai_resp = service.generate_llama_response(patient_id, [patient_text])
-        # ai_text = ai_resp.get("text") if isinstance(ai_resp, dict) else str(ai_resp)
-
         # 1) 외과 긴급 키워드
         if any(kw in norm for kw in self.SURGICAL_KEYWORDS):
-            return {
-                "category": "외과",
-                "text": (
-                    "외과 진료가 필요해 보여요.\n"
-                    "편하실 때 촬영을 통해 증상을 확인해 보실 수 있습니다.\n"
-                    "지금 터치로 증상 확인 페이지로 이동해 보시겠어요? (예/아니오)"
-                )
-            }
+            return {"category":"외과","text":(
+                "외과 진료가 필요해 보여요.\n"
+                "편하실 때 촬영을 통해 증상을 확인해 보실 수 있습니다.\n"
+                "지금 터치로 증상 확인 페이지로 이동해 보시겠어요? (예/아니오)"
+            )}
 
         # 2) 분류
         category = self._classify_text(last_msg)
 
+
         # 3) 내과 처리
         if category == "내과":
-            # 1차: LLM 호출
+            # 3-1) LLM 호출
             ai_text = self._call_llm_for_symptom(last_msg)
 
-            # 2차: DB 룰 매칭 (sub_category, main_symptoms, symptom_synonyms, name_ko)
-            # Clean and normalize user symptom
-            symptom = last_msg
-            norm = normalize(clean_symptom(symptom))
-            for rule in self._load_rules():
-                # gather potential match keywords
-                main_syms = to_list(rule.get("main_symptoms"))
-                syns      = to_list(rule.get("symptom_synonyms"))
-                subs      = to_list(rule.get("sub_category"))
-                name_ko   = [rule.get("name_ko")] if rule.get("name_ko") else []
-                kws       = subs + main_syms + syns + name_ko
-                # normalize keywords
-                kws_norm  = [normalize(kw) for kw in kws if isinstance(kw, str)]
-                # match against normalized user symptom
-                if any(kw in norm for kw in kws_norm):
-                    # format outputs
-                    name = to_list(rule.get("name_ko")) or ["정보 없음"]
-                    home_act  = to_list(rule.get("home_actions"))       or ["정보 없음"]
-                    emerg     = to_list(rule.get("emergency_advice"))   or ["정보 없음"]
-                    return {
-                        "category": "내과",
-                        "text": (
+            # 3-2) DB 룰 매칭 (후보 키워드)
+            if not ai_text:   
+                for rule in self._load_rules():
+                    kws = (
+                        to_list(rule.get("sub_category")) +
+                        to_list(rule.get("main_symptoms")) +
+                        to_list(rule.get("symptom_synonyms")) +
+                        ([rule.get("name_ko")] if rule.get("name_ko") else [])
+                    )
+                    kws_norm = [normalize(k) for k in kws if isinstance(k, str)]
+                    if any(k in norm for k in kws_norm):
+                        name     = to_list(rule.get("name_ko")) or ["정보 없음"]
+                        home_act = to_list(rule.get("home_actions")) or ["정보 없음"]
+                        emerg    = to_list(rule.get("emergency_advice")) or ["정보 없음"]
+                        return {"category":"내과","text":(
                             f"예상 질환: {', '.join(name)}\n"
                             f"자가관리: {', '.join(home_act)}\n"
                             f"이럴 땐 병원: {', '.join(emerg)}\n"
                             "비대면 진료가 필요하면 '예'라고 답해주세요.\n"
                             "(※ 정확한 진단은 전문가 상담을 통해 진행하세요.)"
-                        )
-                    }
+                        )}
+
+            # 3-3) DB 매칭 없으면 LLM 응답 반환
+            return {"category":"내과","text": ai_text}
 
 
-
-        # 4) 기타 과목 → 전문의 선택 유도
-        if category not in ("내과", "외과"):
-            return {
-                "category": "기타",
-                "text": (
-                    "전문의 상담이 필요해 보이는 증상입니다.\n"
-                    "내과 또는 외과 중 추가로 원하시는 상담이 있나요? (내과/외과)"
-                )
-            }
+        # 4) 기타 과목
+        if category not in ("내과","외과"):
+            return {"category":"기타","text":(
+                "전문의 상담이 필요해 보이는 증상입니다.\n"
+                "내과 또는 외과 중 추가로 원하시는 상담이 있나요? (내과/외과)"
+            )}
 
         # 5) 외과 fallback
-        return {
-            "category": "외과",
-            "text": (
-                "외과 진료가 필요해 보여요.\n"
-                "편하실 때 촬영을 통해 증상을 확인해 보실 수 있습니다.\n"
-                "지금 터치로 증상 확인 페이지로 이동해 보시겠어요? (예/아니오)"
-            )
-        }
-
+        return {"category":"외과","text":(
+            "외과 진료가 필요해 보여요.\n"
+            "편하실 때 촬영을 통해 증상을 확인해 보실 수 있습니다.\n"
+            "지금 터치로 증상 확인 페이지로 이동해 보시겠어요? (예/아니오)"
+        )}
 
 # ---- 환자 회원가입 ----
 @app.route('/patient/signup', methods=['POST'])
@@ -837,7 +873,6 @@ def save_chat():
         logger.error(f"Error saving chat: {e}")
         return jsonify({'error': str(e)}), 500
 
-
 # ---- 의사 진료 가능 시간 + 수어 필요 여부 통합 확인 ----
 @app.route('/request/availability-signcheck', methods=['GET'])
 @jwt_required()
@@ -956,6 +991,7 @@ def confirm_reservation():
         return jsonify({'error': str(e)}), 500
    
 
+<<<<<<< Updated upstream
 # ---- 처방전 삽입 정보 반환 ----
 # @app.route('/prescription/data', methods=['GET'])
 # @jwt_required()
@@ -1040,6 +1076,8 @@ def confirm_reservation():
     
 
 
+=======
+>>>>>>> Stashed changes
 # ---- 처방전 URL 반환 ----
 @app.route('/prescription/url', methods=['GET'])
 @jwt_required()
