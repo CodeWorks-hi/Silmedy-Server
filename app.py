@@ -99,15 +99,12 @@ HF_API_KEY = os.getenv("HUGGINGFACE_API_KEY")
 HF_MODEL   = "mistralai/Mistral-7B-Instruct-v0.3"
 HF_API_URL = f"https://router.huggingface.co/hf-inference/models/{HF_MODEL}/v1/chat/completions"
 
-<<<<<<< Updated upstream
-=======
 client = OpenAI(
     base_url=f"https://router.huggingface.co/hf-inference/models/{HF_MODEL}/v1",
     api_key=HF_API_KEY,
 )
 
 
->>>>>>> Stashed changes
 
 HEADERS = {
     "Authorization": f"Bearer {HF_API_KEY}",
@@ -208,10 +205,7 @@ def to_list(val: Any) -> List[Any]:
         return list(val)
     return [val]
 
-<<<<<<< Updated upstream
-=======
 # HF API 호출 공용 함수
->>>>>>> Stashed changes
 def query(payload: dict) -> dict:
     """HF Inference API 에 안전하게 POST 한 뒤 JSON 리턴 (3회 재시도)"""
     for attempt in range(1, 4):
@@ -301,20 +295,6 @@ class HybridLlamaService:
             "top_p":      0.9,
             "n":          1
         }
-<<<<<<< Updated upstream
-        try:
-            data = query(payload)
-             # chat‐completion 응답 처리
-            if isinstance(data, dict) and data.get("choices"):
-                return data["choices"][0]["message"]["content"].strip()
-            # text‐generation 응답 처리
-            if isinstance(data, list) and data and "generated_text" in data[0]:
-                return data[0]["generated_text"].strip()
-        except Exception as e:
-            logger.error(f"[HF_API] 폴백 호출 전체 실패: {e}")
-
-        return "죄송합니다. 현재 해당 증상에 대한 정보를 생성할 수 없습니다."
-=======
         data = query(payload)
         # chat‑completion 형식 처리
         if isinstance(data, dict) and data.get("choices"):
@@ -324,7 +304,6 @@ class HybridLlamaService:
             return data[0]["generated_text"].strip()
 
         return ""  # 둘 다 실패하면 빈 문자열
->>>>>>> Stashed changes
 
     def generate_llama_response(self, patient_id: str, chat_history: List[Any]) -> Dict[str, Any]:
         """
@@ -991,7 +970,6 @@ def confirm_reservation():
         return jsonify({'error': str(e)}), 500
    
 
-<<<<<<< Updated upstream
 # ---- 처방전 삽입 정보 반환 ----
 # @app.route('/prescription/data', methods=['GET'])
 # @jwt_required()
@@ -1076,8 +1054,6 @@ def confirm_reservation():
     
 
 
-=======
->>>>>>> Stashed changes
 # ---- 처방전 URL 반환 ----
 @app.route('/prescription/url', methods=['GET'])
 @jwt_required()
