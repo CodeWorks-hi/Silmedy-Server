@@ -96,11 +96,12 @@ KAKAO_API_KEY = os.getenv("KAKAO_REST_API_KEY")
 # Hugging Face Inference API 설정
 load_dotenv()
 HF_API_KEY = os.getenv("HUGGINGFACE_API_KEY")
-HF_MODEL   = "mistralai/Mistral-7B-Instruct-v0.3"
+HF_MODEL   = "meta-llama/llama-3.2-1b-instruct"
 HF_API_URL = f"https://router.huggingface.co/hf-inference/models/{HF_MODEL}/v1/chat/completions"
 
+# ── OpenAI‑style HF 라우터 클라이언트 ────────
 client = OpenAI(
-    base_url=f"https://router.huggingface.co/hf-inference/models/{HF_MODEL}/v1",
+    base_url="https://router.huggingface.co/novita/v3/openai", 
     api_key=HF_API_KEY,
 )
 
@@ -358,9 +359,6 @@ class HybridLlamaService:
                             "비대면 진료가 필요하면 '예'라고 답해주세요.\n"
                             "(※ 정확한 진단은 전문가 상담을 통해 진행하세요.)"
                         )}
-
-            # 3-3) DB 매칭 없으면 LLM 응답 반환
-            return {"category":"내과","text": ai_text}
 
 
         # 4) 기타 과목
