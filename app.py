@@ -43,8 +43,9 @@ import firebase_admin
 from firebase_admin import credentials, firestore, db
 
 #  TensorFlow Lite (푸쉬 할때 바꿔서) 
-# from tflite_runtime.interpreter import Interpreter
-from tensorflow.lite.python.interpreter import Interpreter
+# from tensorflow.lite.python.interpreter import Interpreter
+from tflite_runtime.interpreter import Interpreter
+
 
 
 # TensorFlow Lite 인터프리터
@@ -100,12 +101,9 @@ KAKAO_API_KEY = os.getenv("KAKAO_REST_API_KEY")
 load_dotenv()
 HF_API_KEY = os.getenv("HUGGINGFACE_API_KEY")
 HF_MODEL   = "mistralai/Mistral-7B-Instruct-v0.3"
-client = OpenAI(
-    base_url=f"https://router.huggingface.co/hf-inference/models/{HF_MODEL}/v1",
-    api_key=HF_API_KEY,
-)
+HF_API_URL = f"https://router.huggingface.co/hf-inference/models/{HF_MODEL}/v1/chat/completions"
 
-
+# ── HTTP 헤더 ────────────────
 HEADERS = {
     "Authorization": f"Bearer {HF_API_KEY}",
     "Content-Type":  "application/json"
@@ -206,16 +204,16 @@ def to_list(val: Any) -> List[Any]:
     return [val]
      # HF API 호출 공용 함수
 
-def query(payload: Dict[str, Any]) -> Dict[str, Any]:
+# ── 안전한 POST 함수 ───────────
+def query(payload: dict) -> dict:
     """HF Inference API 에 안전하게 POST 한 뒤 JSON 리턴"""
     for attempt in range(1, 4):
         try:
-            r = requests.post(HF_API_URL, headers=HEADERS, json=payload, timeout=(5,60))
+            r = requests.post(HF_API_URL, headers=HEADERS, json=payload, timeout=(5, 60))
             r.raise_for_status()
             return r.json()
         except requests.RequestException as e:
             logger.warning(f"[HF_API] attempt {attempt} failed: {e}")
-            time.sleep(attempt)
     raise RuntimeError("HF API 호출 3회 모두 실패")
 
 # 외과 긴급 키워드 목록
@@ -251,27 +249,7 @@ class HybridLlamaService:
             f"Symptom: {symptom}"
         )
 
-        # 1) OpenAI‐style client 호출
-        try:
-            completion = client.chat.completions.create(
-                model=HF_MODEL,
-                messages=[
-                    {"role": "system", "content": "너는 친절한 내과 상담 AI야."},
-                    {"role": "user",   "content": prompt}
-                ],
-                max_tokens=150,
-                temperature=0.3,
-                top_p=0.9,
-                n=1
-            )
-            # 정상 응답이 있으면 바로 반환
-            msg = completion.choices[0].message.content.strip()
-            if msg:
-                return msg
-        except Exception as e:
-            logger.warning(f"[HF_CLIENT] OpenAI‐style 호출 실패: {e}")
-
-        # 2) HTTP POST 폴백
+        # 1) HTTP POST 폴백
         payload = {
             "model": HF_MODEL,
             "messages": [
@@ -285,16 +263,18 @@ class HybridLlamaService:
         }
         try:
             data = query(payload)
-            # chat-completion 응답 포맷 처리
-            if "choices" in data and data["choices"]:
+            # chat‐completion 응답 처리
+            if isinstance(data, dict) and data.get("choices"):
                 return data["choices"][0]["message"]["content"].strip()
-            # fallback: text-generation 형식
+            # text‐generation 응답 처리
             if isinstance(data, list) and data and "generated_text" in data[0]:
                 return data[0]["generated_text"].strip()
         except Exception as e:
             logger.error(f"[HF_API] 폴백 호출 전체 실패: {e}")
 
         return "죄송합니다. 현재 해당 증상에 대한 정보를 생성할 수 없습니다."
+
+
 
     def generate_llama_response(self, patient_id: str, chat_history: List[Any]) -> Dict[str, Any]:
         """
