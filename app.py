@@ -1037,46 +1037,6 @@ def get_prescription_url():
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-    
-
-
-# # ---- 처방전 URL 반환 ----
-# @app.route('/prescription/url', methods=['GET'])
-# @jwt_required()
-# def get_prescription_url():
-#     try:
-#         patient_id = get_jwt_identity()
-#         diagnosis_id = request.args.get('diagnosis_id')
-#         if not diagnosis_id:
-#             return jsonify({'error': 'diagnosis_id is required'}), 400
-
-#         # Step 1: Find prescription record matching diagnosis_id
-#         prescription_items = table_prescription_records.scan(
-#             FilterExpression=Attr('diagnosis_id').eq(int(diagnosis_id))
-#         ).get('Items', [])
-
-#         if not prescription_items:
-#             return jsonify({'error': 'Prescription not found for this diagnosis'}), 404
-
-#         prescription_item = prescription_items[0]
-#         prescription_id = prescription_item.get('prescription_id')
-#         prescription_url = prescription_item.get('prescription_url')
-
-#         # Step 2: Check if delivery exists for this prescription_id
-#         delivery_items = table_drug_deliveries.scan(
-#             FilterExpression=Attr('prescription_id').eq(int(prescription_id))
-#         ).get('Items', [])
-
-#         is_made = bool(delivery_items)
-
-#         return jsonify({
-#             'prescription_id': prescription_id,
-#             'prescription_url': prescription_url,
-#             'is_made': is_made
-#         }), 200
-
-#     except Exception as e:
-#         return jsonify({'error': str(e)}), 500
 
 
 # ---- 진료 내역 반환 ----
