@@ -3,7 +3,6 @@ firebase_admin
 boto3
 datetime
 requests
-toml
 flask_cors
 dotenv
 uuid
@@ -14,3 +13,5 @@ tflite-runtime
 Pillow
 openai
 typing
+transformers
+PyYAML

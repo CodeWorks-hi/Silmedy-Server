@@ -13,11 +13,9 @@ from urllib.parse import unquote
 from typing import Any, Dict, List, Optional
 
 #  서드파티 라이브러리 
-import torch
 import numpy as np
 import requests
 import boto3
-import toml
 import yaml
 from PIL import Image
 from flask import Flask, Blueprint, request, jsonify
