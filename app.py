@@ -848,6 +848,7 @@ def save_chat():
     except Exception as e:
         logger.error(f"Error saving chat: {e}")
         return jsonify({'error': str(e)}), 500
+    
 
 # ---- 의사 진료 가능 시간 + 수어 필요 여부 통합 확인 ----
 @app.route('/request/availability-signcheck', methods=['GET'])
