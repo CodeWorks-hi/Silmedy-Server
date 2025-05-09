@@ -398,37 +398,46 @@ PART_SYMPTOMS = {
 
 def extract_structured_info_manual(ai_text: str) -> dict:
     """
-    ai_text에서 disease_symptoms, main_symptoms, guideline(=analysis)를 추출하고,
+    ai_text에서 disease_symptoms, main_symptoms, home_actions,
+    guideline(=analysis), emergency_advice를 한 번에 파싱하고,
     main_symptoms를 기준으로 symptom_part까지 매핑해 반환합니다.
     """
-    # 1) 파싱할 섹션의 패턴
+    # 1) 파싱할 섹션의 패턴을 한 곳에 정의
     patterns = {
         "disease_symptoms": r"-\s*disease_symptoms\s*[:：]\s*([^\n]+)",
-        "main_symptoms":    r"-\s*main_symptoms\s*[:：]\s*([^\n]+)",
-        "analysis":         r"-\s*guideline\s*[:：]\s*([^\n]+)"
+        "main_symptoms"   : r"-\s*main_symptoms\s*[:：]\s*([^\n]+)",
+        "home_actions"    : r"-\s*home_actions\s*[:：]\s*([^\n]+)",
+        "analysis"        : r"-\s*guideline\s*[:：]\s*([^\n]+)",
+        "emergency_advice": r"-\s*emergency_advice\s*[:：]\s*([^\n]+)",
     }
 
-    extracted = {k: [] for k in patterns}
+    # 2) 각 항목을 정규식으로 한 번만 순회하며 파싱
+    parsed = {k: [] for k in patterns}
     for key, pat in patterns.items():
         m = re.search(pat, ai_text, re.IGNORECASE)
         if m:
-            extracted[key] = [tok.strip() for tok in m.group(1).split(",") if tok.strip()]
+            parsed[key] = [tok.strip() for tok in m.group(1).split(",") if tok.strip()]
 
-    # 2) main_symptoms 기반 부위 매핑
+
+    # 3) PART_SYMPTOMS 매핑을 이용해 symptom_part 생성
     symptom_part = []
-    for ms in extracted["main_symptoms"]:
+    for ms in parsed["main_symptoms"]:
         for part, syms in PART_SYMPTOMS.items():
+            # 필요시 normalize/clean_symptom 적용
             if ms in syms:
                 symptom_part.append(part)
                 break
-    symptom_part = list(dict.fromkeys(symptom_part))
+    symptom_part = list(dict.fromkeys(symptom_part))  # 중복 제거
 
+    # 4) 최종 반환 형식 맞춰 리턴
     return {
-        "disease_symptoms": extracted["disease_symptoms"],
-        "symptom_part":     symptom_part,
-        "analysis":         extracted["analysis"]
+        "disease_symptoms": parsed["disease_symptoms"],
+        "main_symptoms":    parsed["main_symptoms"],
+        "home_actions":     parsed["home_actions"],
+        "analysis":         parsed["analysis"],
+        "emergency_advice": parsed["emergency_advice"],
+        "symptom_part":     symptom_part
     }
-
 
 # ---- 환자 회원가입 ----
 @app.route('/patient/signup', methods=['POST'])
@@ -896,15 +905,19 @@ def save_chat():
             'is_separater': False
         })
 
-        return jsonify({
-            "message": "Chat saved",
+        response = {
+            
             "chat_ids": [pid, aid],
-            "ai_text": ai_text
-        }), 200
-
+            "ai_text": ai_text,
+            "message": "Chat saved"
+        }
+        return jsonify(response), 200
+    
     except Exception as e:
         logger.error(f"Error saving chat: {e}")
         return jsonify({'error': str(e)}), 500
+    
+
 
 # ---- 의사 진료 가능 시간 + 수어 필요 여부 통합 확인 ----
 @app.route('/request/availability-signcheck', methods=['GET'])
@@ -1527,9 +1540,9 @@ def add_chat_separator():
     try:
         patient_id = get_jwt_identity()
         if not patient_id:
-            return jsonify({"error":"patient_id is required"}), 400
+            return jsonify({"error": "patient_id is required"}), 400
 
-        # 1) Firestore에서 separator 이후의 대화(내림차순) 읽기
+        # 1) Firestore에서 separator 이후 대화 읽기 (내림차순)
         coll = collection_consult_text.document(str(patient_id)).collection("chats")
         from firebase_admin import firestore as _fs
         docs = list(coll.order_by("created_at", direction=_fs.Query.DESCENDING).stream())
@@ -1544,61 +1557,68 @@ def add_chat_separator():
 
         # 3) 최신 환자/AI 발화 추출
         last_patient, last_ai = None, None
-        for doc in docs:  # 내림차순 순회: 최신 메시지부터
+        for doc in docs:
             d = doc.to_dict()
-            # separator 이전 건은 스킵
             if last_sep and d["created_at"] <= last_sep:
                 continue
-
-            sender = d.get("sender_id")
-            # 우선 patient_text/ai_text, 없으면 기존 text 필드
-            if sender == "나":
-                txt = d.get("patient_text", d.get("text", "")).strip()
-                if txt and not last_patient:
-                    last_patient = txt
-            elif sender == "AI":
-                txt = d.get("ai_text", d.get("text", "")).strip()
-                if txt and not last_ai:
-                    last_ai = txt
-
-            # 둘 다 채워지면 탈출
+            if d.get("sender_id") == "나" and not last_patient:
+                last_patient = d.get("patient_text", d.get("text", "")).strip()
+            elif d.get("sender_id") == "AI" and not last_ai:
+                last_ai = d.get("ai_text", d.get("text", "")).strip()
             if last_patient and last_ai:
                 break
 
         if not (last_patient and last_ai):
-            return jsonify({"error":"대화 내역이 충분하지 않습니다."}), 400
+            return jsonify({"error": "대화 내역이 충분하지 않습니다."}), 400
 
-        # 4) dialog 조합 및 요약
-        dialog  = f"환자: {last_patient}\nAI: {last_ai}"
-        summary = summarize_dialog(dialog)
+        # 4) 환자 발화 전처리
+        raw_patient = last_patient
+        cleaned     = clean_symptom(raw_patient)
+        norm_patient= normalize(cleaned)
 
-        # 5) 수동 파싱 방식 구조화 정보 추출
-        info             = extract_structured_info_manual(last_ai)
+        # 5) AI 텍스트에서 구조화 정보 추출 (중복 파싱 제거)
+        info = extract_structured_info_manual(last_ai)
         disease_symptoms = info["disease_symptoms"]
+        home_actions     = info["home_actions"]
+        guide_actions    = info["analysis"]            # guideline → analysis
+        emerg_actions    = info["emergency_advice"]
         symptom_part     = info["symptom_part"]
-        analysis         = info["analysis"]
 
-        # 6) consult_id 카운터 증가
-        ctr = table_counters.get_item(Key={"counter_name":"consult_id"})
+        # 6) summary 생성
+        disease_txt = ", ".join(disease_symptoms)
+        home_txt    = ", ".join(home_actions)
+        guide_txt   = " 및 ".join(guide_actions)
+        emerg_txt   = emerg_actions[0] if emerg_actions else ""
+
+        summary = (
+            f"환자는 {raw_patient}에 대해 불편함을 호소하여, AI는 {disease_txt}일 가능성을 제시하고, "
+            f"{home_txt}(을)를 권장했으며, {guide_txt}(을)를 추천했습니다. "
+            f"{emerg_txt}(을)를 권유하였습니다."
+        )
+
+        # 7) consult_id 카운터 증가
+        ctr = table_counters.get_item(Key={"counter_name": "consult_id"})
         new_id = int(ctr.get("Item", {}).get("current_id", 0)) + 1
-        table_counters.put_item(Item={"counter_name":"consult_id","current_id":new_id})
+        table_counters.put_item(Item={"counter_name": "consult_id", "current_id": new_id})
 
-        # 7) DynamoDB 저장 (스키마에 맞게)
+        # 8) DynamoDB 저장 (스키마에 맞게)
         table_ai_consults.put_item(Item={
             "consult_id":       new_id,
             "patient_id":       int(patient_id),
-            "disease_symptom":  disease_symptoms,
+            "disease_symptoms": disease_symptoms,
             "symptom_part":     symptom_part,
-            "analysis":         analysis
+            "analysis":         summary
         })
 
-        # 8) 결과 반환
-        return jsonify({
-            "disease_symptoms":  disease_symptoms,
-            "symptom_part":      symptom_part,
-            "analysis":          analysis,
-            "summary":           summary
-        }), 200
+        # 9) 결과 반환 (키 순서 유지)
+        response = {
+            "patient_id":       int(patient_id),
+            "disease_symptoms": disease_symptoms,
+            "symptom_part":     symptom_part,
+            "analysis":         summary,
+            "message":          "Chat saved"
+        }
+        return jsonify(response), 200
 
     except Exception as e:
         logger.error(f"Error in add_chat_separator: {e}")
