@@ -97,19 +97,37 @@ KAKAO_API_KEY = os.getenv("KAKAO_REST_API_KEY")
 load_dotenv()
 HF_API_KEY = os.getenv("HUGGINGFACE_API_KEY")
 HF_MODEL   = "mistralai/Mistral-7B-Instruct-v0.3"
+
+# 1) chat-completions 용 URL (requests 폴백, 직접 호출)
 HF_API_URL = f"https://router.huggingface.co/hf-inference/models/{HF_MODEL}/v1/chat/completions"
 
+# 2) OpenAI‑style client 의 base_url 은 모델 endpoint(v1)까지만
 client = OpenAI(
     base_url=f"https://router.huggingface.co/hf-inference/models/{HF_MODEL}/v1",
     api_key=HF_API_KEY,
 )
 
-
-
-HEADERS = {
+# 요약(text2text‑generation) 호출용
+SUM_MODEL_ID = "csebuetnlp/mT5_multilingual_XLSum"
+HF_SUMMARY_URL = f"https://router.huggingface.co/hf-inference/models/{SUM_MODEL_ID}"
+SUMMARY_HEADERS = {
     "Authorization": f"Bearer {HF_API_KEY}",
     "Content-Type":  "application/json"
 }
+
+# HF API 호출 공용 함수
+def query(payload: dict) -> dict:
+    """HF Inference API 에 안전하게 POST 한 뒤 JSON 리턴 (3회 재시도)"""
+    for attempt in range(1, 4):
+        try:
+            r = requests.post(HF_API_URL, headers=SUMMARY_HEADERS, json=payload, timeout=(5,60))
+            r.raise_for_status()
+            return r.json()
+        except requests.RequestException as e:
+            logger.warning(f"[HF_API] attempt {attempt} failed: {e}")
+            time.sleep(attempt)
+    raise RuntimeError("HF API 호출 3회 모두 실패")
+
 
 
 dynamodb = boto3.resource(
@@ -189,7 +207,7 @@ def clean_symptom(text: str) -> str:
 # DynamoDB AttributeValue -> Python 타입 변환
 deserializer = TypeDeserializer()
 
-def _deserialize_item(av_map: Dict[str, Any]) -> Dict[str, Any]:
+def deserialize_item(av_map: Dict[str, Any]) -> Dict[str, Any]:
     """
     DynamoDB AttributeValue 맵을 순수 Python 타입으로 변환
     """
@@ -205,105 +223,77 @@ def to_list(val: Any) -> List[Any]:
         return list(val)
     return [val]
 
-# HF API 호출 공용 함수
-def query(payload: dict) -> dict:
-    """HF Inference API 에 안전하게 POST 한 뒤 JSON 리턴 (3회 재시도)"""
-    for attempt in range(1, 4):
-        try:
-            r = requests.post(HF_API_URL, headers=HEADERS, json=payload, timeout=(5,60))
-            r.raise_for_status()
-            return r.json()
-        except requests.RequestException as e:
-            logger.warning(f"[HF_API] attempt {attempt} failed: {e}")
-            time.sleep(attempt)
-    raise RuntimeError("HF API 호출 3회 모두 실패")
+
+
+
 
 # 외과 긴급 키워드 목록
 class HybridLlamaService:
     # 외과 긴급 키워드 목록
     SURGICAL_KEYWORDS = ["골절", "뼈 부러짐", "상처", "출혈", "멍"]
 
-    def _classify_text(self, text: str) -> str:
+    def classify_text(self, text: str) -> str:
         lower = text.lower()
         if any(kw in lower for kw in self.SURGICAL_KEYWORDS):
             return "외과"
         return "내과"
 
-
-    def _load_rules(self) -> List[Dict[str, Any]]:
+    def load_rules(self) -> List[Dict[str, Any]]:
         try:
             items = table_diseases.scan().get("Items", [])
             if not items:
                 return []
             first = next(iter(items[0].values()))
             if isinstance(first, dict) and ("S" in first or "L" in first):
-                return [_deserialize_item(i) for i in items]
+                return [deserialize_item(i) for i in items]
             return items
         except Exception as e:
             logger.warning(f"룰 로드 실패: {e}")
             return []
 
-    def _call_llm_for_symptom(self, symptom: str) -> str:
+
+    def call_llm_for_symptom(self, dialog: str, latest_question: str) -> str:
         """
-        1) OpenAI‑style HF router client 호출 시도
-        2) 실패 시 HTTP POST(query) 폴백
+        환자↔AI 대화를 기반으로, 내과 상담 형식으로 답변을 생성합니다.
+        출력은 200자 이내로 제한되며, 지정된 양식을 엄격히 준수해야 합니다.
         """
+        system_msg = "너는 친절한 내과 상담 AI야. 한국어로 환자가 불안해지지 않도록 부드럽게 답변해줘."
+        
         prompt = (
-            f"환자 증상: {symptom}\n"
-            "예상 질환: 1~2가지,\n"
-            "자가관리: 1~2가지,\n"
-            "이럴 땐 병원 방문: 1~2가지\n"
-            "환자의 증상에 대해서 다시한번 이야기하지 않아도 됩니다.\n"
-            "아래 예시처럼 형식에 맞춰 200자 내외로 작성해주세요:\n"
-            "예상 질환: 혈압, 당뇨병\n"
-            "자가관리: 혈압 측정, 혈당 측정, 식단 관리, 운동 및 삶의 습관 조절\n"
-            "이럴 땐 병원 방문: 혈압 및 당뇨 치료 약물 처방\n"
-            "비대면 진료가 필요하면 '예'라고 답해주세요.\n"
-            "(※ 정확한 진단은 전문가 상담을 통해 진행하세요.)\n"
+            f"{dialog}\n"
+            f"환자 질문: {latest_question}\n\n"
+            "아래 양식을 **엄격히** 준수해 **200자 이내**로 답변해주세요.\n"
+            "※ 환자의 증상 반복 금지\n"
+            "※ 의료 맥락에 맞지 않는 단어(예: 굴욕, 굉장 등) 사용 금지\n"
+            "※ 마지막 두 문구를 반드시 포함하세요:\n"
+            "  - 정확한 진단은 전문가 상담을 통해 진행하세요.\n"
+            "  - 비대면 진료가 필요하면 '예'라고 답해주세요.\n\n"
+            "## 출력 양식\n"
+            "- disease_symptoms  : (1~2가지):\n"
+            "- main_symptoms     : (1~2가지):\n"
+            "- home_actions      : (1~2가지):\n"
+            "- guideline         : (1~2가지):\n"
+            "- emergency_advice  : (1~2가지):\n\n"
+            "## 예시\n"
+            "disease_symptoms  : (1~2가지): 만성 위염, 위염  \n"
+            "main_symptoms     : (1~2가지): 속쓰림, 구역  \n"
+            "home_actions      : (1~2가지): 식사량 조절, 충분한 휴식  \n"
+            "guideline         : (1~2가지): 제산제 복용 권장, 스트레스 관리 필요  \n"
+            "emergency_advice  : (1~2가지): 흑색변·혈변 시 병원 방문  \n"
+            "※ 정확한 진단은 전문가 상담을 통해 진행하세요.  \n"
+            "※ 비대면 진료가 필요하면 '예'라고 답해주세요."
         )
-
-
-        # 1) OpenAI‑style client 호출
-        try:
-            completion = client.chat.completions.create(
-                model=HF_MODEL,
-                messages=[
-                    {"role": "system", "content": "너는 친절한 내과 상담 AI야." "한국어로 환자가 불안하지 않게 대답해줘,"},
-                    {"role": "user",   "content": prompt}
-                ],
-                max_tokens=300,
-                temperature=0.3,
-                top_p=0.9,
-                n=1
-            )
-            llm_text = completion.choices[0].message.content.strip()
-            # llm_text가 비어있지 않다면 곧바로 반환
-            if llm_text:
-                return llm_text
-        except Exception as e:
-            logger.warning(f"[HF_CLIENT] OpenAI‑style 호출 실패: {e}")
-
-        # 2) HTTP POST 폴백
-        payload = {
-            "model":      HF_MODEL,
-            "messages": [
-                {"role": "system", "content": "너는 친절한 내과 상담 AI야."},
-                {"role": "user",   "content": prompt}
+        resp = client.chat.completions.create(
+            model=HF_MODEL,
+            messages=[
+                {"role":"system","content":system_msg},
+                {"role":"user","content":prompt}
             ],
-            "max_tokens": 150,
-            "temperature":0.3,
-            "top_p":      0.9,
-            "n":          1
-        }
-        data = query(payload)
-        # chat‑completion 형식 처리
-        if isinstance(data, dict) and data.get("choices"):
-            return data["choices"][0]["message"]["content"].strip()
-        # text‑generation 형식 처리
-        if isinstance(data, list) and data and "generated_text" in data[0]:
-            return data[0]["generated_text"].strip()
+            temperature=0.2,
+            max_tokens=400
+        )
+        return resp.choices[0].message.content.strip()
 
-        return ""  # 둘 다 실패하면 빈 문자열
 
     def generate_llama_response(self, patient_id: str, chat_history: List[Any]) -> Dict[str, Any]:
         """
@@ -329,17 +319,19 @@ class HybridLlamaService:
             )}
 
         # 2) 분류
-        category = self._classify_text(last_msg)
+        category = self.classify_text(last_msg)
 
 
         # 3) 내과 처리
         if category == "내과":
             # 3-1) LLM 호출
-            ai_text = self._call_llm_for_symptom(last_msg)
+            ai_text = self.call_llm_for_symptom("\n".join([m if isinstance(m,str) else m.get("patient_text","") 
+                                                         for m in chat_history]),
+                                               last_msg).strip()
 
             # 3-2) DB 룰 매칭 (후보 키워드)
             if not ai_text:   
-                for rule in self._load_rules():
+                for rule in self.load_rules():
                     kws = (
                         to_list(rule.get("sub_category")) +
                         to_list(rule.get("main_symptoms")) +
@@ -351,15 +343,17 @@ class HybridLlamaService:
                         name     = to_list(rule.get("name_ko")) or ["정보 없음"]
                         home_act = to_list(rule.get("home_actions")) or ["정보 없음"]
                         emerg    = to_list(rule.get("emergency_advice")) or ["정보 없음"]
-                        return {"category":"내과","text":(
-                            f"예상 질환: {', '.join(name)}\n"
-                            f"자가관리: {', '.join(home_act)}\n"
-                            f"이럴 땐 병원: {', '.join(emerg)}\n"
+                        db_text = (
+                            f"disease_symptoms: {', '.join(name)}\n"
+                            f"home_actions: {', '.join(home_act)}\n"
+                            f"emergency_advice: {', '.join(emerg)}\n"
                             "비대면 진료가 필요하면 '예'라고 답해주세요.\n"
                             "(※ 정확한 진단은 전문가 상담을 통해 진행하세요.)"
-                        )}
-
+                        )
+                    return {"category":"내과", "text": db_text}
+                    
             return {"category":"내과","text":ai_text}
+        
         # 4) 기타 과목
         if category not in ("내과","외과"):
             return {"category":"기타","text":(
@@ -373,6 +367,82 @@ class HybridLlamaService:
             "편하실 때 촬영을 통해 증상을 확인해 보실 수 있습니다.\n"
             "지금 터치로 증상 확인 페이지로 이동해 보시겠어요? (예/아니오)"
         )}
+    
+
+# ---------채팅 요약 ---------
+FUNCTIONS = [
+    {
+        "name": "extract_info",
+        "description": "환자↔AI 대화를 보고 증상, 증상부위, 분석요약을 JSON으로 뽑아냅니다.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "disease_symptoms": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "질병 관련 핵심 증상 2~3가지"
+                },
+                "symptom_part": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "증상 부위(배열)"
+                },
+                "analysis": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "간략 분석 요약(배열)"
+                }
+            },
+            "required": ["disease_symptoms", "symptom_part", "analysis"]
+        }
+    }
+]
+
+
+# ── 구조화 정보 추출 함수 ────────────────────────────────────────
+def extract_structured_info(dialog: str) -> dict:
+    try:
+        resp = client.chat.completions.create(
+            model=HF_MODEL,
+            messages=[
+                {"role": "system", "content": "환자↔AI 대화를 보고 증상, 증상부위, 분석요약을 JSON으로 뽑아냅니다."},
+                {"role": "user",   "content": dialog}
+            ],
+            functions=FUNCTIONS,
+            function_call={"name": "extract_info"}
+        )
+        msg = resp.choices[0].message
+        if msg.function_call and msg.function_call.arguments:
+            args = json.loads(msg.function_call.arguments)
+            return {
+                "disease_symptoms": args.get("disease_symptoms", []),
+                "symptom_part":     args.get("symptom_part", []),
+                "analysis":         args.get("analysis", [])
+            }
+    except Exception as e:
+        logger.error(f"extract_structured_info error: {e}")
+
+    return {"disease_symptoms": [], "symptom_part": [], "analysis": []}
+
+# ── 대화 요약 함수 ───────────────────────────────────────────────
+def summarize_dialog(dialog: str) -> str:
+    prompt = (
+        "아래 환자↔AI 대화를 100자 내외로 한국어로 간결하게 요약해주세요.\n\n"
+        f"{dialog}"
+    )
+    resp = client.chat.completions.create(
+        model=HF_MODEL,
+        messages=[
+            {"role": "system", "content": "당신은 전문 요약가입니다. 핵심만 간결하게 요약하세요."},
+            {"role": "user",   "content": prompt}
+        ],
+        temperature=0.1,
+        max_tokens=120
+    )
+    return resp.choices[0].message.content.strip()
+
+
+
 
 # ---- 환자 회원가입 ----
 @app.route('/patient/signup', methods=['POST'])
@@ -1461,86 +1531,84 @@ def end_call():
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
-
-# ---- 채팅 구분선 추가 ----
+    
+    
+# ---- 채팅 구분선 이후 요약 & 구조화 정보 저장 ----
 @app.route('/chat/add-separator', methods=['POST'])
 @jwt_required()
 def add_chat_separator():
     try:
-        identity = get_jwt_identity()
-        patient_id = identity
+        patient_id = get_jwt_identity()
+        if not patient_id:
+            return jsonify({"error":"patient_id is required"}),400
 
-        if not identity:
-            return jsonify({"error": "patient_id is required"}), 400
+        # Firestore에서 separator 이후 대화 읽기 (내림차순)
+        coll = collection_consult_text.document(str(patient_id)).collection("chats")
+        from firebase_admin import firestore as _fs
+        docs = coll.order_by("created_at", direction=_fs.Query.DESCENDING).stream()
 
-        # Step 1: Fetch recent chats in descending order
-        chat_collection = collection_consult_text.document(str(patient_id)).collection("chats")
-        from firebase_admin import firestore as _firestore
-        chats = chat_collection.order_by("created_at", direction=_firestore.Query.DESCENDING).stream()
-
-        chat_list = []
-        last_separator_time = None
-
-        for chat in chats:
-            chat_data = chat.to_dict()
-            chat_list.append(chat_data)
-            # Accept both is_separator and is_separater for compatibility
-            if chat_data.get("is_separator") or chat_data.get("is_separater"):
-                last_separator_time = chat_data.get("created_at")
+        chat_list, last_sep = [], None
+        for doc in docs:
+            d = doc.to_dict()
+            chat_list.append(d)
+            if d.get("is_separator") or d.get("is_separater"):
+                last_sep = d["created_at"]
                 break
 
-        # Step 2: Filter chats after the last separator
-        texts_to_summarize = []
-        if last_separator_time:
-            # Since chat_list is descending, reverse for ascending
-            for chat in reversed(chat_list):
-                # Compare created_at as string (lexicographically works for "%Y-%m-%d %H:%M:%S")
-                if chat.get("created_at") > last_separator_time:
-                    patient_text = chat.get("patient_text", "")
-                    ai_text = chat.get("ai_text", "")
-                    if patient_text:
-                        texts_to_summarize.append(patient_text.strip())
-                    if ai_text:
-                        texts_to_summarize.append(ai_text.strip())
-        else:
-            # No separator found, summarize everything
-            for chat in reversed(chat_list):
-                patient_text = chat.get("patient_text", "")
-                ai_text = chat.get("ai_text", "")
-                if patient_text:
-                    texts_to_summarize.append(patient_text.strip())
-                if ai_text:
-                    texts_to_summarize.append(ai_text.strip())
+        # 가장 최신 환자/AI 발화 추출
+        last_patient, last_ai = None, None
+        for d in reversed(chat_list):
+            if last_sep and d["created_at"] <= last_sep:
+                continue
+            text = d.get("text", "").strip()
+            if d.get("sender_id") == "나" and not last_patient:
+                last_patient = text
+            elif d.get("sender_id") == "AI" and not last_ai:
+                last_ai = text
+            if last_patient and last_ai:
+                break
 
-        # Step 3: Simulate summary result (TODO: replace with real model call)
-        symptom_part = ["전신"]  # 예시 출력
-        symptom_type = ["두통", "구토"]  # 예시 출력
+        if not (last_patient and last_ai):
+            return jsonify({"error":"대화 내역이 충분하지 않습니다."}),400
 
-        # Step 4: Add separator chat document
-        now = datetime.utcnow()
-        chat_id = now.strftime("%Y%m%d%H%M%S%f")
-        chat_data = {
-            'chat_id': chat_id,
-            'is_separater': True,
-            'sender_id': '',
-            'text': '',
-            'created_at': now.strftime("%Y-%m-%d %H:%M:%S")
-        }
+        # dialog 조합 및 요약
+        dialog  = f"환자: {last_patient}\nAI: {last_ai}"
+        summary = summarize_dialog(dialog)
 
-        chat_collection.document(chat_id).set(chat_data)
-        logger.info(f"[Firestore 구분선 저장됨] patient_id={patient_id}, chat_id={chat_id}")
+        # 구조화 정보 추출
+        info = extract_structured_info(dialog)
+        disease_symptoms = info.get("disease_symptoms", [])
+        symptom_part     = info.get("symptom_part",     [])
+        analysis         = info.get("analysis",         [])
 
+        # consult_id 카운터 증가
+        ctr = table_counters.get_item(Key={"counter_name":"consult_id"})
+        new_id = int(ctr.get("Item",{}).get("current_id",0)) + 1
+        table_counters.put_item(Item={"counter_name":"consult_id","current_id":new_id})
+
+        # DynamoDB 에 저장
+        table_ai_consults.put_item(Item={
+            "consult_id":       new_id,
+            "patient_id":       int(patient_id),
+            "disease_symptoms": disease_symptoms,
+            "symptom_part":     symptom_part,
+            "analysis":         analysis,
+            "summary":          summary,
+            "created_at":       datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+        })
+
+        # 결과 반환
         return jsonify({
-            "message": "Separator added",
-            "chat_id": chat_id,
-            "symptom_part": symptom_part,
-            "symptom_type": symptom_type
+            "message":            "Summary created",
+            "disease_symptoms":   disease_symptoms,
+            "symptom_part":       symptom_part,
+            "analysis":           analysis,
+            "summary":            summary
         }), 200
 
     except Exception as e:
-        logger.error(f"Error adding separator: {e}")
-        return jsonify({'error': str(e)}), 500
+        logger.error(f"Error in add_chat_separator: {e}")
+        return jsonify({"error":str(e)}),500
 
 
 # ---- 보건소+의사 통합 검색 ----
