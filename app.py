@@ -372,36 +372,62 @@ def summarize_dialog(dialog: str) -> str:
     }
     return query(payload)["choices"][0]["message"]["content"].strip()
 
+
+# ── 부위별 증상 매핑
+PART_SYMPTOMS = {
+    "귀":       ["귀 통증", "청력 저하", "이명", "귀가 먹먹함", "귀가 아픔"],
+    "코":       ["코막힘", "콧물", "코답답", "콧물분비", "재채기", "물콧물"],
+    "유방":     ["유방 종괴", "피부 함몰", "유방 통증", "유두 분비물"],
+    "잇몸":     ["잇몸 출혈", "발적", "잇몸 부종", "치은염"],
+    "가슴":     ["호흡곤란", "가슴 통증", "심계항진", "흉통", "숨가쁨", "숨답답"],
+    "전신":     ["부종", "식은땀", "수면 곤란", "피로감", "무증상", "근육통", "전신 통증", "피로", "발열", "권태감"],
+    "근육":     ["근육통", "근육 경련", "근육 약화", "근육 경직", "근육 뻐근"],
+    "관절":     ["관절강직", "관절 통증", "관절 부종", "관절염", "관절 붓기"],
+    "비뇨기":   ["화장실자주감", "배뇨 곤란", "야뇨", "긴박뇨", "단백뇨", "배뇨 통증"],
+    "입":       ["목마름", "구강 건조증", "입마름", "구취", "입안 통증"],
+    "허리":     ["요통", "허리 통증", "허리 아픔"],
+    "뇌":       ["기억력 저하", "인지기능 장애", "우울감", "무기력", "흥미상실", "편측 마비", "언어장애"],
+    "머리":     ["두통", "머리아픔", "편두통", "현기증", "어지러움"],
+    "위":       ["구역", "속쓰림", "신트림", "상복부 통증", "소화 불량"],
+    "배":       ["설사", "복통"],
+    "하복부":   ["하복부 통증", "경련"],
+    "눈":       ["충혈", "눈곱", "시야 흐림", "눈부심"],
+    "폐":       ["기침", "잦은기침", "천명음"],
+    "치아":     ["치아통증", "치통", "과민반응"]
+}
+
 def extract_structured_info_manual(ai_text: str) -> dict:
     """
-    AI가 반환한 포맷된 텍스트에서 disease_symptoms, symptom_part, analysis를
-    정규식으로 파싱합니다.
+    ai_text에서 disease_symptoms, main_symptoms, guideline(=analysis)를 추출하고,
+    main_symptoms를 기준으로 symptom_part까지 매핑해 반환합니다.
     """
-    # 패턴 정의
+    # 1) 파싱할 섹션의 패턴
     patterns = {
         "disease_symptoms": r"-\s*disease_symptoms\s*[:：]\s*([^\n]+)",
-        "main_symptoms"    : r"-\s*main_symptoms\s*[:：]\s*([^\n]+)",
-        "home_actions"     : r"-\s*home_actions\s*[:：]\s*([^\n]+)",
-        "guideline"        : r"-\s*guideline\s*[:：]\s*([^\n]+)",
-        "emergency_advice" : r"-\s*emergency_advice\s*[:：]\s*([^\n]+)"
+        "main_symptoms":    r"-\s*main_symptoms\s*[:：]\s*([^\n]+)",
+        "analysis":         r"-\s*guideline\s*[:：]\s*([^\n]+)"
     }
-    extracted = {}
+
+    extracted = {k: [] for k in patterns}
     for key, pat in patterns.items():
         m = re.search(pat, ai_text, re.IGNORECASE)
         if m:
-            # 쉼표로 분리하고 앞뒤 공백 제거
-            extracted[key] = [item.strip() for item in m.group(1).split(",") if item.strip()]
-        else:
-            extracted[key] = []
+            extracted[key] = [tok.strip() for tok in m.group(1).split(",") if tok.strip()]
+
+    # 2) main_symptoms 기반 부위 매핑
+    symptom_part = []
+    for ms in extracted["main_symptoms"]:
+        for part, syms in PART_SYMPTOMS.items():
+            if ms in syms:
+                symptom_part.append(part)
+                break
+    symptom_part = list(dict.fromkeys(symptom_part))
 
     return {
         "disease_symptoms": extracted["disease_symptoms"],
-        # 증상 부위 정보가 없으면 빈 리스트로
-        "symptom_part":     [],
-        # 간략 분석 요약으로 guideline 항목 사용
-        "analysis":         extracted["guideline"]
+        "symptom_part":     symptom_part,
+        "analysis":         extracted["analysis"]
     }
-
 
 
 # ---- 환자 회원가입 ----
