@@ -1600,7 +1600,7 @@ def add_chat_separator():
         summary = (
             f"환자는 {pati_txt}에 대해 불편함을 호소하여, AI는 {disease_txt}일 가능성을 제시하고, "
             f"{home_txt}를 권장했으며, {guide_txt}를 추천했습니다. "
-            f"{emerg_txt}를 권유하였습니다."
+            f"{emerg_txt}을 권유하였습니다."
         )
 
         # 7) consult_id 카운터 증가
