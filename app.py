@@ -42,7 +42,7 @@ from firebase_admin import credentials, firestore, db
 
 #  TensorFlow Lite (푸쉬 할때 바꿔서) 
 from tflite_runtime.interpreter import Interpreter
-# from tensorflow.lite.python.interpreter import Interpreter
+#from tensorflow.lite.python.interpreter import Interpreter
 
 # TensorFlow Lite 인터프리터
 interpreter = Interpreter(model_path="model_unquant.tflite")
@@ -180,7 +180,8 @@ def clean_symptom(text: str) -> str:
     """
     unnecessary = [
         "설명해 줘", "말해 줘", "알려주세요", "알려 줘", "가요",
-        "알겠습니다", "네", "아니요", "혹시", "요"
+        "알겠습니다", "네", "아니요", "혹시", "요","심해",
+        "너무","많이","아주","조금"
     ]
     # 긴 표현 우선 제거
     unnecessary.sort(key=len, reverse=True)
@@ -251,18 +252,20 @@ class HybridLlamaService:
         prompt = (
             f"{dialog}\n\n"
             "아래 양식을 **엄격히** 준수해 **200자 이내**로 답변해주세요.\n"
-            "※ 환자의 증상 반복 금지\n"
+            "※ 환자의 증상만 다시 언급 해주세요.예 : 속쓰림이 심해요 -> 속쓰림\n"
             "※ 의료 맥락에 맞지 않는 단어(예: 굴욕, 굉장 등) 사용 금지\n"
             "※ 마지막 두 문구를 반드시 포함하세요:\n"
             "  - 정확한 진단은 전문가 상담을 통해 진행하세요.\n"
             "  - 비대면 진료가 필요하면 '예'라고 답해주세요.\n\n"
             "## 출력 양식\n"
+            "- patient_symptom  : patient_symptoms\n"
             "- disease_symptoms  : (1~2가지)\n"
             "- main_symptoms     : (1~2가지)\n"
             "- home_actions      : (1~2가지)\n"
             "- guideline         : (1~2가지)\n"
             "- emergency_advice  : (1~2가지)\n\n"
             "## 예시\n"
+            "patient_symptoms  : 속쓰림"
             "disease_symptoms  : 만성 위염, 위염 "
             "main_symptoms     : 속쓰림, 구역 "
             "home_actions      : 식사량 조절, 충분한 휴식  "
@@ -364,8 +367,8 @@ def summarize_dialog(dialog: str) -> str:
     payload = {
         "model": HF_MODEL,
         "messages": [
-            {"role":"system","content":"당신은 전문 요약가입니다. 핵심만 간결하게 요약하세요."},
-            {"role":"user","content":f"아래 환자↔AI 대화를 100자 내외로 한국어로 요약해주세요.\n\n{dialog}"}
+            {"role":"system","content":"당신은 의학전문 요약가입니다. 핵심만 간결하게 요약하세요."},
+            {"role":"user","content":f"아래 환자↔AI 대화를 80자 내외로 한국어로 요약해주세요.\n\n{dialog}"}
         ],
         "temperature":0.1,
         "max_tokens":120
@@ -398,12 +401,13 @@ PART_SYMPTOMS = {
 
 def extract_structured_info_manual(ai_text: str) -> dict:
     """
-    ai_text에서 disease_symptoms, main_symptoms, home_actions,
+    ai_text에서 patient_symptom,disease_symptoms, main_symptoms, home_actions,
     guideline(=analysis), emergency_advice를 한 번에 파싱하고,
     main_symptoms를 기준으로 symptom_part까지 매핑해 반환합니다.
     """
     # 1) 파싱할 섹션의 패턴을 한 곳에 정의
     patterns = {
+        "patient_symptom" : r"-\s*patient_symptoms\s*[:：]\s*([^\n]+)",
         "disease_symptoms": r"-\s*disease_symptoms\s*[:：]\s*([^\n]+)",
         "main_symptoms"   : r"-\s*main_symptoms\s*[:：]\s*([^\n]+)",
         "home_actions"    : r"-\s*home_actions\s*[:：]\s*([^\n]+)",
@@ -431,6 +435,7 @@ def extract_structured_info_manual(ai_text: str) -> dict:
 
     # 4) 최종 반환 형식 맞춰 리턴
     return {
+        "patient_symptom":  parsed["patient_symptom"],
         "disease_symptoms": parsed["disease_symptoms"],
         "main_symptoms":    parsed["main_symptoms"],
         "home_actions":     parsed["home_actions"],
@@ -1578,22 +1583,24 @@ def add_chat_separator():
 
         # 5) AI 텍스트에서 구조화 정보 추출 (중복 파싱 제거)
         info = extract_structured_info_manual(last_ai)
+        main_symptoms    = info["main_symptoms"]
         disease_symptoms = info["disease_symptoms"]
         home_actions     = info["home_actions"]
-        guide_actions    = info["analysis"]            # guideline → analysis
+        guide_actions    = info["analysis"]            
         emerg_actions    = info["emergency_advice"]
         symptom_part     = info["symptom_part"]
 
         # 6) summary 생성
+        pati_txt = main_symptoms[0] if main_symptoms else last_patient
         disease_txt = ", ".join(disease_symptoms)
         home_txt    = ", ".join(home_actions)
         guide_txt   = " 및 ".join(guide_actions)
         emerg_txt   = emerg_actions[0] if emerg_actions else ""
 
         summary = (
-            f"환자는 {raw_patient}에 대해 불편함을 호소하여, AI는 {disease_txt}일 가능성을 제시하고, "
-            f"{home_txt}(을)를 권장했으며, {guide_txt}(을)를 추천했습니다. "
-            f"{emerg_txt}(을)를 권유하였습니다."
+            f"환자는 {pati_txt}에 대해 불편함을 호소하여, AI는 {disease_txt}일 가능성을 제시하고, "
+            f"{home_txt}를 권장했으며, {guide_txt}를 추천했습니다. "
+            f"{emerg_txt}를 권유하였습니다."
         )
 
         # 7) consult_id 카운터 증가
