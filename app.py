@@ -219,11 +219,23 @@ def to_list(val: Any) -> List[Any]:
 class HybridLlamaService:
     # 외과 긴급 키워드 목록
     SURGICAL_KEYWORDS = ["골절", "뼈 부러짐", "상처", "출혈", "멍"]
+        # 이비인후과/안과(기타) 키워드 목록
+    ENT_OPHTH_KEYWORDS = [
+        # 안과 키워드
+        "눈", "시야", "충혈", "안구", "시력", "눈물", "눈부심", "안통", "눈통증",
+        # 이비인후과 키워드
+        "귀", "이명", "청력", "코막힘", "콧물", "재채기", "목", "목통증", "인후통"
+    ]
 
     def classify_text(self, text: str) -> str:
         lower = text.lower()
+        # 1) 외과 응급 키워드
         if any(kw in lower for kw in self.SURGICAL_KEYWORDS):
             return "외과"
+        # 2) 이비인후과/안과 키워드 -> 기타
+        if any(kw in lower for kw in self.ENT_OPHTH_KEYWORDS):
+            return "기타"
+        # 3) 그 외는 내과
         return "내과"
 
     def load_rules(self) -> List[Dict[str, Any]]:
@@ -394,10 +406,14 @@ PART_SYMPTOMS = {
     "위":       ["구역", "속쓰림", "신트림", "상복부 통증", "소화 불량"],
     "배":       ["설사", "복통"],
     "하복부":   ["하복부 통증", "경련"],
-    "눈":       ["충혈", "눈곱", "시야 흐림", "눈부심"],
+    "눈":       ["충혈", "눈곱", "시야 흐림", "눈부심", "눈물", "눈통증", "시력 저하"],
+    "목":       ["인후통", "목 통증", "목이 아픔", "목소리 변화"],
+    "피부":     ["발진", "가려움증", "피부 발적", "피부 건조증", "피부 통증"],
     "폐":       ["기침", "잦은기침", "천명음"],
     "치아":     ["치아통증", "치통", "과민반응"]
 }
+
+
 
 def extract_structured_info_manual(ai_text: str) -> dict:
     """
@@ -884,44 +900,47 @@ def save_chat():
         # 1) 환자 메시지 저장
         pid = now.strftime("%Y%m%d%H%M%S%f")
         coll.document(pid).set({
-            'chat_id': pid, 
-            'sender_id':'나',
-            'text': patient_text, 
+            'chat_id': pid,
+            'sender_id': '나',
+            'text': patient_text,
             'created_at': ts,
             'is_separater': False
         })
 
-        # 2) AI 응답 생성
-        # ai_resp = service.generate_llama_response(patient_id, [patient_text])
-        # ai_text = ai_resp.get("text") if isinstance(ai_resp, dict) else str(ai_resp)
-        ai_text = service.call_llm_for_symptom(patient_id, [patient_text])
+        # 2) 분류 및 응답 생성
+        resp = service.generate_llama_response(patient_id, [patient_text])
+        category = resp.get('category')
+        ai_text  = resp.get('text', '')
 
-        # 외과 단답형 조기 반환
-        if ai_text.strip() == "외과":
-            return jsonify({"message": ai_text, "chat_ids":[pid]}), 200
+        # 3) 외과 혹은 기타일 경우 즉시 반환
+        if category in ("외과", "기타"):
+            return jsonify({
+                "category": category,
+                "message": ai_text,
+                "chat_ids": [pid]
+            }), 200
 
-        # 3) AI 메시지 저장
+        # 4) 내과 응답 저장
         aid = (now + timedelta(milliseconds=1)).strftime("%Y%m%d%H%M%S%f")
         coll.document(aid).set({
-            'chat_id': aid, 
-            'sender_id':'AI',
-            'text': ai_text, 
+            'chat_id': aid,
+            'sender_id': 'AI',
+            'text': ai_text,
             'created_at': ts,
             'is_separater': False
         })
 
-        response = {
-            
+        # 5) 결과 반환
+        return jsonify({
+            "category": category,
             "chat_ids": [pid, aid],
             "ai_text": ai_text,
             "message": "Chat saved"
-        }
-        return jsonify(response), 200
-    
+        }), 200
+
     except Exception as e:
         logger.error(f"Error saving chat: {e}")
         return jsonify({'error': str(e)}), 500
-    
 
 
 # ---- 의사 진료 가능 시간 + 수어 필요 여부 통합 확인 ----
