@@ -1644,6 +1644,19 @@ def add_chat_separator():
             "analysis":         summary,
             "message":          "Chat saved"
         }
+    
+        # separator = true 한 줄 추가
+        coll = collection_consult_text.document(str(patient_id)).collection("chats")
+
+        sep = datetime.utcnow() - timedelta(milliseconds=1)
+        sid = sep.strftime("%Y%m%d%H%M%S%f")
+        coll.document(sid).set({
+            'chat_id': sid, 'sender_id':'',
+            'text':'',
+            'created_at': sep.strftime("%Y-%m-%d %H:%M:%S"),
+            'is_separater': True
+        })
+
         return jsonify(response), 200
 
     except Exception as e:
