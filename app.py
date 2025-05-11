@@ -180,7 +180,8 @@ def clean_symptom(text: str) -> str:
     """
     unnecessary = [
         "설명해 줘", "말해 줘", "알려주세요", "알려 줘", "가요",
-        "알겠습니다", "네", "아니요", "혹시", "요"
+        "알겠습니다", "네", "아니요", "혹시", "요","심해",
+        "너무","많이","아주","조금"
     ]
     # 긴 표현 우선 제거
     unnecessary.sort(key=len, reverse=True)
@@ -194,7 +195,7 @@ def clean_symptom(text: str) -> str:
 # DynamoDB AttributeValue -> Python 타입 변환
 deserializer = TypeDeserializer()
 
-def _deserialize_item(av_map: Dict[str, Any]) -> Dict[str, Any]:
+def deserialize_item(av_map: Dict[str, Any]) -> Dict[str, Any]:
     """
     DynamoDB AttributeValue 맵을 순수 Python 타입으로 변환
     """
@@ -209,76 +210,94 @@ def to_list(val: Any) -> List[Any]:
     if isinstance(val, (list, tuple)):
         return list(val)
     return [val]
-     # HF API 호출 공용 함수
 
-def query(payload: dict) -> dict:
-    """HF Inference API 에 안전하게 POST 한 뒤 JSON 리턴"""
-    for attempt in range(1, 4):
-        try:
-            r = requests.post(HF_API_URL, headers=HEADERS, json=payload, timeout=(5,60))
-            r.raise_for_status()
-            return r.json()
-        except requests.RequestException as e:
-            logger.warning(f"[HF_API] attempt {attempt} failed: {e}")
-    raise RuntimeError("HF API 호출 3회 모두 실패")
+
+
+
 
 # 외과 긴급 키워드 목록
 class HybridLlamaService:
     # 외과 긴급 키워드 목록
     SURGICAL_KEYWORDS = ["골절", "뼈 부러짐", "상처", "출혈", "멍"]
+        # 이비인후과/안과(기타) 키워드 목록
+    ENT_OPHTH_KEYWORDS = [
+        # 안과 키워드
+        "눈", "시야", "충혈", "안구", "시력", "눈물", "눈부심", "안통", "눈통증",
+        # 이비인후과 키워드
+        "귀", "이명", "청력", "코막힘", "콧물", "재채기", "목", "목통증", "인후통"
+    ]
 
-    def _classify_text(self, text: str) -> str:
+    def classify_text(self, text: str) -> str:
         lower = text.lower()
-        return "외과" if any(kw in lower for kw in self.SURGICAL_KEYWORDS) else "내과"
+        # 1) 외과 응급 키워드
+        if any(kw in lower for kw in self.SURGICAL_KEYWORDS):
+            return "외과"
+        # 2) 이비인후과/안과 키워드 -> 기타
+        if any(kw in lower for kw in self.ENT_OPHTH_KEYWORDS):
+            return "기타"
+        # 3) 그 외는 내과
+        return "내과"
 
-    def _load_rules(self) -> List[Dict[str, Any]]:
+    def load_rules(self) -> List[Dict[str, Any]]:
         try:
             items = table_diseases.scan().get("Items", [])
             if not items:
                 return []
             first = next(iter(items[0].values()))
             if isinstance(first, dict) and ("S" in first or "L" in first):
-                return [_deserialize_item(i) for i in items]
+                return [deserialize_item(i) for i in items]
             return items
         except Exception as e:
             logger.warning(f"룰 로드 실패: {e}")
             return []
 
-    def _call_llm_for_symptom(self, symptom: str) -> str:
-        """
-        1) OpenAI‐style HF router client 호출 시도
-        2) 실패 시 HTTP POST(query) 폴백
-        """
-        prompt = (
-            "너는 친절한 내과 상담 AI야. 예상 원인 1~2가지, 자가관리법 1~2가지, "
-            "이럴 땐 병원 방문 안내를 2~3줄로 알려줘.\n\n"
-            f"Symptom: {symptom}"
-        )
 
-        # 1) HTTP POST 폴백
+    def call_llm_for_symptom(self, patient_id: str, messages: List[str]) -> str:
+        """
+        patient_id: 환자 식별자 (로그 등에 활용)
+        messages:   환자 발화 문자열의 리스트
+        """
+        system_msg = "너는 친절한 내과 상담 AI야. 한국어로 환자가 불안해지지 않도록 부드럽게 답변해줘."
+        # 메시지 리스트를 하나의 대화(dialog)로 합칩니다.
+        dialog = "\n".join(f"환자: {m}" for m in messages)
+
+        prompt = (
+            f"{dialog}\n\n"
+            "아래 양식을 **엄격히** 준수해 **200자 이내**로 답변해주세요.\n"
+            "※ 환자의 증상만 다시 언급 해주세요.예 : 속쓰림이 심해요 -> 속쓰림\n"
+            "※ 의료 맥락에 맞지 않는 단어(예: 굴욕, 굉장 등) 사용 금지\n"
+            "※ 마지막 두 문구를 반드시 포함하세요:\n"
+            "  - 정확한 진단은 전문가 상담을 통해 진행하세요.\n"
+            "  - 비대면 진료가 필요하면 '예'라고 답해주세요.\n\n"
+            "## 출력 양식\n"
+            "- patient_symptom  : patient_symptoms\n"
+            "- disease_symptoms  : (1~2가지)\n"
+            "- main_symptoms     : (1~2가지)\n"
+            "- home_actions      : (1~2가지)\n"
+            "- guideline         : (1~2가지)\n"
+            "- emergency_advice  : (1~2가지)\n\n"
+            "## 예시\n"
+            "patient_symptoms  : 속쓰림"
+            "disease_symptoms  : 만성 위염, 위염 "
+            "main_symptoms     : 속쓰림, 구역 "
+            "home_actions      : 식사량 조절, 충분한 휴식  "
+            "guideline         : 제산제 복용 권장, 스트레스 관리 필요 "
+            "emergency_advice  : 흑색변·혈변 시 병원 방문 "
+            "※ 정확한 진단은 전문가 상담을 통해 진행하세요.  "
+            "※ 비대면 진료가 필요하면 '예'라고 답해주세요."
+        )
         payload = {
             "model": HF_MODEL,
             "messages": [
-                {"role": "system", "content": "너는 친절한 내과 상담 AI야."},
+                {"role": "system", "content": system_msg},
                 {"role": "user",   "content": prompt}
             ],
-            "max_tokens": 150,
-            "temperature": 0.3,
-            "top_p": 0.9,
-            "n": 1
+            "temperature": 0.2,
+            "max_tokens": 400
         }
-        try:
-            data = query(payload)
-             # chat‐completion 응답 처리
-            if isinstance(data, dict) and data.get("choices"):
-                return data["choices"][0]["message"]["content"].strip()
-            # text‐generation 응답 처리
-            if isinstance(data, list) and data and "generated_text" in data[0]:
-                return data[0]["generated_text"].strip()
-        except Exception as e:
-            logger.error(f"[HF_API] 폴백 호출 전체 실패: {e}")
+        result = query(payload)
+        return result["choices"][0]["message"]["content"].strip()
 
-        return "죄송합니다. 현재 해당 증상에 대한 정보를 생성할 수 없습니다."
 
     def generate_llama_response(self, patient_id: str, chat_history: List[Any]) -> Dict[str, Any]:
         """
@@ -295,81 +314,63 @@ class HybridLlamaService:
         logger.info(f"[generate] patient_id={patient_id}, symptom={symptom}")
         
 
-
-        # # 2) AI 응답 생성
-        # ai_resp = service.generate_llama_response(patient_id, [patient_text])
-        # ai_text = ai_resp.get("text") if isinstance(ai_resp, dict) else str(ai_resp)
-
         # 1) 외과 긴급 키워드
         if any(kw in norm for kw in self.SURGICAL_KEYWORDS):
-            return {
-                "category": "외과",
-                "text": (
-                    "외과 진료가 필요해 보여요.\n"
-                    "편하실 때 촬영을 통해 증상을 확인해 보실 수 있습니다.\n"
-                    "지금 터치로 증상 확인 페이지로 이동해 보시겠어요? (예/아니오)"
-                )
-            }
-
-        # 2) 분류
-        category = self._classify_text(last_msg)
-
-        # 3) 내과 처리
-        if category == "내과":
-            # 1차: LLM 호출
-            ai_text = self._call_llm_for_symptom(last_msg)
-
-            # 2차: DB 룰 매칭 (sub_category, main_symptoms, symptom_synonyms, name_ko)
-            # Clean and normalize user symptom
-            symptom = last_msg
-            norm = normalize(clean_symptom(symptom))
-            for rule in self._load_rules():
-                # gather potential match keywords
-                main_syms = to_list(rule.get("main_symptoms"))
-                syns      = to_list(rule.get("symptom_synonyms"))
-                subs      = to_list(rule.get("sub_category"))
-                name_ko   = [rule.get("name_ko")] if rule.get("name_ko") else []
-                kws       = subs + main_syms + syns + name_ko
-                # normalize keywords
-                kws_norm  = [normalize(kw) for kw in kws if isinstance(kw, str)]
-                # match against normalized user symptom
-                if any(kw in norm for kw in kws_norm):
-                    # format outputs
-                    name = to_list(rule.get("name_ko")) or ["정보 없음"]
-                    home_act  = to_list(rule.get("home_actions"))       or ["정보 없음"]
-                    emerg     = to_list(rule.get("emergency_advice"))   or ["정보 없음"]
-                    return {
-                        "category": "내과",
-                        "text": (
-                            f"예상 질환: {', '.join(name)}\n"
-                            f"자가관리: {', '.join(home_act)}\n"
-                            f"이럴 땐 병원: {', '.join(emerg)}\n"
-                            "비대면 진료가 필요하면 '예'라고 답해주세요.\n"
-                            "(※ 정확한 진단은 전문가 상담을 통해 진행하세요.)"
-                        )
-                    }
-
-
-
-        # 4) 기타 과목 → 전문의 선택 유도
-        if category not in ("내과", "외과"):
-            return {
-                "category": "기타",
-                "text": (
-                    "전문의 상담이 필요해 보이는 증상입니다.\n"
-                    "내과 또는 외과 중 추가로 원하시는 상담이 있나요? (내과/외과)"
-                )
-            }
-
-        # 5) 외과 fallback
-        return {
-            "category": "외과",
-            "text": (
+            return {"category":"외과","text":(
                 "외과 진료가 필요해 보여요.\n"
                 "편하실 때 촬영을 통해 증상을 확인해 보실 수 있습니다.\n"
                 "지금 터치로 증상 확인 페이지로 이동해 보시겠어요? (예/아니오)"
-            )
-        }
+            )}
+
+        # 2) 분류
+        category = self.classify_text(last_msg)
+
+
+        # 3) 내과 처리
+        if category == "내과":
+            # 3-1) LLM 호출
+            ai_text = self.call_llm_for_symptom("\n".join([m if isinstance(m,str) else m.get("patient_text","") 
+                                                         for m in chat_history]),
+                                               last_msg).strip()
+
+            # 3-2) DB 룰 매칭 (후보 키워드)
+            if not ai_text:   
+                for rule in self.load_rules():
+                    kws = (
+                        to_list(rule.get("sub_category")) +
+                        to_list(rule.get("main_symptoms")) +
+                        to_list(rule.get("symptom_synonyms")) +
+                        ([rule.get("name_ko")] if rule.get("name_ko") else [])
+                    )
+                    kws_norm = [normalize(k) for k in kws if isinstance(k, str)]
+                    if any(k in norm for k in kws_norm):
+                        name     = to_list(rule.get("name_ko")) or ["정보 없음"]
+                        home_act = to_list(rule.get("home_actions")) or ["정보 없음"]
+                        emerg    = to_list(rule.get("emergency_advice")) or ["정보 없음"]
+                        db_text = (
+                            f"disease_symptoms: {', '.join(name)}\n"
+                            f"home_actions: {', '.join(home_act)}\n"
+                            f"emergency_advice: {', '.join(emerg)}\n"
+                            "비대면 진료가 필요하면 '예'라고 답해주세요.\n"
+                            "(※ 정확한 진단은 전문가 상담을 통해 진행하세요.)"
+                        )
+                    return {"category":"내과", "text": db_text}
+                    
+            return {"category":"내과","text":ai_text}
+        
+        # 4) 기타 과목
+        if category not in ("내과","외과"):
+            return {"category":"기타","text":(
+                "전문의 상담이 필요해 보이는 증상입니다.\n"
+                "내과 또는 외과 중 추가로 원하시는 상담이 있나요? (내과/외과)"
+            )}
+
+        # 5) 외과 fallback
+        return {"category":"외과","text":(
+            "외과 진료가 필요해 보여요.\n"
+            "편하실 때 촬영을 통해 증상을 확인해 보실 수 있습니다.\n"
+            "지금 터치로 증상 확인 페이지로 이동해 보시겠어요? (예/아니오)"
+        )}
     
 
 # ---------채팅 요약 ---------
