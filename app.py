@@ -542,6 +542,9 @@ def extract_structured_info_manual(ai_text: str) -> dict:
         "symptom_part":     symptom_part
     }
 
+
+
+
 # ---- 환자 회원가입 ----
 @app.route('/patient/signup', methods=['POST'])
 def patient_signup():
@@ -1639,6 +1642,83 @@ def end_call():
         return jsonify({'error': str(e)}), 500
     
     
+
+# ----    음성-> 텍스트 변환     ───────────────────────────────
+
+
+# 1) HF Whisper API 설정
+API_URL = "https://api-inference.huggingface.co/models/openai/whisper-large-v3"
+HF_API_KEY  = os.getenv("HUGGINGFACE_API_KEY")
+HEADERS     = {
+    "Authorization": f"Bearer {HF_API_KEY}"
+
+    }
+
+# 2) 확장자 → Content-Type 매핑
+CONTENT_TYPES = {
+    ".flac": "audio/flac",
+    ".wav":  "audio/wav",
+    ".mp3":  "audio/mpeg",
+    ".ogg":  "audio/ogg",
+    ".m4a":  "audio/mp4",
+}
+
+def get_content_type(filename: str, default: str) -> str:
+    ext = os.path.splitext(filename)[1].lower()
+    return CONTENT_TYPES.get(ext, default)
+
+def query_whisper_bytes(data: bytes, content_type: str) -> dict:
+    resp = requests.post(
+        API_URL,
+        headers={**HEADERS, "Content-Type": content_type},
+        data=data,
+        timeout=60
+    )
+    try:
+        resp.raise_for_status()
+    except requests.HTTPError as e:
+        # 상세 에러 로그 출력
+        print(f"[HF ERROR] status={resp.status_code}, body={resp.text}")
+        raise
+    return resp.json()
+
+
+# ---- 음성→텍스트 변환 (실시간, 저장 없이) ----
+@app.route('/voice/add-txt', methods=['POST'])
+def add_txt():
+    """
+    요청: multipart/form-data, 필드명 'audio'
+    응답: { "text": "전사된 한글 문자열" }
+    """
+    if 'audio' not in request.files:
+        return jsonify({"error": "audio 파일이 없습니다"}), 400
+
+    f = request.files['audio']
+    raw = f.read()
+    content_type = get_content_type(f.filename, f.mimetype or "application/octet-stream")
+
+    try:
+        result = query_whisper_bytes(raw, content_type)
+        text = result.get("text", "")
+        return jsonify({"text": text.strip()})
+    except requests.HTTPError as e:
+        # e.response 가 아니라 resp.text 를 이미 로깅했으니 간단히
+        return jsonify({
+            "error": "Upstream API 오류",
+            "status": e.response.status_code if e.response else None,
+            "detail": e.response.text if e.response else str(e)
+        }), 502
+    except Exception as e:
+        print(f"[SERVER ERROR] {e}")
+        return jsonify({"error": f"서버 내부 오류: {e}"}), 500
+
+
+
+
+
+
+
+
 # ── 채팅 구분선 이후 요약 & 구조화 정보 저장 ───────────────────────────────
 @app.route('/chat/add-separator', methods=['POST'])
 @jwt_required()
