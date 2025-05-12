@@ -421,14 +421,14 @@ def extract_structured_info_manual(ai_text: str) -> dict:
     guideline(=analysis), emergency_advice를 한 번에 파싱하고,
     main_symptoms를 기준으로 symptom_part까지 매핑해 반환합니다.
     """
-    # 1) 파싱할 섹션의 패턴을 한 곳에 정의
+    # 1) 파싱할 섹션의 패턴을 한 곳에 정의 (더 유연하게, 대시(-) 없이도, 한글 콜론(：) 허용)
     patterns = {
-        "patient_symptom" : r"-\s*patient_symptoms\s*[:：]\s*([^\n]+)",
-        "disease_symptoms": r"-\s*disease_symptoms\s*[:：]\s*([^\n]+)",
-        "main_symptoms"   : r"-\s*main_symptoms\s*[:：]\s*([^\n]+)",
-        "home_actions"    : r"-\s*home_actions\s*[:：]\s*([^\n]+)",
-        "analysis"        : r"-\s*guideline\s*[:：]\s*([^\n]+)",
-        "emergency_advice": r"-\s*emergency_advice\s*[:：]\s*([^\n]+)",
+        "patient_symptom" : r"\bpatient_symptoms\s*[:：]\s*([^-\n]+)",
+        "disease_symptoms": r"\bdisease_symptoms\s*[:：]\s*([^-\n]+)",
+        "main_symptoms"   : r"\bmain_symptoms\s*[:：]\s*([^-\n]+)",
+        "home_actions"    : r"\bhome_actions\s*[:：]\s*([^-\n]+)",
+        "analysis"        : r"\bguideline\s*[:：]\s*([^-\n]+)",
+        "emergency_advice": r"\bemergency_advice\s*[:：]\s*([^-\n]+)",
     }
 
     # 2) 각 항목을 정규식으로 한 번만 순회하며 파싱
@@ -1576,14 +1576,15 @@ def add_chat_separator():
         for doc in docs:
             d = doc.to_dict()
             if d.get("is_separator"):
-                last_sep = d["created_at"]
+                last_sep = datetime.strptime(d["created_at"], "%Y-%m-%d %H:%M:%S")
                 break
 
         # 3) 최신 환자/AI 발화 추출
         last_patient, last_ai = None, None
         for doc in docs:
             d = doc.to_dict()
-            if last_sep and d["created_at"] <= last_sep:
+            doc_time = datetime.strptime(d["created_at"], "%Y-%m-%d %H:%M:%S")
+            if last_sep and doc_time < last_sep:
                 continue
             if d.get("sender_id") == "나" and not last_patient:
                 last_patient = d.get("patient_text", d.get("text", "")).strip()
