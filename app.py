@@ -894,7 +894,7 @@ def save_chat():
                 'chat_id': sid, 'sender_id':'',
                 'text':'',
                 'created_at': sep.strftime("%Y-%m-%d %H:%M:%S"),
-                'is_separater': True
+                'is_separator': True
             })
 
         # 1) 환자 메시지 저장
@@ -904,7 +904,7 @@ def save_chat():
             'sender_id': '나',
             'text': patient_text,
             'created_at': ts,
-            'is_separater': False
+            'is_separator': False
         })
 
         # 2) 분류 및 응답 생성
@@ -927,7 +927,7 @@ def save_chat():
             'sender_id': 'AI',
             'text': ai_text,
             'created_at': ts,
-            'is_separater': False
+            'is_separator': False
         })
 
         # 5) 결과 반환
@@ -1575,7 +1575,7 @@ def add_chat_separator():
         last_sep = None
         for doc in docs:
             d = doc.to_dict()
-            if d.get("is_separator") or d.get("is_separater"):
+            if d.get("is_separator"):
                 last_sep = d["created_at"]
                 break
 
@@ -1651,7 +1651,7 @@ def add_chat_separator():
             'chat_id': sid, 'sender_id':'',
             'text':'',
             'created_at': sep.strftime("%Y-%m-%d %H:%M:%S"),
-            'is_separater': True
+            'is_separator': True
         })
 
         return jsonify(response), 200
@@ -1679,7 +1679,7 @@ def move_with_separator():
             'chat_id': sid, 'sender_id':'',
             'text':'',
             'created_at': sep.strftime("%Y-%m-%d %H:%M:%S"),
-            'is_separater': True
+            'is_separator': True
         })
 
         response = {
