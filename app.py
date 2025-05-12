@@ -1644,9 +1644,6 @@ def add_chat_separator():
             "analysis":         summary,
             "message":          "Chat saved"
         }
-    
-        # separator = true 한 줄 추가
-        coll = collection_consult_text.document(str(patient_id)).collection("chats")
 
         sep = datetime.utcnow() - timedelta(milliseconds=1)
         sid = sep.strftime("%Y%m%d%H%M%S%f")
@@ -1658,6 +1655,38 @@ def add_chat_separator():
         })
 
         return jsonify(response), 200
+
+    except Exception as e:
+        logger.error(f"Error in add_chat_separator: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+# ---- 채팅 구분선 생성 및 외과 이동 ----
+@app.route('/chat/move-to-body', methods=['POST'])
+@jwt_required()
+def move_with_separator():
+    try:
+        patient_id = get_jwt_identity()
+        if not patient_id:
+            return jsonify({"error": "patient_id is required"}), 400
+
+        # 1) Firestore에서 separator 이후 대화 읽기 (내림차순)
+        coll = collection_consult_text.document(str(patient_id)).collection("chats")
+
+        sep = datetime.utcnow() - timedelta(milliseconds=1)
+        sid = sep.strftime("%Y%m%d%H%M%S%f")
+        coll.document(sid).set({
+            'chat_id': sid, 'sender_id':'',
+            'text':'',
+            'created_at': sep.strftime("%Y-%m-%d %H:%M:%S"),
+            'is_separater': True
+        })
+
+        response = {
+            "answer" : "사진 기반 진단으로 이동합니다."
+        }
+
+        return jsonify(response)
 
     except Exception as e:
         logger.error(f"Error in add_chat_separator: {e}")
