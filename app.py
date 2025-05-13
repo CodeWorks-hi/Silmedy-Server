@@ -1283,7 +1283,7 @@ def get_diagnosis_by_patient():
                 diagnosis_id = item.get('diagnosis_id')
                 diagnosed_at = item.get('diagnosed_at', '')
                 doctor_id = item.get('doctor_id', '')
-                summary_text = list(item.get('summary_text', [])) if isinstance(item.get('summary_text'), set) else item.get('summary_text', [])
+                symptoms = list(item.get('symptoms', [])) if isinstance(item.get('symptoms'), set) else item.get('symptoms', [])
 
                 try:
                     diagnosed_date = datetime.strptime(diagnosed_at, "%Y-%m-%d %H:%M:%S").date().isoformat()
@@ -1303,7 +1303,7 @@ def get_diagnosis_by_patient():
                 result = {
                     'diagnosis_id': diagnosis_id,
                     'diagnosed_at': diagnosed_date,
-                    'summary_text': summary_text,
+                    'symptoms': symptoms,
                     'hospital_name': hospital_name
                 }
                 items.append(result)
