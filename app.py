@@ -1920,7 +1920,7 @@ def health_centers_with_doctors():
             data["license_number"] = doc.id  # 여기서 직접 추가
             for hospital in matched_hospitals:
                 if (
-                    data.get("hospital_id") == hospital["hospital_id"]
+                    data.get("hospital_id") == str(hospital["hospital_id"])
                     and data.get("department") == department
                     and (not gender or gender == "전체" or data.get("gender") == gender)
                 ):
