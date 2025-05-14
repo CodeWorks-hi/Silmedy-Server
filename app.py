@@ -69,10 +69,10 @@ def refresh_token():
     access_token = create_access_token(identity=identity)
     return jsonify(access_token=access_token), 200
 
-with open('api-doc.yaml', 'r', encoding='utf-8-sig') as f:
-    swagger_template = yaml.safe_load(f)
+# with open('api-doc.yaml', 'r', encoding='utf-8-sig') as f:
+#     swagger_template = yaml.safe_load(f)
 
-swagger = Swagger(app, template=swagger_template)
+swagger = Swagger(app)
 
 CORS(app, resources={r"/*": {"origins": "*"}})
 
