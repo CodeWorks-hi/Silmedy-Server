@@ -548,6 +548,68 @@ def extract_structured_info_manual(ai_text: str) -> dict:
 # ---- 환자 회원가입 ----
 @app.route('/patient/signup', methods=['POST'])
 def patient_signup():
+    """
+    Register a new patient.
+    ---
+    parameters:
+      - name: email
+        in: body
+        type: string
+        required: true
+        description: Patient's email address
+      - name: password
+        in: body
+        type: string
+        required: true
+        description: Patient's password
+      - name: name
+        in: body
+        type: string
+        required: true
+        description: Patient's name
+      - name: contact
+        in: body
+        type: string
+        required: true
+        description: Patient's contact number
+      - name: postal_code
+        in: body
+        type: string
+        required: true
+        description: Postal code
+      - name: address
+        in: body
+        type: string
+        required: true
+        description: Address
+      - name: address_detail
+        in: body
+        type: string
+        required: false
+        description: Detailed address
+      - name: birth_date
+        in: body
+        type: string
+        required: true
+        description: Birth date
+      - name: sign_language_needed
+        in: body
+        type: boolean
+        required: false
+        description: Whether sign language is needed
+      - name: is_default_address
+        in: body
+        type: boolean
+        required: false
+        description: Whether this is the default address
+    responses:
+      200:
+        description: Patient registration successful
+      409:
+        description: Email already in use
+      500:
+        description: Server error
+    """
     logger.info(f"REQUEST: {request.json}")
     try:
         body = request.get_json()
@@ -598,6 +660,30 @@ def patient_signup():
 # ---- 환자 로그인 ----
 @app.route('/patient/login', methods=['POST'])
 def patient_login():
+    """
+    Patient login.
+    ---
+    parameters:
+      - name: email
+        in: body
+        type: string
+        required: true
+        description: Patient's email address
+      - name: password
+        in: body
+        type: string
+        required: true
+        description: Patient's password
+    responses:
+      200:
+        description: Login successful
+      400:
+        description: Email and password required
+      401:
+        description: Invalid credentials
+      500:
+        description: Server error
+    """
     try:
         data = request.get_json()
         email = data.get('email')
@@ -639,6 +725,25 @@ def patient_login():
 @app.route('/patient/fcm-token', methods=['POST'])
 @jwt_required()
 def register_fcm_token():
+    """
+    Register FCM token for push notifications.
+    ---
+    parameters:
+      - name: fcm_token
+        in: body
+        type: string
+        required: true
+        description: FCM token to register
+    responses:
+      200:
+        description: FCM token saved successfully
+      400:
+        description: FCM token required
+      404:
+        description: User not found
+      500:
+        description: Server error
+    """
     try:
         patient_id = get_jwt_identity()  # JWT의 sub (환자 ID 또는 이메일)
 
@@ -663,6 +768,23 @@ def register_fcm_token():
 # ---- 우편번호 검색 ----
 @app.route('/postal_code', methods=['GET'])
 def search_postal_code():
+    """
+    Search postal code by keyword.
+    ---
+    parameters:
+      - name: keyword
+        in: query
+        type: string
+        required: true
+        description: Search keyword for postal code
+    responses:
+      200:
+        description: List of postal codes
+      400:
+        description: Keyword is required
+      500:
+        description: Server error
+    """
     keyword = request.args.get('keyword')
     if not keyword:
         return jsonify({'error': 'Keyword is required'}), 400
@@ -686,6 +808,30 @@ def search_postal_code():
 # ---- 환자 비밀번호 변경 ----
 @app.route('/patient/repassword', methods=['POST'])
 def patient_change_password():
+    """
+    Change patient password.
+    ---
+    parameters:
+      - name: email
+        in: body
+        type: string
+        required: true
+        description: Patient's email address
+      - name: new_password
+        in: body
+        type: string
+        required: true
+        description: New password
+    responses:
+      200:
+        description: Password changed successfully
+      400:
+        description: Email and new password required
+      404:
+        description: User not found
+      500:
+        description: Server error
+    """
     try:
         data = request.get_json()
         email = data.get('email')
@@ -711,6 +857,13 @@ def patient_change_password():
 @app.route('/patient/logout', methods=['POST'])
 @jwt_required()
 def logout():
+    """
+    Patient logout.
+    ---
+    responses:
+      200:
+        description: Logout successful
+    """
     patient_id = get_jwt_identity()
     logger.info(f"Patient {patient_id} logged out.")
     return jsonify({'message': '로그아웃 처리 완료'}), 200
@@ -720,6 +873,17 @@ def logout():
 @app.route('/patient/mypage', methods=['GET'])
 @jwt_required()
 def get_mypage():
+    """
+    Get patient mypage information.
+    ---
+    responses:
+      200:
+        description: Patient mypage data
+      400:
+        description: Patient ID required
+      404:
+        description: User not found
+    """
     patient_id = get_jwt_identity()
     if not patient_id:
         return jsonify({'error': 'Patient ID required'}), 400
@@ -735,6 +899,25 @@ def get_mypage():
 @app.route('/patient/update', methods=['POST'])
 @jwt_required()
 def update_patient_info():
+    """
+    Update patient information.
+    ---
+    parameters:
+      - name: updates
+        in: body
+        type: object
+        required: true
+        description: Fields to update (dictionary)
+    responses:
+      200:
+        description: Update successful
+      400:
+        description: Updates required
+      404:
+        description: User not found
+      500:
+        description: Server error
+    """
     try:
         data = request.get_json()
         patient_id = get_jwt_identity()
@@ -758,6 +941,17 @@ def update_patient_info():
 @app.route('/patient/delete', methods=['DELETE'])
 @jwt_required()
 def delete_patient():
+    """
+    Delete patient account.
+    ---
+    responses:
+      200:
+        description: Account deleted successfully
+      400:
+        description: Patient ID required
+      404:
+        description: User not found
+    """
     patient_id = get_jwt_identity()
     if not patient_id:
         return jsonify({'error': 'Patient ID required'}), 400
@@ -783,6 +977,21 @@ def is_valid_phone_number(phone):
 # ---- 인증번호 요청 ----
 @app.route("/request-verification-code", methods=["POST"])
 def request_verification_code():
+    """
+    Request phone verification code.
+    ---
+    parameters:
+      - name: phone_number
+        in: body
+        type: string
+        required: true
+        description: Phone number to send verification code
+    responses:
+      200:
+        description: Verification code sent
+      400:
+        description: Phone number required or invalid format
+    """
     data = request.json
     phone_number = data.get("phone_number")
 
@@ -808,6 +1017,26 @@ def request_verification_code():
 # ---- 인증번호 확인 ----
 @app.route("/verify-code", methods=["POST"])
 def verify_code():
+    """
+    Verify phone verification code.
+    ---
+    parameters:
+      - name: phone_number
+        in: body
+        type: string
+        required: true
+        description: Phone number
+      - name: code
+        in: body
+        type: string
+        required: true
+        description: Verification code
+    responses:
+      200:
+        description: Verification successful
+      400:
+        description: Verification failed or required fields missing
+    """
     data = request.json
     phone_number = data.get("phone_number")
     code = data.get("code")
@@ -825,6 +1054,30 @@ def verify_code():
 # --- 인증 후 이메일 확인 ---
 @app.route("/verify-code-get-email", methods=["POST"])
 def verify_and_get_email():
+    """
+    Verify code and get email by phone number.
+    ---
+    parameters:
+      - name: phone_number
+        in: body
+        type: string
+        required: true
+        description: Phone number
+      - name: code
+        in: body
+        type: string
+        required: true
+        description: Verification code
+    responses:
+      200:
+        description: Email found and returned
+      400:
+        description: Verification code mismatch
+      404:
+        description: User not found
+      500:
+        description: Server error
+    """
     
     phone = request.json.get("phone_number", "").strip()  # 전화번호에서 하이픈 제거
     code = request.json.get("code", "").strip()  # 인증코드
@@ -859,6 +1112,35 @@ def verify_and_get_email():
 # ---- 인증 후 비밀번호 변경 ----
 @app.route("/verify-code-check-user", methods=["POST"])
 def verify_code_check_user():
+    """
+    Verify code and check if user exists by email and phone.
+    ---
+    parameters:
+      - name: email
+        in: body
+        type: string
+        required: true
+        description: Email address
+      - name: phone_number
+        in: body
+        type: string
+        required: true
+        description: Phone number
+      - name: code
+        in: body
+        type: string
+        required: true
+        description: Verification code
+    responses:
+      200:
+        description: User verified
+      400:
+        description: Verification code mismatch
+      404:
+        description: User not found
+      500:
+        description: Server error
+    """
     email = request.json.get("email", "").strip()
     phone = request.json.get("phone_number", "").replace("-", "").strip()
     code = request.json.get("code", "").strip()
@@ -895,6 +1177,19 @@ def verify_code_check_user():
 @app.route('/patient/name', methods=['GET'])
 @jwt_required()
 def get_patient_name():
+    """
+    Get patient name by JWT.
+    ---
+    responses:
+      200:
+        description: Patient name returned
+      401:
+        description: Unauthorized
+      404:
+        description: User not found
+      500:
+        description: Server error
+    """
     try:
         patient_id = get_jwt_identity()
         if not patient_id:
@@ -917,6 +1212,25 @@ def get_patient_name():
  # ---- 증상으로 관련 정보 조회 ----
 @app.route('/info-by-symptom', methods=['POST'])
 def get_disease_info_by_symptom():
+    """
+    Get disease info by symptom.
+    ---
+    parameters:
+      - name: symptom
+        in: body
+        type: string
+        required: true
+        description: Symptom to search
+    responses:
+      200:
+        description: Disease info found
+      400:
+        description: Symptom required
+      404:
+        description: No matching disease found
+      500:
+        description: Server error
+    """
     try:
         data = request.get_json()
         symptom = data.get('symptom')
@@ -960,6 +1274,23 @@ service = HybridLlamaService()
 @app.route('/chat/save', methods=['POST'])
 @jwt_required()
 def save_chat():
+    """
+    Save chat message and generate AI response.
+    ---
+    parameters:
+      - name: patient_text
+        in: body
+        type: string
+        required: true
+        description: Patient's chat message
+    responses:
+      200:
+        description: Chat saved and AI response generated
+      400:
+        description: Missing required fields
+      500:
+        description: Server error
+    """
     try:
         patient_id = get_jwt_identity()
         data = request.get_json()
@@ -1032,6 +1363,25 @@ def save_chat():
 @app.route('/request/availability-signcheck', methods=['GET'])
 @jwt_required()
 def get_availability_and_signcheck():
+    """
+    Get doctor's availability and patient's sign language need.
+    ---
+    parameters:
+      - name: license_number
+        in: query
+        type: string
+        required: true
+        description: Doctor's license number
+    responses:
+      200:
+        description: Reservations and sign language need info
+      400:
+        description: License number required
+      404:
+        description: Doctor or user not found
+      500:
+        description: Server error
+    """
     try:
         patient_id = get_jwt_identity()
         license_number = request.args.get('license_number')
@@ -1087,6 +1437,57 @@ def get_availability_and_signcheck():
 @app.route('/request/confirmed', methods=['POST'])
 @jwt_required()
 def confirm_reservation():
+    """
+    Confirm and save a reservation.
+    ---
+    parameters:
+      - name: doctor_id
+        in: body
+        type: integer
+        required: true
+        description: Doctor ID
+      - name: department
+        in: body
+        type: string
+        required: true
+        description: Department
+      - name: symptom_part
+        in: body
+        type: array
+        items:
+          type: string
+        required: true
+        description: Symptom part(s)
+      - name: symptom_type
+        in: body
+        type: array
+        items:
+          type: string
+        required: true
+        description: Symptom type(s)
+      - name: book_date
+        in: body
+        type: string
+        required: true
+        description: Booking date
+      - name: book_hour
+        in: body
+        type: string
+        required: true
+        description: Booking hour
+      - name: sign_language_needed
+        in: body
+        type: boolean
+        required: true
+        description: Sign language needed
+    responses:
+      200:
+        description: Reservation confirmed
+      400:
+        description: Missing required reservation information
+      500:
+        description: Server error
+    """
     try:
         data = request.get_json()
         patient_id = get_jwt_identity()
@@ -1234,6 +1635,25 @@ def confirm_reservation():
 @app.route('/prescription/url', methods=['GET'])
 @jwt_required()
 def get_prescription_url():
+    """
+    Get prescription URL by diagnosis ID.
+    ---
+    parameters:
+      - name: diagnosis_id
+        in: query
+        type: string
+        required: true
+        description: Diagnosis ID
+    responses:
+      200:
+        description: Prescription URL found
+      400:
+        description: Diagnosis ID required
+      404:
+        description: Prescription not found
+      500:
+        description: Server error
+    """
     try:
         patient_id = get_jwt_identity()
         diagnosis_id = request.args.get('diagnosis_id')
@@ -1273,6 +1693,15 @@ def get_prescription_url():
 @app.route('/diagnosis/list', methods=['GET'])
 @jwt_required()
 def get_diagnosis_by_patient():
+    """
+    Get diagnosis records for the patient.
+    ---
+    responses:
+      200:
+        description: List of diagnosis records
+      500:
+        description: Server error
+    """
     try:
         patient_id = get_jwt_identity()
 
@@ -1318,6 +1747,17 @@ def get_diagnosis_by_patient():
 @app.route('/patient/default-address', methods=['GET'])
 @jwt_required()
 def get_default_address():
+    """
+    Get patient's default address.
+    ---
+    responses:
+      200:
+        description: Default address info
+      404:
+        description: User not found
+      500:
+        description: Server error
+    """
     try:
         patient_id = get_jwt_identity()
 
@@ -1355,6 +1795,58 @@ def get_default_address():
 @app.route('/delivery/register', methods=['POST'])
 @jwt_required()
 def register_delivery():
+    """
+    Register a delivery request.
+    ---
+    parameters:
+      - name: is_delivery
+        in: body
+        type: boolean
+        required: true
+        description: Whether delivery is requested
+      - name: prescription_id
+        in: body
+        type: string
+        required: true
+        description: Prescription ID
+      - name: address
+        in: body
+        type: string
+        required: false
+        description: Delivery address
+      - name: postal_code
+        in: body
+        type: string
+        required: false
+        description: Postal code
+      - name: patient_contact
+        in: body
+        type: string
+        required: false
+        description: Patient contact
+      - name: pharmacy_id
+        in: body
+        type: string
+        required: false
+        description: Pharmacy ID
+      - name: delivery_request
+        in: body
+        type: string
+        required: false
+        description: Special delivery request
+      - name: is_default_address
+        in: body
+        type: boolean
+        required: false
+        description: Set as default address
+    responses:
+      200:
+        description: Delivery registered
+      400:
+        description: Required fields missing
+      500:
+        description: Server error
+    """
     try:
         data = request.get_json()
         required_fields = ['is_delivery', 'prescription_id']
@@ -1430,6 +1922,25 @@ def register_delivery():
 @app.route('/delivery/complete', methods=['POST'])
 @jwt_required()
 def mark_delivery_as_received():
+    """
+    Mark delivery as received.
+    ---
+    parameters:
+      - name: delivery_id
+        in: body
+        type: string
+        required: true
+        description: Delivery ID
+    responses:
+      200:
+        description: Delivery marked as received
+      400:
+        description: Delivery ID required
+      404:
+        description: Delivery not found
+      500:
+        description: Server error
+    """
     try:
         data = request.get_json()
         delivery_id = data.get('delivery_id')
@@ -1464,6 +1975,25 @@ def mark_delivery_as_received():
 # ---- 전화 대기 ----
 @app.route('/call/waiting-doctor', methods=['POST'])
 def update_waiting_call():
+    """
+    Update call status to 'accepted' by room code.
+    ---
+    parameters:
+      - name: room_code
+        in: body
+        type: string
+        required: true
+        description: Room code for the call
+    responses:
+      200:
+        description: Call status updated
+      400:
+        description: Room code required
+      404:
+        description: Call not found
+      500:
+        description: Server error
+    """
     try:
         data = request.get_json()
         room_code = data.get('room_code')
@@ -1487,6 +2017,25 @@ def update_waiting_call():
 # ---- 전화 연결 ----
 @app.route('/call/accept', methods=['POST'])
 def accept_call():
+    """
+    Accept a call by call ID.
+    ---
+    parameters:
+      - name: call_id
+        in: body
+        type: string
+        required: true
+        description: Call ID
+    responses:
+      200:
+        description: Call accepted
+      400:
+        description: Call ID required
+      404:
+        description: Call not found
+      500:
+        description: Server error
+    """
     try:
         data = request.get_json()
         call_id = data.get('call_id')
@@ -1515,6 +2064,25 @@ def accept_call():
 # ---- 화면에 의사 이름 및 정보 표시 (room_code 기반) ----
 @app.route('/call/doctor-id', methods=['POST'])
 def get_doctor_info_from_room_code():
+    """
+    Get doctor info from room code.
+    ---
+    parameters:
+      - name: room_code
+        in: body
+        type: string
+        required: true
+        description: Room code for the call
+    responses:
+      200:
+        description: Doctor info returned
+      400:
+        description: Room code required
+      404:
+        description: Call or doctor not found
+      500:
+        description: Server error
+    """
     try:
         data = request.get_json()
         room_code = data.get('room_code')
@@ -1552,6 +2120,35 @@ def get_doctor_info_from_room_code():
 # ---- 환자 텍스트 저장 ----
 @app.route('/call/add-patient-text', methods=['POST'])
 def add_patient_text():
+    """
+    Add patient text to a call.
+    ---
+    parameters:
+      - name: room_code
+        in: body
+        type: string
+        required: true
+        description: Room code for the call
+      - name: patient_id
+        in: body
+        type: string
+        required: true
+        description: Patient ID
+      - name: patient_text
+        in: body
+        type: string
+        required: true
+        description: Patient text to add
+    responses:
+      200:
+        description: Patient text added
+      400:
+        description: Required fields missing
+      404:
+        description: Call not found
+      500:
+        description: Server error
+    """
     try:
         data = request.get_json()
         room_code = data.get('room_code')
@@ -1590,6 +2187,25 @@ def add_patient_text():
 # ---- 의사 텍스트 화면에 표출 ----
 @app.route('/call/latest-doctor-text', methods=['POST'])
 def get_latest_doctor_text():
+    """
+    Get latest doctor text for a call.
+    ---
+    parameters:
+      - name: room_code
+        in: body
+        type: string
+        required: true
+        description: Room code for the call
+    responses:
+      200:
+        description: Latest doctor text found
+      400:
+        description: Room code required
+      404:
+        description: Call or doctor text not found
+      500:
+        description: Server error
+    """
     try:
         data = request.get_json()
         room_code = data.get('room_code')
@@ -1616,6 +2232,25 @@ def get_latest_doctor_text():
 # ---- 전화 종료 ----
 @app.route('/call/end', methods=['POST'])
 def end_call():
+    """
+    End a call by room code.
+    ---
+    parameters:
+      - name: room_code
+        in: body
+        type: string
+        required: true
+        description: Room code for the call
+    responses:
+      200:
+        description: Call ended successfully
+      400:
+        description: Room code required
+      404:
+        description: Call not found
+      500:
+        description: Server error
+    """
     try:
         data = request.get_json()
         room_code = data.get('room_code')
@@ -1687,6 +2322,27 @@ def query_whisper_bytes(data: bytes, content_type: str) -> dict:
 @app.route('/voice/add-txt', methods=['POST'])
 def add_txt():
     """
+    Speech-to-text conversion (Whisper API).
+    ---
+    consumes:
+      - multipart/form-data
+    parameters:
+      - name: audio
+        in: formData
+        type: file
+        required: true
+        description: Audio file to transcribe
+    responses:
+      200:
+        description: Transcription successful
+      400:
+        description: Audio file missing
+      502:
+        description: Upstream API error
+      500:
+        description: Server error
+    """
+    """
     요청: multipart/form-data, 필드명 'audio'
     응답: { "text": "전사된 한글 문자열" }
     """
@@ -1723,6 +2379,17 @@ def add_txt():
 @app.route('/chat/add-separator', methods=['POST'])
 @jwt_required()
 def add_chat_separator():
+    """
+    Add chat separator, summarize and extract info after separator.
+    ---
+    responses:
+      200:
+        description: Chat separator and summary info saved
+      400:
+        description: Not enough chat history
+      500:
+        description: Server error
+    """
     try:
         patient_id = get_jwt_identity()
         if not patient_id:
@@ -1830,6 +2497,15 @@ def add_chat_separator():
 @app.route('/chat/move-to-body', methods=['POST'])
 @jwt_required()
 def move_with_separator():
+    """
+    Add chat separator and move to body diagnosis.
+    ---
+    responses:
+      200:
+        description: Moved to photo-based diagnosis
+      500:
+        description: Server error
+    """
     try:
         patient_id = get_jwt_identity()
         if not patient_id:
@@ -1861,6 +2537,40 @@ def move_with_separator():
 # ---- 보건소+의사 통합 검색 ----
 @app.route('/health-centers-with-doctors', methods=['GET'])
 def health_centers_with_doctors():
+    """
+    Search health centers and doctors nearby.
+    ---
+    parameters:
+      - name: lat
+        in: query
+        type: string
+        required: true
+        description: Latitude
+      - name: lng
+        in: query
+        type: string
+        required: true
+        description: Longitude
+      - name: department
+        in: query
+        type: string
+        required: true
+        description: Department
+      - name: gender
+        in: query
+        type: string
+        required: false
+        description: Doctor gender
+    responses:
+      200:
+        description: List of doctors at health centers
+      400:
+        description: Missing or invalid parameters
+      404:
+        description: No health centers found
+      500:
+        description: Server error
+    """
     try:
         lat_str = request.args.get('lat')
         lng_str = request.args.get('lng')
@@ -1949,6 +2659,30 @@ def health_centers_with_doctors():
 @app.route('/pharmacies/nearby-info', methods=['GET'])
 @jwt_required()
 def search_pharmacies_with_details():
+    """
+    Search pharmacies nearby with details.
+    ---
+    parameters:
+      - name: lat
+        in: query
+        type: string
+        required: true
+        description: Latitude
+      - name: lng
+        in: query
+        type: string
+        required: true
+        description: Longitude
+    responses:
+      200:
+        description: List of nearby pharmacies
+      400:
+        description: Missing or invalid parameters
+      401:
+        description: Unauthorized
+      500:
+        description: Server error
+    """
     try:
         patient_id = get_jwt_identity()
         if not patient_id:
