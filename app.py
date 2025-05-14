@@ -551,57 +551,51 @@ def patient_signup():
     """
     Register a new patient.
     ---
-    parameters:
-      - name: email
-        in: body
-        type: string
-        required: true
-        description: Patient's email address
-      - name: password
-        in: body
-        type: string
-        required: true
-        description: Patient's password
-      - name: name
-        in: body
-        type: string
-        required: true
-        description: Patient's name
-      - name: contact
-        in: body
-        type: string
-        required: true
-        description: Patient's contact number
-      - name: postal_code
-        in: body
-        type: string
-        required: true
-        description: Postal code
-      - name: address
-        in: body
-        type: string
-        required: true
-        description: Address
-      - name: address_detail
-        in: body
-        type: string
-        required: false
-        description: Detailed address
-      - name: birth_date
-        in: body
-        type: string
-        required: true
-        description: Birth date
-      - name: sign_language_needed
-        in: body
-        type: boolean
-        required: false
-        description: Whether sign language is needed
-      - name: is_default_address
-        in: body
-        type: boolean
-        required: false
-        description: Whether this is the default address
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+                description: Patient's email address
+              password:
+                type: string
+                description: Patient's password
+              name:
+                type: string
+                description: Patient's name
+              contact:
+                type: string
+                description: Patient's contact number
+              postal_code:
+                type: string
+                description: Postal code
+              address:
+                type: string
+                description: Address
+              address_detail:
+                type: string
+                description: Detailed address
+              birth_date:
+                type: string
+                description: Birth date
+              sign_language_needed:
+                type: boolean
+                description: Whether sign language is needed
+              is_default_address:
+                type: boolean
+                description: Whether this is the default address
+            required:
+              - email
+              - password
+              - name
+              - contact
+              - postal_code
+              - address
+              - birth_date
     responses:
       200:
         description: Patient registration successful
@@ -663,17 +657,22 @@ def patient_login():
     """
     Patient login.
     ---
-    parameters:
-      - name: email
-        in: body
-        type: string
-        required: true
-        description: Patient's email address
-      - name: password
-        in: body
-        type: string
-        required: true
-        description: Patient's password
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+                description: Patient's email address
+              password:
+                type: string
+                description: Patient's password
+            required:
+              - email
+              - password
     responses:
       200:
         description: Login successful
@@ -728,12 +727,18 @@ def register_fcm_token():
     """
     Register FCM token for push notifications.
     ---
-    parameters:
-      - name: fcm_token
-        in: body
-        type: string
-        required: true
-        description: FCM token to register
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              fcm_token:
+                type: string
+                description: FCM token to register
+            required:
+              - fcm_token
     responses:
       200:
         description: FCM token saved successfully
@@ -811,17 +816,22 @@ def patient_change_password():
     """
     Change patient password.
     ---
-    parameters:
-      - name: email
-        in: body
-        type: string
-        required: true
-        description: Patient's email address
-      - name: new_password
-        in: body
-        type: string
-        required: true
-        description: New password
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+                description: Patient's email address
+              new_password:
+                type: string
+                description: New password
+            required:
+              - email
+              - new_password
     responses:
       200:
         description: Password changed successfully
@@ -902,12 +912,18 @@ def update_patient_info():
     """
     Update patient information.
     ---
-    parameters:
-      - name: updates
-        in: body
-        type: object
-        required: true
-        description: Fields to update (dictionary)
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              updates:
+                type: object
+                description: Fields to update (dictionary)
+            required:
+              - updates
     responses:
       200:
         description: Update successful
@@ -980,12 +996,18 @@ def request_verification_code():
     """
     Request phone verification code.
     ---
-    parameters:
-      - name: phone_number
-        in: body
-        type: string
-        required: true
-        description: Phone number to send verification code
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              phone_number:
+                type: string
+                description: Phone number to send verification code
+            required:
+              - phone_number
     responses:
       200:
         description: Verification code sent
@@ -1020,17 +1042,22 @@ def verify_code():
     """
     Verify phone verification code.
     ---
-    parameters:
-      - name: phone_number
-        in: body
-        type: string
-        required: true
-        description: Phone number
-      - name: code
-        in: body
-        type: string
-        required: true
-        description: Verification code
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              phone_number:
+                type: string
+                description: Phone number
+              code:
+                type: string
+                description: Verification code
+            required:
+              - phone_number
+              - code
     responses:
       200:
         description: Verification successful
@@ -1057,17 +1084,22 @@ def verify_and_get_email():
     """
     Verify code and get email by phone number.
     ---
-    parameters:
-      - name: phone_number
-        in: body
-        type: string
-        required: true
-        description: Phone number
-      - name: code
-        in: body
-        type: string
-        required: true
-        description: Verification code
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              phone_number:
+                type: string
+                description: Phone number
+              code:
+                type: string
+                description: Verification code
+            required:
+              - phone_number
+              - code
     responses:
       200:
         description: Email found and returned
@@ -1115,22 +1147,26 @@ def verify_code_check_user():
     """
     Verify code and check if user exists by email and phone.
     ---
-    parameters:
-      - name: email
-        in: body
-        type: string
-        required: true
-        description: Email address
-      - name: phone_number
-        in: body
-        type: string
-        required: true
-        description: Phone number
-      - name: code
-        in: body
-        type: string
-        required: true
-        description: Verification code
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+                description: Email address
+              phone_number:
+                type: string
+                description: Phone number
+              code:
+                type: string
+                description: Verification code
+            required:
+              - email
+              - phone_number
+              - code
     responses:
       200:
         description: User verified
@@ -1215,12 +1251,18 @@ def get_disease_info_by_symptom():
     """
     Get disease info by symptom.
     ---
-    parameters:
-      - name: symptom
-        in: body
-        type: string
-        required: true
-        description: Symptom to search
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              symptom:
+                type: string
+                description: Symptom to search
+            required:
+              - symptom
     responses:
       200:
         description: Disease info found
@@ -1277,12 +1319,18 @@ def save_chat():
     """
     Save chat message and generate AI response.
     ---
-    parameters:
-      - name: patient_text
-        in: body
-        type: string
-        required: true
-        description: Patient's chat message
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              patient_text:
+                type: string
+                description: Patient's chat message
+            required:
+              - patient_text
     responses:
       200:
         description: Chat saved and AI response generated
@@ -1440,46 +1488,46 @@ def confirm_reservation():
     """
     Confirm and save a reservation.
     ---
-    parameters:
-      - name: doctor_id
-        in: body
-        type: integer
-        required: true
-        description: Doctor ID
-      - name: department
-        in: body
-        type: string
-        required: true
-        description: Department
-      - name: symptom_part
-        in: body
-        type: array
-        items:
-          type: string
-        required: true
-        description: Symptom part(s)
-      - name: symptom_type
-        in: body
-        type: array
-        items:
-          type: string
-        required: true
-        description: Symptom type(s)
-      - name: book_date
-        in: body
-        type: string
-        required: true
-        description: Booking date
-      - name: book_hour
-        in: body
-        type: string
-        required: true
-        description: Booking hour
-      - name: sign_language_needed
-        in: body
-        type: boolean
-        required: true
-        description: Sign language needed
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              doctor_id:
+                type: integer
+                description: Doctor ID
+              department:
+                type: string
+                description: Department
+              symptom_part:
+                type: array
+                items:
+                  type: string
+                description: Symptom part(s)
+              symptom_type:
+                type: array
+                items:
+                  type: string
+                description: Symptom type(s)
+              book_date:
+                type: string
+                description: Booking date
+              book_hour:
+                type: string
+                description: Booking hour
+              sign_language_needed:
+                type: boolean
+                description: Sign language needed
+            required:
+              - doctor_id
+              - department
+              - symptom_part
+              - symptom_type
+              - book_date
+              - book_hour
+              - sign_language_needed
     responses:
       200:
         description: Reservation confirmed
@@ -1798,47 +1846,40 @@ def register_delivery():
     """
     Register a delivery request.
     ---
-    parameters:
-      - name: is_delivery
-        in: body
-        type: boolean
-        required: true
-        description: Whether delivery is requested
-      - name: prescription_id
-        in: body
-        type: string
-        required: true
-        description: Prescription ID
-      - name: address
-        in: body
-        type: string
-        required: false
-        description: Delivery address
-      - name: postal_code
-        in: body
-        type: string
-        required: false
-        description: Postal code
-      - name: patient_contact
-        in: body
-        type: string
-        required: false
-        description: Patient contact
-      - name: pharmacy_id
-        in: body
-        type: string
-        required: false
-        description: Pharmacy ID
-      - name: delivery_request
-        in: body
-        type: string
-        required: false
-        description: Special delivery request
-      - name: is_default_address
-        in: body
-        type: boolean
-        required: false
-        description: Set as default address
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              is_delivery:
+                type: boolean
+                description: Whether delivery is requested
+              prescription_id:
+                type: string
+                description: Prescription ID
+              address:
+                type: string
+                description: Delivery address
+              postal_code:
+                type: string
+                description: Postal code
+              patient_contact:
+                type: string
+                description: Patient contact
+              pharmacy_id:
+                type: string
+                description: Pharmacy ID
+              delivery_request:
+                type: string
+                description: Special delivery request
+              is_default_address:
+                type: boolean
+                description: Set as default address
+            required:
+              - is_delivery
+              - prescription_id
     responses:
       200:
         description: Delivery registered
@@ -1925,12 +1966,18 @@ def mark_delivery_as_received():
     """
     Mark delivery as received.
     ---
-    parameters:
-      - name: delivery_id
-        in: body
-        type: string
-        required: true
-        description: Delivery ID
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              delivery_id:
+                type: string
+                description: Delivery ID
+            required:
+              - delivery_id
     responses:
       200:
         description: Delivery marked as received
