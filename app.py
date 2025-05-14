@@ -72,7 +72,7 @@ def refresh_token():
 # with open('api-doc.yaml', 'r', encoding='utf-8-sig') as f:
 #     swagger_template = yaml.safe_load(f)
 
-swagger = Swagger(app)
+swagger = Swagger(app, template={"info": {"title": "Silmedy-User", "version": "1.0"}})
 
 CORS(app, resources={r"/*": {"origins": "*"}})
 
