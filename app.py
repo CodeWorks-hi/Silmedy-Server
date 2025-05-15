@@ -73,7 +73,7 @@ from flask import send_file
 
 @app.route("/openapi.yaml")
 def openapi_spec():
-    return send_file(os.path.join(app.root_path, "api-doc-openapi3.yaml"), mimetype="text/yaml")
+    return send_file("api-doc-openapi3.yaml", mimetype="application/yaml")
 
 from flask import render_template
 
