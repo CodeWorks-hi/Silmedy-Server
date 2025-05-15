@@ -19,7 +19,6 @@ paths:
             properties:
               phone_number:
                 type: string
-                example: "01012345678"
       responses:
         '200':
           description: 인증번호 발송 성공
