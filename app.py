@@ -69,7 +69,7 @@ def refresh_token():
     access_token = create_access_token(identity=identity)
     return jsonify(access_token=access_token), 200
 
-with open('api-doc.yaml', 'r', encoding='utf-8-sig') as f:
+with open('api-doc-openapi3.yaml', 'r', encoding='utf-8-sig') as f:
     swagger_template = yaml.safe_load(f)
 
 swagger = Swagger(app, template=swagger_template)

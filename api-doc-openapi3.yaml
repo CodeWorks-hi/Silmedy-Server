@@ -1,0 +1,629 @@
+openapi: 3.0.0
+info:
+  title: Silmedy_User
+  version: 1.0.0
+servers:
+- url: http://192.168.0.170:5000/
+paths:
+  /patient/signup:
+    post:
+      summary: "\uD658\uC790 \uD68C\uC6D0\uAC00\uC785"
+      responses:
+        '200':
+          description: "\uD658\uC790 \uB4F1\uB85D \uC131\uACF5"
+        '409':
+          description: "\uC774\uBA54\uC77C \uC911\uBCF5"
+        '500':
+          description: "\uC11C\uBC84 \uC624\uB958"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+                name:
+                  type: string
+                contact:
+                  type: string
+                postal_code:
+                  type: string
+                address:
+                  type: string
+                address_detail:
+                  type: string
+                birth_date:
+                  type: string
+                sign_language_needed:
+                  type: boolean
+                is_default_address:
+                  type: boolean
+  /patient/login:
+    post:
+      summary: "\uD658\uC790 \uB85C\uADF8\uC778"
+      responses:
+        '200':
+          description: "\uB85C\uADF8\uC778 \uC131\uACF5"
+        '400':
+          description: "\uD544\uC218 \uC785\uB825 \uB204\uB77D"
+        '401':
+          description: "\uB85C\uADF8\uC778 \uC2E4\uD328"
+        '500':
+          description: "\uC11C\uBC84 \uC624\uB958"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+  /patient/fcm-token:
+    post:
+      summary: "FCM \uD1A0\uD070 \uB4F1\uB85D"
+      responses:
+        '200':
+          description: "FCM \uD1A0\uD070 \uC800\uC7A5 \uC131\uACF5"
+        '400':
+          description: "FCM \uD1A0\uD070 \uB204\uB77D"
+        '404':
+          description: "\uC0AC\uC6A9\uC790 \uC5C6\uC74C"
+        '500':
+          description: "\uC11C\uBC84 \uC624\uB958"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fcm_token:
+                  type: string
+                  description: FCM token to register
+  /postal_code:
+    get:
+      summary: "\uC6B0\uD3B8\uBC88\uD638 \uAC80\uC0C9"
+      responses:
+        '200':
+          description: "\uC6B0\uD3B8\uBC88\uD638 \uB9AC\uC2A4\uD2B8 \uBC18\uD658"
+        '400':
+          description: "\uD0A4\uC6CC\uB4DC \uB204\uB77D"
+        '500':
+          description: "\uC11C\uBC84 \uC624\uB958"
+      parameters:
+      - name: keyword
+        in: query
+        required: true
+        schema:
+          type: string
+        description: "\uAC80\uC0C9 \uD0A4\uC6CC\uB4DC"
+  /patient/repassword:
+    post:
+      summary: "\uD658\uC790 \uBE44\uBC00\uBC88\uD638 \uBCC0\uACBD"
+      responses:
+        '200':
+          description: "\uBE44\uBC00\uBC88\uD638 \uBCC0\uACBD \uC131\uACF5"
+        '400':
+          description: "\uC785\uB825 \uB204\uB77D"
+        '404':
+          description: "\uC0AC\uC6A9\uC790 \uC5C6\uC74C"
+        '500':
+          description: "\uC11C\uBC84 \uC624\uB958"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                new_password:
+                  type: string
+  /patient/logout:
+    post:
+      summary: "\uD658\uC790 \uB85C\uADF8\uC544\uC6C3"
+      responses:
+        '200':
+          description: "\uB85C\uADF8\uC544\uC6C3 \uC131\uACF5"
+  /patient/mypage:
+    get:
+      summary: "\uD658\uC790 \uB9C8\uC774\uD398\uC774\uC9C0 \uC870\uD68C"
+      responses:
+        '200':
+          description: "\uB9C8\uC774\uD398\uC774\uC9C0 \uB370\uC774\uD130 \uBC18\uD658"
+        '400':
+          description: "\uD658\uC790 ID \uB204\uB77D"
+        '404':
+          description: "\uC0AC\uC6A9\uC790 \uC5C6\uC74C"
+  /patient/update:
+    post:
+      summary: "\uD68C\uC6D0 \uC815\uBCF4 \uC218\uC815"
+      responses:
+        '200':
+          description: "\uC815\uBCF4 \uC218\uC815 \uC131\uACF5"
+        '400':
+          description: "\uC5C5\uB370\uC774\uD2B8 \uD56D\uBAA9 \uB204\uB77D"
+        '404':
+          description: "\uC0AC\uC6A9\uC790 \uC5C6\uC74C"
+        '500':
+          description: "\uC11C\uBC84 \uC624\uB958"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                updates:
+                  type: object
+                  description: "\uC218\uC815\uD560 \uD544\uB4DC \uB515\uC154\uB108\
+                    \uB9AC"
+  /patient/delete:
+    delete:
+      summary: "\uD68C\uC6D0 \uD0C8\uD1F4"
+      responses:
+        '200':
+          description: "\uD68C\uC6D0 \uD0C8\uD1F4 \uC644\uB8CC"
+        '400':
+          description: "\uD658\uC790 ID \uB204\uB77D"
+        '404':
+          description: "\uC0AC\uC6A9\uC790 \uC5C6\uC74C"
+  /request-verification-code:
+    post:
+      summary: "\uC778\uC99D\uBC88\uD638 \uC694\uCCAD"
+      responses:
+        '200':
+          description: "\uC778\uC99D\uBC88\uD638 \uBC1C\uC1A1\uB428"
+        '400':
+          description: "\uC804\uD654\uBC88\uD638 \uB204\uB77D \uB610\uB294 \uD615\uC2DD\
+            \ \uC624\uB958"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phone_number:
+                  type: string
+                  description: "\uC804\uD654\uBC88\uD638"
+  /verify-code:
+    post:
+      summary: "\uC778\uC99D\uBC88\uD638 \uD655\uC778"
+      responses:
+        '200':
+          description: "\uC778\uC99D \uC131\uACF5"
+        '400':
+          description: "\uC778\uC99D \uC2E4\uD328 \uB610\uB294 \uD544\uC218 \uC785\
+            \uB825 \uB204\uB77D"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phone_number:
+                  type: string
+                code:
+                  type: string
+  /verify-code-get-email:
+    post:
+      summary: "\uC778\uC99D \uD6C4 \uC774\uBA54\uC77C \uD655\uC778"
+      responses:
+        '200':
+          description: "\uC774\uBA54\uC77C \uBC18\uD658 \uC131\uACF5"
+        '400':
+          description: "\uC778\uC99D\uBC88\uD638 \uBD88\uC77C\uCE58"
+        '404':
+          description: "\uC0AC\uC6A9\uC790 \uC5C6\uC74C"
+        '500':
+          description: "\uC11C\uBC84 \uC624\uB958"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phone_number:
+                  type: string
+                code:
+                  type: string
+  /verify-code-check-user:
+    post:
+      summary: "\uC778\uC99D \uD6C4 \uC0AC\uC6A9\uC790 \uD655\uC778"
+      responses:
+        '200':
+          description: "\uC0AC\uC6A9\uC790 \uD655\uC778 \uC644\uB8CC"
+        '400':
+          description: "\uC778\uC99D\uBC88\uD638 \uBD88\uC77C\uCE58"
+        '404':
+          description: "\uC0AC\uC6A9\uC790 \uC5C6\uC74C"
+        '500':
+          description: "\uC11C\uBC84 \uC624\uB958"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                phone_number:
+                  type: string
+                code:
+                  type: string
+  /patient/name:
+    get:
+      summary: "\uD658\uC790 \uC774\uB984 \uBC18\uD658"
+      responses:
+        '200':
+          description: "\uC774\uB984 \uBC18\uD658 \uC131\uACF5"
+        '401':
+          description: "\uC778\uC99D \uC2E4\uD328"
+        '404':
+          description: "\uC0AC\uC6A9\uC790 \uC5C6\uC74C"
+        '500':
+          description: "\uC11C\uBC84 \uC624\uB958"
+  /info-by-symptom:
+    post:
+      summary: "\uC99D\uC0C1 \uAE30\uBC18 \uC9C8\uBCD1 \uC815\uBCF4 \uC870\uD68C"
+      responses:
+        '200':
+          description: "\uC9C8\uBCD1 \uC815\uBCF4 \uC870\uD68C \uC131\uACF5"
+        '400':
+          description: "\uC99D\uC0C1 \uB204\uB77D"
+        '404':
+          description: "\uB9E4\uCE6D\uB41C \uC9C8\uBCD1 \uC5C6\uC74C"
+        '500':
+          description: "\uC11C\uBC84 \uC624\uB958"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                symptom:
+                  type: string
+                  description: "\uAC80\uC0C9\uD560 \uC99D\uC0C1\uBA85"
+  /chat/save:
+    post:
+      summary: "AI \uCC57 \uC800\uC7A5 \uBC0F \uC751\uB2F5 \uC0DD\uC131"
+      responses:
+        '200':
+          description: "\uCC57 \uC800\uC7A5 \uBC0F AI \uC751\uB2F5 \uBC18\uD658"
+        '400':
+          description: "\uD544\uC218 \uD56D\uBAA9 \uB204\uB77D"
+        '500':
+          description: "\uC11C\uBC84 \uC624\uB958"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                patient_text:
+                  type: string
+                  description: "\uD658\uC790 \uC785\uB825 \uBA54\uC2DC\uC9C0"
+  /request/availability-signcheck:
+    get:
+      summary: "\uC758\uC0AC \uC9C4\uB8CC \uAC00\uB2A5 \uC2DC\uAC04 + \uC218\uC5B4\
+        \ \uD544\uC694 \uC5EC\uBD80 \uD655\uC778"
+      responses:
+        '200':
+          description: Reservations and sign language need info
+        '400':
+          description: License number required
+        '404':
+          description: Doctor or user not found
+        '500':
+          description: Server error
+      security:
+      - JWT: []
+      parameters:
+      - name: license_number
+        in: query
+        required: true
+        schema:
+          type: string
+        description: Doctor's license number
+  /request/confirmed:
+    post:
+      summary: "\uC9C4\uB8CC \uC608\uC57D \uD655\uC815"
+      responses:
+        '200':
+          description: Reservation confirmed
+        '400':
+          description: Missing required reservation information
+        '500':
+          description: Server error
+      security:
+      - JWT: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - doctor_id
+              - department
+              - symptom_part
+              - symptom_type
+              - book_date
+              - book_hour
+              - sign_language_needed
+              properties:
+                doctor_id:
+                  type: integer
+                  description: Doctor ID
+                department:
+                  type: string
+                  description: Department
+                symptom_part:
+                  type: array
+                  items:
+                    type: string
+                  description: Symptom part(s)
+                symptom_type:
+                  type: array
+                  items:
+                    type: string
+                  description: Symptom type(s)
+                book_date:
+                  type: string
+                  description: Booking date (YYYY-MM-DD)
+                book_hour:
+                  type: string
+                  description: Booking hour (e.g., "14:00")
+                sign_language_needed:
+                  type: boolean
+                  description: Whether sign language is needed
+  /prescription/url:
+    get:
+      summary: "\uCC98\uBC29\uC804 URL \uBC18\uD658"
+      responses:
+        '200':
+          description: Prescription URL found
+        '400':
+          description: Diagnosis ID required
+        '404':
+          description: Prescription not found
+        '500':
+          description: Server error
+      security:
+      - JWT: []
+      parameters:
+      - name: diagnosis_id
+        in: query
+        required: true
+        schema:
+          type: string
+        description: Diagnosis ID
+  /diagnosis/list:
+    get:
+      summary: "\uC9C4\uB8CC \uB0B4\uC5ED \uBC18\uD658"
+      responses:
+        '200':
+          description: List of diagnosis records
+        '500':
+          description: Server error
+      security:
+      - JWT: []
+  /patient/default-address:
+    get:
+      summary: "\uD658\uC790 \uAE30\uBCF8 \uC8FC\uC18C \uBC18\uD658"
+      responses:
+        '200':
+          description: Default address info
+        '404':
+          description: User not found
+        '500':
+          description: Server error
+      security:
+      - JWT: []
+  /delivery/register:
+    post:
+      summary: "\uBC30\uC1A1 \uC694\uCCAD \uB4F1\uB85D"
+      responses:
+        '200':
+          description: Delivery registered
+        '400':
+          description: Required fields missing
+        '500':
+          description: Server error
+      security:
+      - JWT: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - is_delivery
+              - prescription_id
+              properties:
+                is_delivery:
+                  type: boolean
+                  description: Whether delivery is requested
+                prescription_id:
+                  type: string
+                  description: Prescription ID
+                address:
+                  type: string
+                  description: Delivery address
+                postal_code:
+                  type: string
+                  description: Postal code
+                patient_contact:
+                  type: string
+                  description: Patient contact
+                pharmacy_id:
+                  type: string
+                  description: Pharmacy ID
+                delivery_request:
+                  type: string
+                  description: Special delivery request
+                is_default_address:
+                  type: boolean
+                  description: Set as default address
+  /delivery/complete:
+    post:
+      summary: "\uBC30\uC1A1 \uC644\uB8CC \uCC98\uB9AC"
+      responses:
+        '200':
+          description: Delivery marked as received
+        '400':
+          description: Delivery ID required
+        '404':
+          description: Delivery not found
+        '500':
+          description: Server error
+      security:
+      - JWT: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - delivery_id
+              properties:
+                delivery_id:
+                  type: string
+                  description: Delivery ID
+  /chat/add-separator:
+    post:
+      summary: "\uCC44\uD305 \uAD6C\uBD84\uC120 \uCD94\uAC00 \uBC0F \uC815\uBCF4 \uC694\
+        \uC57D \uC800\uC7A5"
+      responses:
+        '200':
+          description: Chat separator and summary info saved
+        '400':
+          description: Not enough chat history
+        '500':
+          description: Server error
+      security:
+      - JWT: []
+  /chat/move-to-body:
+    post:
+      summary: "\uCC44\uD305 \uAD6C\uBD84\uC120 \uCD94\uAC00 \uD6C4 \uC678\uACFC \uAE30\
+        \uBC18 \uC9C4\uB2E8\uC73C\uB85C \uC774\uB3D9"
+      responses:
+        '200':
+          description: Moved to photo-based diagnosis
+        '500':
+          description: Server error
+      security:
+      - JWT: []
+  /health-centers-with-doctors:
+    get:
+      summary: "\uC8FC\uBCC0 \uBCF4\uAC74\uC18C \uBC0F \uD574\uB2F9 \uC758\uC0AC \uAC80\
+        \uC0C9"
+      responses:
+        '200':
+          description: List of doctors at health centers
+        '400':
+          description: Missing or invalid parameters
+        '404':
+          description: No health centers found
+        '500':
+          description: Server error
+      parameters:
+      - name: lat
+        in: query
+        required: true
+        schema:
+          type: string
+        description: "\uC704\uB3C4"
+      - name: lng
+        in: query
+        required: true
+        schema:
+          type: string
+        description: "\uACBD\uB3C4"
+      - name: department
+        in: query
+        required: true
+        schema:
+          type: string
+        description: "\uC9C4\uB8CC\uACFC"
+      - name: gender
+        in: query
+        required: false
+        schema:
+          type: string
+        description: "\uC758\uC0AC \uC131\uBCC4 (\uC120\uD0DD)"
+  /pharmacies/nearby-info:
+    get:
+      summary: "\uC57D\uAD6D \uADFC\uCC98 \uC0C1\uC138 \uC815\uBCF4 \uD1B5\uD569 \uC870\
+        \uD68C"
+      responses:
+        200:
+          description: "\uADFC\uCC98 \uC57D\uAD6D \uC815\uBCF4 \uB9AC\uC2A4\uD2B8\
+            \ \uBC18\uD658"
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                pharmacy_id:
+                  type: integer
+                  description: "\uC57D\uAD6D ID"
+                pharmacy_name:
+                  type: string
+                  description: "\uC57D\uAD6D \uC774\uB984"
+                open_hour:
+                  type: string
+                  description: "\uC6B4\uC601 \uC2DC\uC791 \uC2DC\uAC04"
+                close_hour:
+                  type: string
+                  description: "\uC6B4\uC601 \uC885\uB8CC \uC2DC\uAC04"
+                address:
+                  type: string
+                  description: "\uC57D\uAD6D \uC8FC\uC18C"
+                contact:
+                  type: string
+                  description: "\uC57D\uAD6D \uC804\uD654\uBC88\uD638"
+        '400':
+          description: "lat \uB610\uB294 lng \uD30C\uB77C\uBBF8\uD130 \uB204\uB77D\
+            \ \uD639\uC740 \uD615\uC2DD \uC624\uB958"
+        '401':
+          description: "\uC778\uC99D \uC2E4\uD328 (JWT \uD544\uC694)"
+        '500':
+          description: "\uC11C\uBC84 \uC624\uB958 \uB610\uB294 Kakao API \uC624\uB958"
+      security:
+      - JWT: []
+      parameters:
+      - name: lat
+        in: query
+        required: true
+        schema:
+          type: string
+        description: "\uC704\uB3C4 (Latitude)"
+      - name: lng
+        in: query
+        required: true
+        schema:
+          type: string
+        description: "\uACBD\uB3C4 (Longitude)"
+components:
+  securitySchemes:
+    JWT:
+      type: apiKey
+      name: Authorization
+      in: header
