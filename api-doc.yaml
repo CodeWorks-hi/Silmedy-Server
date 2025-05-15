@@ -10,7 +10,7 @@ paths:
   /request-verification-code:
     post:
       summary: 인증번호 요청
-      body:
+      parameters:
         - in: body
           name: body
           required: true
@@ -19,6 +19,7 @@ paths:
             properties:
               phone_number:
                 type: string
+                example: "01012345678"
       responses:
         '200':
           description: 인증번호 발송 성공
