@@ -69,11 +69,22 @@ def refresh_token():
     access_token = create_access_token(identity=identity)
     return jsonify(access_token=access_token), 200
 
-with open('api-doc-openapi3.yaml', 'r', encoding='utf-8-sig') as f:
-    swagger_template = yaml.safe_load(f)
+from flask import send_file
 
-swagger = Swagger(app, template=swagger_template)
+@app.route("/openapi.yaml")
+def openapi_spec():
+    return send_file("api-doc-openapi3.yaml", mimetype="application/yaml")
 
+from flask import render_template
+
+@app.route("/docs")
+def redoc_docs():
+    return render_template("redoc.html")
+
+# with open('api-doc-openapi3.yaml', 'r', encoding='utf-8-sig') as f:
+#     swagger_template = yaml.safe_load(f)
+
+# swagger = Swagger(app, template=swagger_template)
 # swagger = Swagger(app, template={"info": {"title": "Silmedy-User", "version": "1.0"}})
 
 CORS(app, resources={r"/*": {"origins": "*"}})
