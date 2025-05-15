@@ -10,7 +10,7 @@ paths:
   /request-verification-code:
     post:
       summary: 인증번호 요청
-      parameters:
+      body:
         - in: body
           name: body
           required: true
