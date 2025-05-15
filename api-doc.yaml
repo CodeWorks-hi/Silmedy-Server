@@ -80,6 +80,7 @@ paths:
           in: query
           required: true
           type: string
+          example: "string"
       responses:
         '200':
           description: 우편번호 검색 결과
@@ -95,8 +96,10 @@ paths:
             properties:
               phone_number:
                 type: string
+                example: "string"
               code:
                 type: string
+                example: "string"
       responses:
         '200':
           description: 이메일 반환
@@ -112,10 +115,13 @@ paths:
             properties:
               email:
                 type: string
+                example: "string"
               phone_number:
                 type: string
+                example: "string"
               code:
                 type: string
+                example: "string"
       responses:
         '200':
           description: 사용자 존재 여부 확인
