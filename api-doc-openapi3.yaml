@@ -4,6 +4,14 @@ info:
   version: 1.0.0
 servers:
 - url: http://43.201.73.161:5000/
+
+components:
+  securitySchemes:
+    JWT:
+      type: apiKey
+      name: Authorization
+      in: header
+
 paths:
   /patient/signup:
     post:
@@ -573,32 +581,27 @@ paths:
       summary: "\uC57D\uAD6D \uADFC\uCC98 \uC0C1\uC138 \uC815\uBCF4 \uD1B5\uD569 \uC870\
         \uD68C"
       responses:
-        200:
-          description: "\uADFC\uCC98 \uC57D\uAD6D \uC815\uBCF4 \uB9AC\uC2A4\uD2B8\
-            \ \uBC18\uD658"
-          schema:
-            type: array
-            items:
-              type: object
-              properties:
-                pharmacy_id:
-                  type: integer
-                  description: "\uC57D\uAD6D ID"
-                pharmacy_name:
-                  type: string
-                  description: "\uC57D\uAD6D \uC774\uB984"
-                open_hour:
-                  type: string
-                  description: "\uC6B4\uC601 \uC2DC\uC791 \uC2DC\uAC04"
-                close_hour:
-                  type: string
-                  description: "\uC6B4\uC601 \uC885\uB8CC \uC2DC\uAC04"
-                address:
-                  type: string
-                  description: "\uC57D\uAD6D \uC8FC\uC18C"
-                contact:
-                  type: string
-                  description: "\uC57D\uAD6D \uC804\uD654\uBC88\uD638"
+        '200':
+          description: 근처 약국 정보 리스트 반환
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    pharmacy_id:
+                      type: integer
+                    pharmacy_name:
+                      type: string
+                    open_hour:
+                      type: string
+                    close_hour:
+                      type: string
+                    address:
+                      type: string
+                    contact:
+                      type: string
         '400':
           description: "lat \uB610\uB294 lng \uD30C\uB77C\uBBF8\uD130 \uB204\uB77D\
             \ \uD639\uC740 \uD615\uC2DD \uC624\uB958"
@@ -614,16 +617,10 @@ paths:
         required: true
         schema:
           type: string
-        description: "\uC704\uB3C4 (Latitude)"
+          description: "\uC704\uB3C4 (Latitude)"
       - name: lng
         in: query
         required: true
         schema:
           type: string
-        description: "\uACBD\uB3C4 (Longitude)"
-components:
-  securitySchemes:
-    JWT:
-      type: apiKey
-      name: Authorization
-      in: header
+          description: "\uACBD\uB3C4 (Longitude)"
