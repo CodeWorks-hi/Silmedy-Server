@@ -41,8 +41,8 @@ import firebase_admin
 from firebase_admin import credentials, firestore, db
 
 #  TensorFlow Lite (푸쉬 할때 바꿔서) 
-# from tflite_runtime.interpreter import Interpreter
-from tensorflow.lite.python.interpreter import Interpreter
+from tflite_runtime.interpreter import Interpreter
+# from tensorflow.lite.python.interpreter import Interpreter
 
 # TensorFlow Lite 인터프리터
 interpreter = Interpreter(model_path="model_unquant.tflite")
