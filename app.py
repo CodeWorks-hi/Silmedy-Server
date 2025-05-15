@@ -81,7 +81,7 @@ def refresh_token():
 # def redoc_docs():
 #     return render_template("redoc.html")
 
-with open('api-doc-openapi3.yaml', 'r', encoding='utf-8-sig') as f:
+with open('api-doc.yaml', 'r', encoding='utf-8-sig') as f:
     swagger_template = yaml.safe_load(f)
 
 swagger = Swagger(app, template=swagger_template)
