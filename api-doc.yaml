@@ -284,6 +284,8 @@ paths:
   /patient/name:
     get:
       summary: 환자 이름 반환
+      security:
+      - JWT: []
       responses:
         '200':
           description: 이름 반환 성공
@@ -638,3 +640,48 @@ paths:
           description: 인증 실패 (JWT 필요)
         '500':
           description: 서버 오류 또는 Kakao API 오류
+  /token/refresh:
+    post:
+      summary: 액세스 토큰 갱신
+      security:
+        - JWT: []
+      responses:
+        '200':
+          description: 액세스 토큰 반환
+        '401':
+          description: 리프레시 토큰 누락 또는 만료
+
+  /voice/add-txt:
+    post:
+      summary: 음성 → 텍스트 변환
+      consumes:
+        - multipart/form-data
+      parameters:
+        - in: formData
+          name: audio
+          type: file
+          required: true
+          description: 음성 파일 (mp3, wav 등)
+      responses:
+        '200':
+          description: 변환된 텍스트 반환
+        '400':
+          description: 음성 파일 누락
+        '502':
+          description: HuggingFace API 오류
+        '500':
+          description: 서버 오류
+  /patient/mypage:
+    get:
+      summary: 환자 마이페이지 조회
+      security:
+        - JWT: []
+      responses:
+        '200':
+          description: 마이페이지 데이터 반환
+        '400':
+          description: 환자 ID 누락
+        '404':
+          description: 사용자 없음
+        '500':
+          description: 서버 오류
