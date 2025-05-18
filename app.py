@@ -673,7 +673,7 @@ def register_fcm_token():
 
 
 # ---- 우편번호 검색 ----
-@app.route('/postal_code', methods=['GET'])
+@app.route('/postal-wcode', methods=['GET'])
 def search_postal_code():
     
     keyword = request.args.get('keyword')

@@ -388,7 +388,7 @@ paths:
           description: 서버 오류
 
 
-  /postal_code:
+  /postal-code:
     get:
       summary: 키워드로 우편번호를 검색합니다.
       description: 입력한 키워드로 카카오 API를 통해 우편번호 리스트를 조회하는 API입니다.
