@@ -1,11 +1,34 @@
 swagger: "2.0"
 info:
-  title: Silmedy_User
+  title: Silmedy-환자 앱
   version: 1.0.0
+  description: |
+    Silmedy 환자용 앱의 백엔드 REST API 명세서입니다.
+    회원 관리, 인증, 진료 예약, AI 진단, 배송 요청 등 주요 기능을 포함합니다.
+    각 API는 JWT 보안 인증을 기반으로 동작하며, 클라이언트 앱에서 호출됩니다.
 host: 43.201.73.161:5000
 basePath: /
 schemes:
   - http
+tags:
+  - name: 회원 정보
+    description: 회원가입, 로그인, 로그아웃, 마이페이지 조회 및 사용자 정보 수정 등 환자의 기본 계정 정보 관리를 위한 API입니다.
+  - name: 사용자 인증
+    description: 전화번호 기반 본인 인증 및 인증번호 확인을 위한 API입니다.
+  - name: 토큰 발급 및 갱신
+    description: JWT 기반 인증 토큰의 발급 및 리프레시를 담당하는 API입니다.
+  - name: 외부 API
+    description: 카카오 우편번호 검색 등 외부 서비스와 연동된 기능을 제공하는 API입니다.
+  - name: 채팅 기반 진단
+    description: 환자 입력에 따른 AI 챗 기록 저장 및 요약, 진단 흐름 제어를 위한 API입니다.
+  - name: 질병 정보
+    description: 증상 기반으로 연관된 질병 정보를 제공하는 AI 분석 API입니다.
+  - name: 진료 예약
+    description: 의사의 진료 가능 시간 조회 및 진료 예약 확정을 위한 API입니다.
+  - name: 진료 내역 확인
+    description: 진료 기록 및 처방전 내역을 확인할 수 있는 API입니다.
+  - name: 약품 조제 및 배송
+    description: 약국과 연동한 약 조제 및 배송 요청, 상태 변경을 위한 API입니다.
 
 securityDefinitions:
   JWT:
@@ -17,6 +40,10 @@ paths:
   /patient/signup:
     post:
       summary: 환자 회원가입
+      tags: [회원 정보]
+      description: |
+        새로운 환자 계정을 생성합니다. 이메일 중복 여부를 사전 확인하며,
+        회원가입 후 환자 ID가 자동 부여됩니다.
       parameters:
         - in: body
           name: body
@@ -52,9 +79,34 @@ paths:
         '500':
           description: 서버 오류
 
+  /patient/check-email:
+    post:
+      summary: 이메일 중복 확인
+      description: 입력한 이메일이 이미 사용 중인지 확인하는 API입니다.
+      tags: [회원 정보]
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+                description: 중복 확인할 이메일
+      responses:
+        '200':
+          description: 사용 가능한 이메일
+        '409':
+          description: 이미 사용 중인 이메일
+        '400':
+          description: 이메일 형식 오류 또는 누락
+
   /patient/login:
     post:
       summary: 환자 로그인
+      description: 환자가 이메일과 비밀번호로 로그인하는 API입니다. 로그인 성공 시 토큰이 발급됩니다.
+      tags: [회원 정보]
       parameters:
         - in: body
           name: body
@@ -76,9 +128,65 @@ paths:
         '500':
           description: 서버 오류
 
-  /patient/fcm-token:
+  /patient/logout:
     post:
-      summary: FCM 토큰 등록
+      summary: 환자 로그아웃
+      description: 환자의 로그아웃 처리를 수행합니다. 토큰 삭제 또는 클라이언트 세션 종료에 사용됩니다.
+      tags: [회원 정보]
+      responses:
+        '200':
+          description: 로그아웃 성공
+
+  /patient/name:
+    get:
+      summary: 환자 이름 반환
+      description: 환자의 이름 정보를 조회하는 API입니다. JWT 인증이 필요합니다.
+      tags: [회원 정보]
+      security:
+      - JWT: []
+      responses:
+        '200':
+          description: 이름 반환 성공
+        '401':
+          description: 인증 실패
+        '404':
+          description: 사용자 없음
+        '500':
+          description: 서버 오류
+
+  /patient/default-address:
+    get:
+      summary: 환자 기본 주소 반환
+      description: 환자의 기본 배송 주소 정보를 반환합니다. JWT 인증이 필요합니다.
+      tags: [회원 정보]
+      security:
+        - JWT: []
+      responses:
+        '200':
+          description: Default address info
+        '404':
+          description: User not found
+        '500':
+          description: Server error
+
+  /patient/mypage:
+    get:
+      summary: 환자 마이페이지 조회
+      description: 환자의 마이페이지(개인 정보 및 계정 상태 등)를 조회하는 API입니다.
+      tags: [회원 정보]
+      responses:
+        '200':
+          description: 마이페이지 데이터 반환
+        '400':
+          description: 환자 ID 누락
+        '404':
+          description: 사용자 없음
+
+  /patient/update:
+    post:
+      summary: 회원 정보 수정
+      description: 환자의 계정 정보를 수정하는 API입니다. 변경할 필드와 값을 전달합니다.
+      tags: [회원 정보]
       parameters:
         - in: body
           name: body
@@ -86,39 +194,24 @@ paths:
           schema:
             type: object
             properties:
-              fcm_token:
-                type: string
-                description: FCM token to register
+              updates:
+                type: object
+                description: 수정할 필드 딕셔너리
       responses:
         '200':
-          description: FCM 토큰 저장 성공
+          description: 정보 수정 성공
         '400':
-          description: FCM 토큰 누락
+          description: 업데이트 항목 누락
         '404':
           description: 사용자 없음
-        '500':
-          description: 서버 오류
-
-  /postal_code:
-    get:
-      summary: 우편번호 검색
-      parameters:
-        - in: query
-          name: keyword
-          required: true
-          type: string
-          description: 검색 키워드
-      responses:
-        '200':
-          description: 우편번호 리스트 반환
-        '400':
-          description: 키워드 누락
         '500':
           description: 서버 오류
 
   /patient/repassword:
     post:
       summary: 환자 비밀번호 변경
+      description: 환자의 비밀번호를 변경하는 API입니다. 이메일과 새로운 비밀번호를 입력받습니다.
+      tags: [회원 정보]
       parameters:
         - in: body
           name: body
@@ -140,50 +233,11 @@ paths:
         '500':
           description: 서버 오류
 
-  /patient/logout:
-    post:
-      summary: 환자 로그아웃
-      responses:
-        '200':
-          description: 로그아웃 성공
-
-  /patient/mypage:
-    get:
-      summary: 환자 마이페이지 조회
-      responses:
-        '200':
-          description: 마이페이지 데이터 반환
-        '400':
-          description: 환자 ID 누락
-        '404':
-          description: 사용자 없음
-
-  /patient/update:
-    post:
-      summary: 회원 정보 수정
-      parameters:
-        - in: body
-          name: body
-          required: true
-          schema:
-            type: object
-            properties:
-              updates:
-                type: object
-                description: 수정할 필드 딕셔너리
-      responses:
-        '200':
-          description: 정보 수정 성공
-        '400':
-          description: 업데이트 항목 누락
-        '404':
-          description: 사용자 없음
-        '500':
-          description: 서버 오류
-
   /patient/delete:
     delete:
       summary: 회원 탈퇴
+      description: 환자 계정을 영구적으로 삭제하는 API입니다.
+      tags: [회원 정보]
       responses:
         '200':
           description: 회원 탈퇴 완료
@@ -192,9 +246,51 @@ paths:
         '404':
           description: 사용자 없음
 
+
+  /patient/fcm-token:
+    post:
+      summary: FCM 토큰 등록
+      description: 푸시 알림 수신을 위한 FCM 토큰을 등록하는 API입니다.
+      tags: [토큰 발급 및 갱신]
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            properties:
+              fcm_token:
+                type: string
+                description: FCM token to register
+      responses:
+        '200':
+          description: FCM 토큰 저장 성공
+        '400':
+          description: FCM 토큰 누락
+        '404':
+          description: 사용자 없음
+        '500':
+          description: 서버 오류
+
+  /token/refresh:
+    post:
+      summary: 액세스 토큰 갱신
+      description: 만료된 액세스 토큰을 리프레시 토큰으로 갱신하는 API입니다.
+      tags: [토큰 발급 및 갱신]
+      security:
+        - JWT: []
+      responses:
+        '200':
+          description: 액세스 토큰 반환
+        '401':
+          description: 리프레시 토큰 누락 또는 만료
+
+
   /request-verification-code:
     post:
       summary: 인증번호 요청
+      description: 사용자의 전화번호로 인증번호를 발송하는 API입니다.
+      tags: [사용자 인증]
       parameters:
         - in: body
           name: body
@@ -214,6 +310,8 @@ paths:
   /verify-code:
     post:
       summary: 인증번호 확인
+      description: 사용자가 입력한 인증번호가 유효한지 확인하는 API입니다.
+      tags: [사용자 인증]
       parameters:
         - in: body
           name: body
@@ -234,6 +332,8 @@ paths:
   /verify-code-get-email:
     post:
       summary: 인증 후 이메일 확인
+      description: 인증번호 확인 후 해당 전화번호에 연동된 이메일을 반환하는 API입니다.
+      tags: [사용자 인증]
       parameters:
         - in: body
           name: body
@@ -258,6 +358,8 @@ paths:
   /verify-code-check-user:
     post:
       summary: 인증 후 사용자 확인
+      description: 인증번호 확인 후 이메일과 전화번호가 일치하는 사용자가 존재하는지 검증하는 API입니다.
+      tags: [사용자 인증]
       parameters:
         - in: body
           name: body
@@ -281,24 +383,84 @@ paths:
         '500':
           description: 서버 오류
 
-  /patient/name:
+
+  /postal_code:
     get:
-      summary: 환자 이름 반환
-      security:
-      - JWT: []
+      summary: 우편번호 검색
+      description: 입력한 키워드로 카카오 API를 통해 우편번호 리스트를 조회하는 API입니다.
+      tags: [외부 API]
+      parameters:
+        - in: query
+          name: keyword
+          required: true
+          type: string
+          description: 검색 키워드
       responses:
         '200':
-          description: 이름 반환 성공
-        '401':
-          description: 인증 실패
-        '404':
-          description: 사용자 없음
+          description: 우편번호 리스트 반환
+        '400':
+          description: 키워드 누락
         '500':
           description: 서버 오류
+
+
+  /chat/save:
+    post:
+      summary: AI 챗 저장 및 응답 생성
+      description: 환자의 입력 메시지를 저장하고, AI 챗봇의 응답을 생성하여 반환하는 API입니다.
+      tags: [채팅 기반 진단]
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            properties:
+              patient_text:
+                type: string
+                description: 환자 입력 메시지
+      responses:
+        '200':
+          description: 챗 저장 및 AI 응답 반환
+        '400':
+          description: 필수 항목 누락
+        '500':
+          description: 서버 오류
+
+  /chat/move-to-body:
+    post:
+      summary: 채팅 구분선 추가 후 외과 기반 진단으로 이동
+      description: 채팅 구분선을 추가한 뒤, 외과(사진 기반) 진단 단계로 이동하는 API입니다.
+      tags: [채팅 기반 진단]
+      security:
+        - JWT: []
+      responses:
+        '200':
+          description: Moved to photo-based diagnosis
+        '500':
+          description: Server error
+
+  /chat/add-separator:
+    post:
+      summary: 채팅 구분선 추가 및 정보 요약 저장
+      description: 챗 기록에 구분선을 추가하고, 해당 구간의 요약 정보를 저장하는 API입니다.
+      tags: [채팅 기반 진단]
+      security:
+        - JWT: []
+      responses:
+        '200':
+          description: Chat separator and summary info saved
+        '400':
+          description: Not enough chat history
+        '500':
+          description: Server error
+
 
   /info-by-symptom:
     post:
       summary: 증상 기반 질병 정보 조회
+      description: 입력한 증상명을 기반으로 연관된 질병 정보를 AI가 분석하여 제공합니다.
+      tags: [질병 정보]
       parameters:
         - in: body
           name: body
@@ -319,30 +481,48 @@ paths:
         '500':
           description: 서버 오류
 
-  /chat/save:
-    post:
-      summary: AI 챗 저장 및 응답 생성
+
+  /health-centers-with-doctors:
+    get:
+      summary: 주변 보건소 및 해당 의사 검색
+      description: 위치(위도, 경도)와 진료과, 의사 성별을 기준으로 가까운 보건소 및 소속 의사 정보를 조회합니다.
+      tags: [진료 예약]
       parameters:
-        - in: body
-          name: body
+        - name: lat
+          in: query
           required: true
-          schema:
-            type: object
-            properties:
-              patient_text:
-                type: string
-                description: 환자 입력 메시지
+          type: string
+          description: 위도
+        - name: lng
+          in: query
+          required: true
+          type: string
+          description: 경도
+        - name: department
+          in: query
+          required: true
+          type: string
+          description: 진료과
+        - name: gender
+          in: query
+          required: false
+          type: string
+          description: 의사 성별 (선택)
       responses:
         '200':
-          description: 챗 저장 및 AI 응답 반환
+          description: List of doctors at health centers
         '400':
-          description: 필수 항목 누락
+          description: Missing or invalid parameters
+        '404':
+          description: No health centers found
         '500':
-          description: 서버 오류
+          description: Server error
 
   /request/availability-signcheck:
     get:
       summary: 의사 진료 가능 시간 + 수어 필요 여부 확인
+      description: 특정 의사의 진료 가능 시간과 수어(수화) 필요 여부를 조회하는 API입니다.
+      tags: [진료 예약]
       security:
         - JWT: []
       parameters:
@@ -364,6 +544,8 @@ paths:
   /request/confirmed:
     post:
       summary: 진료 예약 확정
+      description: 진료 예약 정보를 입력하여 예약을 확정하는 API입니다. 예약 관련 필수 정보를 모두 입력해야 합니다.
+      tags: [진료 예약]
       security:
         - JWT: []
       parameters:
@@ -414,9 +596,25 @@ paths:
         '500':
           description: Server error
 
+
+  /diagnosis/list:
+    get:
+      summary: 진료 내역 반환
+      description: 환자의 전체 진료 기록 목록을 반환하는 API입니다.
+      tags: [진료 내역 확인]
+      security:
+        - JWT: []
+      responses:
+        '200':
+          description: List of diagnosis records
+        '500':
+          description: Server error
+
   /prescription/url:
     get:
       summary: 처방전 URL 반환
+      description: 진료 내역 ID로 처방전 PDF의 URL을 반환하는 API입니다.
+      tags: [진료 내역 확인]
       security:
         - JWT: []
       parameters:
@@ -435,166 +633,12 @@ paths:
         '500':
           description: Server error
 
-  /diagnosis/list:
-    get:
-      summary: 진료 내역 반환
-      security:
-        - JWT: []
-      responses:
-        '200':
-          description: List of diagnosis records
-        '500':
-          description: Server error
-
-  /patient/default-address:
-    get:
-      summary: 환자 기본 주소 반환
-      security:
-        - JWT: []
-      responses:
-        '200':
-          description: Default address info
-        '404':
-          description: User not found
-        '500':
-          description: Server error
-
-  /delivery/register:
-    post:
-      summary: 배송 요청 등록
-      security:
-        - JWT: []
-      parameters:
-        - in: body
-          name: body
-          required: true
-          schema:
-            type: object
-            required:
-              - is_delivery
-              - prescription_id
-            properties:
-              is_delivery:
-                type: boolean
-                description: Whether delivery is requested
-              prescription_id:
-                type: string
-                description: Prescription ID
-              address:
-                type: string
-                description: Delivery address
-              postal_code:
-                type: string
-                description: Postal code
-              patient_contact:
-                type: string
-                description: Patient contact
-              pharmacy_id:
-                type: string
-                description: Pharmacy ID
-              delivery_request:
-                type: string
-                description: Special delivery request
-              is_default_address:
-                type: boolean
-                description: Set as default address
-      responses:
-        '200':
-          description: Delivery registered
-        '400':
-          description: Required fields missing
-        '500':
-          description: Server error
-
-  /delivery/complete:
-    post:
-      summary: 배송 완료 처리
-      security:
-        - JWT: []
-      parameters:
-        - in: body
-          name: body
-          required: true
-          schema:
-            type: object
-            required:
-              - delivery_id
-            properties:
-              delivery_id:
-                type: string
-                description: Delivery ID
-      responses:
-        '200':
-          description: Delivery marked as received
-        '400':
-          description: Delivery ID required
-        '404':
-          description: Delivery not found
-        '500':
-          description: Server error
-
-  /chat/add-separator:
-    post:
-      summary: 채팅 구분선 추가 및 정보 요약 저장
-      security:
-        - JWT: []
-      responses:
-        '200':
-          description: Chat separator and summary info saved
-        '400':
-          description: Not enough chat history
-        '500':
-          description: Server error
-
-  /chat/move-to-body:
-    post:
-      summary: 채팅 구분선 추가 후 외과 기반 진단으로 이동
-      security:
-        - JWT: []
-      responses:
-        '200':
-          description: Moved to photo-based diagnosis
-        '500':
-          description: Server error
-
-  /health-centers-with-doctors:
-    get:
-      summary: 주변 보건소 및 해당 의사 검색
-      parameters:
-        - name: lat
-          in: query
-          required: true
-          type: string
-          description: 위도
-        - name: lng
-          in: query
-          required: true
-          type: string
-          description: 경도
-        - name: department
-          in: query
-          required: true
-          type: string
-          description: 진료과
-        - name: gender
-          in: query
-          required: false
-          type: string
-          description: 의사 성별 (선택)
-      responses:
-        '200':
-          description: List of doctors at health centers
-        '400':
-          description: Missing or invalid parameters
-        '404':
-          description: No health centers found
-        '500':
-          description: Server error
 
   /pharmacies/nearby-info:
     get:
       summary: 약국 근처 상세 정보 통합 조회
       description: 위도, 경도를 기준으로 근처 약국 정보를 카카오 API로 조회하고, 자체 DB와 일치하는 약국의 상세 정보를 반환합니다.
+      tags: [약품 조제 및 배송]
       security:
         - JWT: []
       parameters:
@@ -640,48 +684,52 @@ paths:
           description: 인증 실패 (JWT 필요)
         '500':
           description: 서버 오류 또는 Kakao API 오류
-  /token/refresh:
-    post:
-      summary: 액세스 토큰 갱신
-      security:
-        - JWT: []
-      responses:
-        '200':
-          description: 액세스 토큰 반환
-        '401':
-          description: 리프레시 토큰 누락 또는 만료
 
-  /voice/add-txt:
+  /delivery/register:
     post:
-      summary: 음성 → 텍스트 변환
-      consumes:
-        - multipart/form-data
-      parameters:
-        - in: formData
-          name: audio
-          type: file
-          required: true
-          description: 음성 파일 (mp3, wav 등)
-      responses:
-        '200':
-          description: 변환된 텍스트 반환
-        '400':
-          description: 음성 파일 누락
-        '502':
-          description: HuggingFace API 오류
-        '500':
-          description: 서버 오류
-  /patient/mypage:
-    get:
-      summary: 환자 마이페이지 조회
+      summary: 배송 요청 등록
+      description: 약 조제 후 배송 요청을 등록하는 API입니다. 처방전 ID와 배송 정보가 필요합니다.
+      tags: [약품 조제 및 배송]
       security:
         - JWT: []
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            required:
+              - is_delivery
+              - prescription_id
+            properties:
+              is_delivery:
+                type: boolean
+                description: Whether delivery is requested
+              prescription_id:
+                type: string
+                description: Prescription ID
+              address:
+                type: string
+                description: Delivery address
+              postal_code:
+                type: string
+                description: Postal code
+              patient_contact:
+                type: string
+                description: Patient contact
+              pharmacy_id:
+                type: string
+                description: Pharmacy ID
+              delivery_request:
+                type: string
+                description: Special delivery request
+              is_default_address:
+                type: boolean
+                description: Set as default address
       responses:
         '200':
-          description: 마이페이지 데이터 반환
+          description: Delivery registered
         '400':
-          description: 환자 ID 누락
-        '404':
-          description: 사용자 없음
+          description: Required fields missing
         '500':
-          description: 서버 오류
+          description: Server error
