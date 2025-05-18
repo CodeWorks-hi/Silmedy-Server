@@ -18,7 +18,7 @@ tags:
   - name: 토큰 발급 및 갱신
     description: JWT 기반 인증 토큰의 발급 및 리프레시를 담당하는 API입니다.
   - name: 외부 API
-    description: 카카오 우편번호 검색 등 외부 서비스와 연동된 기능을 제공하는 API입니다.
+    description: 우편번호 검색 등 외부 서비스와 연동된 기능을 제공하는 API입니다.
   - name: 채팅 기반 진단
     description: 환자 입력에 따른 AI 챗 기록 저장 및 요약, 진단 흐름 제어를 위한 API입니다.
   - name: 질병 정보
@@ -39,7 +39,7 @@ securityDefinitions:
 paths:
   /patient/signup:
     post:
-      summary: 환자 회원가입
+      summary: 회원가입 요청을 처리하고 사용자 계정을 생성합니다.
       tags: [회원 정보]
       description: |
         새로운 환자 계정을 생성합니다. 이메일 중복 여부를 사전 확인하며,
@@ -81,7 +81,7 @@ paths:
 
   /patient/check-email:
     post:
-      summary: 이메일 중복 확인
+      summary: 이메일 중복 여부를 확인합니다.
       description: 입력한 이메일이 이미 사용 중인지 확인하는 API입니다.
       tags: [회원 정보]
       parameters:
@@ -104,7 +104,7 @@ paths:
 
   /patient/login:
     post:
-      summary: 환자 로그인
+      summary: 이메일과 비밀번호를 통해 로그인합니다.
       description: 환자가 이메일과 비밀번호로 로그인하는 API입니다. 로그인 성공 시 토큰이 발급됩니다.
       tags: [회원 정보]
       parameters:
@@ -130,7 +130,7 @@ paths:
 
   /patient/logout:
     post:
-      summary: 환자 로그아웃
+      summary: 현재 로그인된 사용자를 로그아웃합니다.
       description: 환자의 로그아웃 처리를 수행합니다. 토큰 삭제 또는 클라이언트 세션 종료에 사용됩니다.
       tags: [회원 정보]
       responses:
@@ -139,7 +139,7 @@ paths:
 
   /patient/name:
     get:
-      summary: 환자 이름 반환
+      summary: 인증된 사용자의 이름 정보를 반환합니다.
       description: 환자의 이름 정보를 조회하는 API입니다. JWT 인증이 필요합니다.
       tags: [회원 정보]
       security:
@@ -156,7 +156,7 @@ paths:
 
   /patient/default-address:
     get:
-      summary: 환자 기본 주소 반환
+      summary: 기본 배송 주소를 조회합니다.
       description: 환자의 기본 배송 주소 정보를 반환합니다. JWT 인증이 필요합니다.
       tags: [회원 정보]
       security:
@@ -171,7 +171,7 @@ paths:
 
   /patient/mypage:
     get:
-      summary: 환자 마이페이지 조회
+      summary: 사용자의 마이페이지 정보를 조회합니다.
       description: 환자의 마이페이지(개인 정보 및 계정 상태 등)를 조회하는 API입니다.
       tags: [회원 정보]
       responses:
@@ -184,7 +184,7 @@ paths:
 
   /patient/update:
     post:
-      summary: 회원 정보 수정
+      summary: 회원 정보를 수정합니다.
       description: 환자의 계정 정보를 수정하는 API입니다. 변경할 필드와 값을 전달합니다.
       tags: [회원 정보]
       parameters:
@@ -209,7 +209,7 @@ paths:
 
   /patient/repassword:
     post:
-      summary: 환자 비밀번호 변경
+      summary: 사용자의 비밀번호를 변경합니다.
       description: 환자의 비밀번호를 변경하는 API입니다. 이메일과 새로운 비밀번호를 입력받습니다.
       tags: [회원 정보]
       parameters:
@@ -235,7 +235,7 @@ paths:
 
   /patient/delete:
     delete:
-      summary: 회원 탈퇴
+      summary: 사용자 계정을 삭제합니다.
       description: 환자 계정을 영구적으로 삭제하는 API입니다.
       tags: [회원 정보]
       responses:
@@ -249,7 +249,7 @@ paths:
 
   /patient/fcm-token:
     post:
-      summary: FCM 토큰 등록
+      summary: FCM 토큰을 등록하여 푸시 알림을 수신합니다.
       description: 푸시 알림 수신을 위한 FCM 토큰을 등록하는 API입니다.
       tags: [토큰 발급 및 갱신]
       parameters:
@@ -274,7 +274,7 @@ paths:
 
   /token/refresh:
     post:
-      summary: 액세스 토큰 갱신
+      summary: 리프레시 토큰으로 액세스 토큰을 갱신합니다.
       description: 만료된 액세스 토큰을 리프레시 토큰으로 갱신하는 API입니다.
       tags: [토큰 발급 및 갱신]
       security:
@@ -288,7 +288,7 @@ paths:
 
   /request-verification-code:
     post:
-      summary: 인증번호 요청
+      summary: 전화번호로 인증번호를 전송합니다.
       description: 사용자의 전화번호로 인증번호를 발송하는 API입니다.
       tags: [사용자 인증]
       parameters:
@@ -309,7 +309,7 @@ paths:
 
   /verify-code:
     post:
-      summary: 인증번호 확인
+      summary: 입력한 인증번호의 유효성을 검사합니다.
       description: 사용자가 입력한 인증번호가 유효한지 확인하는 API입니다.
       tags: [사용자 인증]
       parameters:
@@ -331,7 +331,7 @@ paths:
 
   /verify-code-get-email:
     post:
-      summary: 인증 후 이메일 확인
+      summary: 인증번호로 연결된 이메일을 조회합니다.
       description: 인증번호 확인 후 해당 전화번호에 연동된 이메일을 반환하는 API입니다.
       tags: [사용자 인증]
       parameters:
@@ -357,7 +357,7 @@ paths:
 
   /verify-code-check-user:
     post:
-      summary: 인증 후 사용자 확인
+      summary: 입력한 정보로 사용자를 확인합니다.
       description: 인증번호 확인 후 이메일과 전화번호가 일치하는 사용자가 존재하는지 검증하는 API입니다.
       tags: [사용자 인증]
       parameters:
@@ -386,7 +386,7 @@ paths:
 
   /postal_code:
     get:
-      summary: 우편번호 검색
+      summary: 키워드로 우편번호를 검색합니다.
       description: 입력한 키워드로 카카오 API를 통해 우편번호 리스트를 조회하는 API입니다.
       tags: [외부 API]
       parameters:
@@ -406,7 +406,7 @@ paths:
 
   /chat/save:
     post:
-      summary: AI 챗 저장 및 응답 생성
+      summary: AI 챗 응답을 저장하고 결과를 반환합니다.
       description: 환자의 입력 메시지를 저장하고, AI 챗봇의 응답을 생성하여 반환하는 API입니다.
       tags: [채팅 기반 진단]
       parameters:
@@ -429,7 +429,7 @@ paths:
 
   /chat/move-to-body:
     post:
-      summary: 채팅 구분선 추가 후 외과 기반 진단으로 이동
+      summary: 채팅 후 외과 진단 단계로 이동합니다.
       description: 채팅 구분선을 추가한 뒤, 외과(사진 기반) 진단 단계로 이동하는 API입니다.
       tags: [채팅 기반 진단]
       security:
@@ -442,7 +442,7 @@ paths:
 
   /chat/add-separator:
     post:
-      summary: 채팅 구분선 추가 및 정보 요약 저장
+      summary: 챗 기록에 구분선을 추가하고 요약합니다.
       description: 챗 기록에 구분선을 추가하고, 해당 구간의 요약 정보를 저장하는 API입니다.
       tags: [채팅 기반 진단]
       security:
@@ -458,7 +458,7 @@ paths:
 
   /info-by-symptom:
     post:
-      summary: 증상 기반 질병 정보 조회
+      summary: 증상에 따른 질병 정보를 조회합니다.
       description: 입력한 증상명을 기반으로 연관된 질병 정보를 AI가 분석하여 제공합니다.
       tags: [질병 정보]
       parameters:
@@ -484,7 +484,7 @@ paths:
 
   /health-centers-with-doctors:
     get:
-      summary: 주변 보건소 및 해당 의사 검색
+      summary: 근처 보건소와 의사 정보를 조회합니다.
       description: 위치(위도, 경도)와 진료과, 의사 성별을 기준으로 가까운 보건소 및 소속 의사 정보를 조회합니다.
       tags: [진료 예약]
       parameters:
@@ -520,7 +520,7 @@ paths:
 
   /request/availability-signcheck:
     get:
-      summary: 의사 진료 가능 시간 + 수어 필요 여부 확인
+      summary: 의사 진료 가능 시간과 수어 여부를 확인합니다.
       description: 특정 의사의 진료 가능 시간과 수어(수화) 필요 여부를 조회하는 API입니다.
       tags: [진료 예약]
       security:
@@ -543,7 +543,7 @@ paths:
 
   /request/confirmed:
     post:
-      summary: 진료 예약 확정
+      summary: 진료 예약을 확정합니다.
       description: 진료 예약 정보를 입력하여 예약을 확정하는 API입니다. 예약 관련 필수 정보를 모두 입력해야 합니다.
       tags: [진료 예약]
       security:
@@ -599,7 +599,7 @@ paths:
 
   /diagnosis/list:
     get:
-      summary: 진료 내역 반환
+      summary: 진료 기록 목록을 반환합니다.
       description: 환자의 전체 진료 기록 목록을 반환하는 API입니다.
       tags: [진료 내역 확인]
       security:
@@ -612,7 +612,7 @@ paths:
 
   /prescription/url:
     get:
-      summary: 처방전 URL 반환
+      summary: 처방전 PDF의 URL을 반환합니다.
       description: 진료 내역 ID로 처방전 PDF의 URL을 반환하는 API입니다.
       tags: [진료 내역 확인]
       security:
@@ -636,7 +636,7 @@ paths:
 
   /pharmacies/nearby-info:
     get:
-      summary: 약국 근처 상세 정보 통합 조회
+      summary: 위치 기반 약국 상세 정보를 조회합니다.
       description: 위도, 경도를 기준으로 근처 약국 정보를 카카오 API로 조회하고, 자체 DB와 일치하는 약국의 상세 정보를 반환합니다.
       tags: [약품 조제 및 배송]
       security:
@@ -687,7 +687,7 @@ paths:
 
   /delivery/register:
     post:
-      summary: 배송 요청 등록
+      summary: 배송 요청을 등록합니다.
       description: 약 조제 후 배송 요청을 등록하는 API입니다. 처방전 ID와 배송 정보가 필요합니다.
       tags: [약품 조제 및 배송]
       security:
