@@ -6,6 +6,10 @@ info:
     Silmedy 환자용 앱의 백엔드 REST API 명세서입니다.
     회원 관리, 인증, 진료 예약, AI 진단, 배송 요청 등 주요 기능을 포함합니다.
     각 API는 JWT 보안 인증을 기반으로 동작하며, 클라이언트 앱에서 호출됩니다.
+
+    🔐 인증이 필요한 API는 상단의 **Authorize** 버튼을 눌러 JWT 토큰을 입력한 후 사용하세요.
+    - 예시: `Bearer eyJhbGciOi...`
+    - "Bearer"와 토큰 사이에 **공백** 포함
 host: 43.201.73.161:5000
 basePath: /
 schemes:
