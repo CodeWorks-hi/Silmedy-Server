@@ -657,7 +657,7 @@ paths:
           type: string
           description: 경도 (Longitude)
       responses:
-        200:
+        '200':
           description: 근처 약국 정보 리스트 반환
           schema:
             type: array
