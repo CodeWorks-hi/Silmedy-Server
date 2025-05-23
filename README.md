@@ -56,8 +56,6 @@ Silmedy는 환자 중심의 비대면 진료 환경을 제공하기 위한 통�
 ├── .env                      # 환경 변수 (JWT 키, API 키 등)
 ├── silmedy-23a1b-*.json      # Firebase 인증키
 ├── model_unquant.tflite      # TFLite 모델
-├── templates/
-│   └── redoc.html            # API 문서용 Redoc 템플릿
 ├── static/
 │   └── js/                   # 정적 파일(js 등)
 ```
@@ -81,9 +79,7 @@ python app.py
 ```
 
 5. Swagger 문서 확인:  
-   http://localhost:5000/apidocs  
-   Redoc 문서 확인:  
-   http://localhost:5000/docs
+   http://43.201.73.161:5000/apidocs
 
 ---
 
