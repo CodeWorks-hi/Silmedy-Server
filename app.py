@@ -39,7 +39,6 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 # Firebase 관련 
 import firebase_admin
 from firebase_admin import credentials, firestore, db
-from firebase_admin import auth as firebase_auth
 
 #  TensorFlow Lite (푸쉬 할때 바꿔서) 
 from tflite_runtime.interpreter import Interpreter
@@ -842,51 +841,59 @@ def verify_code():
         return jsonify({"success": False, "message": "인증 실패"}), 400
     
 
+
 # --- 인증 후 이메일 확인 ---
 @app.route("/verify-code-get-email", methods=["POST"])
 def verify_and_get_email():
+    
+    
+    phone = request.json.get("phone_number", "").strip()  # 전화번호에서 하이픈 제거
+    code = request.json.get("code", "").strip()  # 인증코드
+
+    # 인증번호 확인 (여기서는 예시로 임의의 코드 비교)
+    if verification_codes.get(phone) != code:  # verification_codes는 인증번호 저장소
+        return jsonify({"success": False, "message": "인증번호가 일치하지 않습니다."}), 400
+
     try:
-        id_token = request.json.get("idToken", "").strip()
-        if not id_token:
-            return jsonify({"success": False, "message": "idToken이 필요합니다."}), 400
-
-        # Firebase 토큰 검증
-        decoded_token = firebase_auth.verify_id_token(id_token)
-        phone_number = decoded_token.get("phone_number", "").replace("+82", "0")  # 한국번호 변환
-
-        # Firestore에서 전화번호(contact)로 사용자 조회
-        formatted_phone = f"{phone_number[:3]}-{phone_number[3:7]}-{phone_number[7:]}"
+        # Firestore에서 해당 전화번호(contact)를 가진 유저 찾기
+        # 입력된 전화번호에서 하이픈을 추가하여 Firestore에서 조회할 전화번호와 형식 맞추기
+        formatted_phone = f"{phone[:3]}-{phone[3:7]}-{phone[7:]}"  # 하이픈 추가
         users_ref = collection_patients.where("contact", "==", formatted_phone).limit(1).stream()
         user_doc = next(users_ref, None)
 
-        if not user_doc:
+        if not user_doc:  # user_doc가 없으면 유저가 없다는 메시지
             return jsonify({"success": False, "message": "해당 번호로 등록된 유저가 없습니다."}), 404
 
+        # 유저의 이메일 가져오기
         user_data = user_doc.to_dict()
         email = user_data.get("email", "이메일 없음")
-        return jsonify({"success": True, "email": email}), 200
+        
+        return jsonify({
+            "success": True,
+            "email": email
+        }), 200
 
-    except firebase_auth.InvalidIdTokenError:
-        return jsonify({"success": False, "message": "유효하지 않은 토큰입니다."}), 401
     except Exception as e:
         return jsonify({"success": False, "message": f"오류 발생: {str(e)}"}), 500
     
 
+# ---- 인증 후 비밀번호 변경 ----
 @app.route("/verify-code-check-user", methods=["POST"])
 def verify_code_check_user():
+    
     email = request.json.get("email", "").strip()
-    id_token = request.json.get("idToken", "").strip()
+    phone = request.json.get("phone_number", "").replace("-", "").strip()
+    code = request.json.get("code", "").strip()
 
-    if not email or not id_token:
-        return jsonify({"success": False, "message": "이메일과 토큰이 필요합니다."}), 400
+    # 인증번호 확인
+    if verification_codes.get(phone) != code:
+        return jsonify({"success": False, "message": "인증번호가 일치하지 않습니다."}), 400
+
+    # 전화번호에 하이픈 추가 (파이어스토어에 저장된 형식에 맞추기)
+    formatted_phone = f"{phone[:3]}-{phone[3:7]}-{phone[7:]}"  # 예: 01012341234 → 010-1234-1234
 
     try:
-        # Firebase 토큰 검증
-        decoded_token = firebase_auth.verify_id_token(id_token)
-        phone_number = decoded_token.get("phone_number", "").replace("+82", "0")
-        formatted_phone = f"{phone_number[:3]}-{phone_number[3:7]}-{phone_number[7:]}"  # 예: 01012341234 → 010-1234-1234
-
-        # Firestore에서 이메일과 전화번호 둘 다 일치하는 유저 찾기
+        # Firestore에서 이메일과 전화번호 둘 다 일치하는 유저 찾기 (doc id가 아닌 필드 기반)
         user_query = (
             collection_patients
             .where("email", "==", email)
@@ -901,8 +908,6 @@ def verify_code_check_user():
         else:
             return jsonify({"success": False, "message": "가입된 사용자가 아닙니다."}), 404
 
-    except firebase_auth.InvalidIdTokenError:
-        return jsonify({"success": False, "message": "유효하지 않은 토큰입니다."}), 401
     except Exception as e:
         return jsonify({"success": False, "message": f"오류 발생: {str(e)}"}), 500
     
