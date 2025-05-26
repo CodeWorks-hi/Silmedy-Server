@@ -92,10 +92,3 @@ AWS_SECRET_ACCESS_KEY=your_aws_secret
 HUGGINGFACE_API_KEY=your_hf_key
 POSTAL_CODE_KEY=your_kakao_key
 ```
-
----
-
-## 📬 문의
-
-문의 사항이 있으신 경우 아래 이메일로 연락주세요.  
-📧 Email: codekookiz@gmail.com
